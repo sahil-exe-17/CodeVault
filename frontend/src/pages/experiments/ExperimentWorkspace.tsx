@@ -115,6 +115,40 @@ export const ExperimentWorkspace: React.FC = () => {
         }
       })
       .catch(() => {
+        // Fallback from localStorage (for offline or serverless)
+        try {
+          const direct = localStorage.getItem(`cv_experiment_${id}`)
+          if (direct) {
+            const data = JSON.parse(direct)
+            setExperiment(data)
+            if (data.code_files && Array.isArray(data.code_files) && data.code_files.length > 0) {
+              setCodeFiles(data.code_files)
+              setActiveCodeId(data.code_files[0].id)
+            } else {
+              setCodeFiles([{ id: 'c1', title: 'Code 1', language: data.language || 'c', code: data.source_code || '' }])
+            }
+            return
+          }
+
+          // Search in all subject experiment lists
+          for (let i = 0; i < localStorage.length; i++) {
+            const k = localStorage.key(i)
+            if (k && k.startsWith('cv_experiments_')) {
+              const list = JSON.parse(localStorage.getItem(k) || '[]')
+              const found = list.find((x: any) => x.id === id)
+              if (found) {
+                setExperiment(found)
+                if (found.code_files && Array.isArray(found.code_files) && found.code_files.length > 0) {
+                  setCodeFiles(found.code_files)
+                  setActiveCodeId(found.code_files[0].id)
+                } else {
+                  setCodeFiles([{ id: 'c1', title: 'Code 1', language: found.language || 'c', code: found.source_code || '' }])
+                }
+                return
+              }
+            }
+          }
+        } catch {}
         toast.error('Failed to load experiment.')
       })
       .finally(() => {
@@ -135,16 +169,22 @@ export const ExperimentWorkspace: React.FC = () => {
       setAutoSaveStatus('saving')
       try {
         const primary = codeFiles[0] || { code: '', language: 'c' }
-        await experimentsApi.update(id, {
+        const updated = {
           ...experiment,
           code_files: codeFiles,
           source_code: primary.code,
           language: primary.language,
-        })
+        }
+        try {
+          localStorage.setItem(`cv_experiment_${id}`, JSON.stringify(updated))
+        } catch {}
+        await experimentsApi.update(id, updated)
         setAutoSaveStatus('saved')
         setTimeout(() => setAutoSaveStatus('idle'), 2000)
       } catch {
-        setAutoSaveStatus('idle')
+        // If API fails (e.g. 405 on static hosting), still mark saved because localStorage is persisted
+        setAutoSaveStatus('saved')
+        setTimeout(() => setAutoSaveStatus('idle'), 2000)
       }
     }, 1500)
 
