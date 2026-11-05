@@ -12,11 +12,13 @@ import {
   Sparkles,
   Bookmark,
   ChevronRight,
+  Camera,
 } from 'lucide-react'
 import { Button } from '@/components/ui/Button'
 import { Badge } from '@/components/ui/Badge'
 import { ActivityChart } from '@/components/charts/ActivityChart'
 import { NewExperimentModal } from '@/components/experiments/NewExperimentModal'
+import { ScanPhotoModal } from '@/components/experiments/ScanPhotoModal'
 import { experimentsApi, subjectsApi, analyticsApi } from '@/lib/api'
 import { useAuthStore } from '@/store/authStore'
 import type { Experiment, Subject } from '@/types'
@@ -38,6 +40,7 @@ export const Dashboard: React.FC = () => {
   })
   const [isLoading, setIsLoading] = useState(true)
   const [isNewModalOpen, setIsNewModalOpen] = useState(false)
+  const [isScanModalOpen, setIsScanModalOpen] = useState(false)
 
   // Demo fallback seed data if backend is offline or empty
   const defaultExperiments: Experiment[] = [
@@ -148,45 +151,46 @@ export const Dashboard: React.FC = () => {
     },
   ]
 
-  useEffect(() => {
-    async function loadData() {
-      setIsLoading(true)
-      try {
-        const [expRes, subRes, ovRes, actRes] = await Promise.allSettled([
-          experimentsApi.list(),
-          subjectsApi.list(),
-          analyticsApi.getOverview(),
-          analyticsApi.getWeeklyActivity(),
-        ])
+  const loadData = async () => {
+    setIsLoading(true)
+    try {
+      const [expRes, subRes, ovRes, actRes] = await Promise.allSettled([
+        experimentsApi.list(),
+        subjectsApi.list(),
+        analyticsApi.getOverview(),
+        analyticsApi.getWeeklyActivity(),
+      ])
 
-        if (expRes.status === 'fulfilled' && expRes.value) {
-          const list = Array.isArray(expRes.value) ? expRes.value : (expRes.value as any)?.data || []
-          setExperiments(list.length > 0 ? list : defaultExperiments)
-        } else {
-          setExperiments(defaultExperiments)
-        }
-
-        if (subRes.status === 'fulfilled' && subRes.value) {
-          const list = Array.isArray(subRes.value) ? subRes.value : (subRes.value as any)?.data || []
-          setSubjects(list.length > 0 ? list : defaultSubjects)
-        } else {
-          setSubjects(defaultSubjects)
-        }
-
-        if (ovRes.status === 'fulfilled' && ovRes.value) {
-          setOverview(ovRes.value as any)
-        }
-
-        if (actRes.status === 'fulfilled' && actRes.value) {
-          setWeeklyActivity(actRes.value as any)
-        }
-      } catch {
+      if (expRes.status === 'fulfilled' && expRes.value) {
+        const list = Array.isArray(expRes.value) ? expRes.value : (expRes.value as any)?.data || []
+        setExperiments(list.length > 0 ? list : defaultExperiments)
+      } else {
         setExperiments(defaultExperiments)
-        setSubjects(defaultSubjects)
-      } finally {
-        setIsLoading(false)
       }
+
+      if (subRes.status === 'fulfilled' && subRes.value) {
+        const list = Array.isArray(subRes.value) ? subRes.value : (subRes.value as any)?.data || []
+        setSubjects(list.length > 0 ? list : defaultSubjects)
+      } else {
+        setSubjects(defaultSubjects)
+      }
+
+      if (ovRes.status === 'fulfilled' && ovRes.value) {
+        setOverview(ovRes.value as any)
+      }
+
+      if (actRes.status === 'fulfilled' && actRes.value) {
+        setWeeklyActivity(actRes.value as any)
+      }
+    } catch {
+      setExperiments(defaultExperiments)
+      setSubjects(defaultSubjects)
+    } finally {
+      setIsLoading(false)
     }
+  }
+
+  useEffect(() => {
     loadData()
   }, [])
 
@@ -213,6 +217,14 @@ export const Dashboard: React.FC = () => {
         </div>
 
         <div className="flex items-center gap-2.5">
+          <Button
+            variant="secondary"
+            size="sm"
+            icon={<Camera className="w-3.5 h-3.5" />}
+            onClick={() => setIsScanModalOpen(true)}
+          >
+            Scan Photo
+          </Button>
           <Button
             variant="secondary"
             size="sm"
@@ -556,6 +568,16 @@ export const Dashboard: React.FC = () => {
         isOpen={isNewModalOpen}
         onClose={() => setIsNewModalOpen(false)}
       />
+
+      {/* AI Photo Code Scanner Modal */}
+      <ScanPhotoModal
+        isOpen={isScanModalOpen}
+        onClose={() => {
+          setIsScanModalOpen(false)
+          loadData()
+        }}
+      />
     </div>
   )
 }
+

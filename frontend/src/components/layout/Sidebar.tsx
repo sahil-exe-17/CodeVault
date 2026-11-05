@@ -179,3 +179,4 @@ export const Sidebar: React.FC<SidebarProps> = ({ isCollapsed, toggleCollapse })
     </aside>
   )
 }
+

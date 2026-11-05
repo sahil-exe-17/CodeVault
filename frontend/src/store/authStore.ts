@@ -1,107 +1,242 @@
 import { create } from 'zustand'
-import { supabase } from '@/lib/supabase'
 import type { User } from '@/types'
+import { authApi } from '@/lib/api'
+
+interface GoogleAuthPayload {
+  email: string
+  name?: string
+  avatar_url?: string
+  google_id?: string
+}
 
 interface AuthState {
   user: User | null
-  session: any | null
+  token: string | null
   loading: boolean
   setUser: (user: User | null) => void
-  setSession: (session: any | null) => void
   setLoading: (loading: boolean) => void
-  signIn: (email: string, password: string) => Promise<void>
-  signUp: (email: string, password: string, displayName: string) => Promise<void>
-  signOut: () => Promise<void>
-  signInDemo: () => void
+  signIn: (email: string, password?: string) => Promise<User>
+  signUp: (email: string, password?: string, displayName?: string) => Promise<User>
+  signInWithGoogle: (googleData: GoogleAuthPayload) => Promise<User>
+  updateProfile: (data: Partial<User>) => Promise<User>
+  signOut: () => void
 }
 
-export const useAuthStore = create<AuthState>((set) => ({
-  user: {
-    id: '00000000-0000-0000-0000-000000000001',
-    email: 'alex@codevault.dev',
-    username: 'alexdev',
-    display_name: 'Alex Rivera',
-    avatar_url: '',
-  },
-  session: { access_token: 'demo-token' },
+const getDeterministicUserId = (email: string): string => {
+  const clean = email.trim().toLowerCase()
+  let hash = 0
+  for (let i = 0; i < clean.length; i++) {
+    hash = (hash << 5) - hash + clean.charCodeAt(i)
+    hash |= 0
+  }
+  return 'usr_' + Math.abs(hash).toString(36)
+}
+
+const getStoredProfile = (email: string): Partial<User> | null => {
+  try {
+    const raw = localStorage.getItem(`cv_profile_${email.trim().toLowerCase()}`)
+    return raw ? JSON.parse(raw) : null
+  } catch {
+    return null
+  }
+}
+
+const saveStoredProfile = (email: string, user: User) => {
+  try {
+    localStorage.setItem(`cv_profile_${email.trim().toLowerCase()}`, JSON.stringify(user))
+  } catch {}
+}
+
+const getInitialUser = (): User | null => {
+  try {
+    const raw = localStorage.getItem('codevault_user')
+    return raw ? JSON.parse(raw) : null
+  } catch {
+    return null
+  }
+}
+
+export const useAuthStore = create<AuthState>((set, get) => ({
+  user: getInitialUser(),
+  token: localStorage.getItem('codevault_token') || null,
   loading: false,
 
-  setUser: (user) => set({ user }),
-  setSession: (session) => set({ session }),
+  setUser: (user) => {
+    if (user) {
+      localStorage.setItem('codevault_user', JSON.stringify(user))
+      saveStoredProfile(user.email, user)
+    } else {
+      localStorage.removeItem('codevault_user')
+    }
+    set({ user })
+  },
+
   setLoading: (loading) => set({ loading }),
 
-  signIn: async (email, password) => {
+  signIn: async (email: string, password?: string) => {
     set({ loading: true })
+    const cleanEmail = email.trim().toLowerCase()
     try {
-      const { data, error } = await supabase.auth.signInWithPassword({ email, password })
-      if (error) {
-        // If Supabase is unconfigured, fallback to demo user
-        if (error.message.includes('FetchError') || error.message.includes('NetworkError') || error.message.includes('Invalid API key')) {
-          const demoUser: User = {
-            id: '00000000-0000-0000-0000-000000000001',
-            email,
-            username: email.split('@')[0],
-            display_name: email.split('@')[0],
-          }
-          localStorage.setItem('codevault_demo_token', 'demo-token')
-          set({ user: demoUser, session: { access_token: 'demo-token' }, loading: false })
-          return
-        }
-        throw error
+      const res: any = await authApi.login({ email: cleanEmail, password })
+      const user = res.user
+      const token = res.token || `token_${user.id}`
+
+      localStorage.setItem('codevault_token', token)
+      localStorage.setItem('codevault_user', JSON.stringify(user))
+      saveStoredProfile(user.email, user)
+
+      set({ user, token, loading: false })
+      return user
+    } catch (err: any) {
+      // If it's a specific credential validation error from backend (like wrong password), throw it!
+      if (err.message && !err.message.includes('Network Error') && !err.message.includes('ECONNREFUSED')) {
+        set({ loading: false })
+        throw err
       }
-      set({ session: data.session, user: data.user as any, loading: false })
-    } catch (err) {
-      set({ loading: false })
-      throw err
+
+      // If backend network unreachable (e.g. running on static Vercel), retrieve consistent user account
+      console.warn('Backend network unreachable during signin, loading local consistent session:', err.message)
+      const existing = getStoredProfile(cleanEmail)
+      const stableId = getDeterministicUserId(cleanEmail)
+
+      const localUser: User = {
+        id: stableId,
+        email: cleanEmail,
+        username: cleanEmail.split('@')[0],
+        display_name: existing?.display_name || cleanEmail.split('@')[0].replace(/[._]/g, ' '),
+        college: existing?.college || '',
+        department: existing?.department || '',
+        semester: existing?.semester || '',
+        roll_number: existing?.roll_number || '',
+        coding_goals: existing?.coding_goals || '',
+        is_profile_completed: existing ? Boolean(existing.is_profile_completed) : true,
+        auth_provider: 'email',
+        ...existing,
+      }
+
+      const token = `token_${localUser.id}`
+      localStorage.setItem('codevault_token', token)
+      localStorage.setItem('codevault_user', JSON.stringify(localUser))
+      saveStoredProfile(localUser.email, localUser)
+
+      set({ user: localUser, token, loading: false })
+      return localUser
     }
   },
 
-  signUp: async (email, password, displayName) => {
+  signUp: async (email: string, password?: string, displayName?: string) => {
     set({ loading: true })
+    const cleanEmail = email.trim().toLowerCase()
     try {
-      const { data, error } = await supabase.auth.signUp({
-        email,
+      const res: any = await authApi.signup({
+        email: cleanEmail,
         password,
-        options: { data: { display_name: displayName } },
+        display_name: displayName,
       })
-      if (error) {
-        if (error.message.includes('FetchError') || error.message.includes('NetworkError') || error.message.includes('Invalid API key')) {
-          const demoUser: User = {
-            id: '00000000-0000-0000-0000-000000000001',
-            email,
-            username: email.split('@')[0],
-            display_name: displayName || email.split('@')[0],
-          }
-          set({ user: demoUser, session: { access_token: 'demo-token' }, loading: false })
-          return
-        }
-        throw error
+      const user = res.user
+      const token = res.token || `token_${user.id}`
+
+      localStorage.setItem('codevault_token', token)
+      localStorage.setItem('codevault_user', JSON.stringify(user))
+      saveStoredProfile(user.email, user)
+
+      set({ user, token, loading: false })
+      return user
+    } catch (err: any) {
+      // If email already exists or password too short, throw it so UI tells the user!
+      if (err.message && !err.message.includes('Network Error') && !err.message.includes('ECONNREFUSED')) {
+        set({ loading: false })
+        throw err
       }
-      set({ session: data.session, user: data.user as any, loading: false })
-    } catch (err) {
-      set({ loading: false })
-      throw err
+
+      // If network is unreachable, provision consistent user by email
+      console.warn('Backend network unreachable during signup, creating consistent local user:', err.message)
+      const stableId = getDeterministicUserId(cleanEmail)
+      const existing = getStoredProfile(cleanEmail)
+
+      const localUser: User = {
+        id: stableId,
+        email: cleanEmail,
+        username: cleanEmail.split('@')[0],
+        display_name: displayName || cleanEmail.split('@')[0].replace(/[._]/g, ' '),
+        is_profile_completed: false,
+        auth_provider: 'email',
+        ...existing,
+      }
+
+      const token = `token_${localUser.id}`
+      localStorage.setItem('codevault_token', token)
+      localStorage.setItem('codevault_user', JSON.stringify(localUser))
+      saveStoredProfile(localUser.email, localUser)
+
+      set({ user: localUser, token, loading: false })
+      return localUser
     }
   },
 
-  signOut: async () => {
+  signInWithGoogle: async (googleData: GoogleAuthPayload) => {
+    set({ loading: true })
+    const cleanEmail = googleData.email.trim().toLowerCase()
     try {
-      await supabase.auth.signOut()
-    } catch {
-      // Ignore signOut errors on demo mode
+      const res: any = await authApi.googleAuth({ ...googleData, email: cleanEmail })
+      const user = res.user
+      const token = res.token || `token_${user.id}`
+
+      localStorage.setItem('codevault_token', token)
+      localStorage.setItem('codevault_user', JSON.stringify(user))
+      saveStoredProfile(user.email, user)
+
+      set({ user, token, loading: false })
+      return user
+    } catch (err: any) {
+      // If network unreachable, load/create consistent Google user by email
+      console.warn('Backend network unreachable during Google auth, restoring local session:', err.message)
+      const stableId = getDeterministicUserId(cleanEmail)
+      const existing = getStoredProfile(cleanEmail)
+
+      const localUser: User = {
+        id: stableId,
+        email: cleanEmail,
+        username: cleanEmail.split('@')[0],
+        display_name: googleData.name || cleanEmail.split('@')[0],
+        avatar_url: googleData.avatar_url || '',
+        auth_provider: 'google',
+        is_profile_completed: existing ? Boolean(existing.is_profile_completed) : false,
+        ...existing,
+      }
+
+      const token = `token_${localUser.id}`
+      localStorage.setItem('codevault_token', token)
+      localStorage.setItem('codevault_user', JSON.stringify(localUser))
+      saveStoredProfile(localUser.email, localUser)
+
+      set({ user: localUser, token, loading: false })
+      return localUser
     }
-    localStorage.removeItem('codevault_demo_token')
-    set({ user: null, session: null })
   },
 
-  signInDemo: () => {
-    const demoUser: User = {
-      id: '00000000-0000-0000-0000-000000000001',
-      email: 'alex@codevault.dev',
-      username: 'alexdev',
-      display_name: 'Alex Rivera',
+  updateProfile: async (data: Partial<User>) => {
+    const current = get().user
+    try {
+      const res: any = await authApi.updateProfile(data)
+      const updatedUser = res?.data || res || { ...current, ...data }
+      localStorage.setItem('codevault_user', JSON.stringify(updatedUser))
+      if (updatedUser.email) saveStoredProfile(updatedUser.email, updatedUser)
+      set({ user: updatedUser })
+      return updatedUser
+    } catch {
+      // Local fallback
+      const merged = { ...current, ...data, is_profile_completed: true } as User
+      localStorage.setItem('codevault_user', JSON.stringify(merged))
+      if (merged.email) saveStoredProfile(merged.email, merged)
+      set({ user: merged })
+      return merged
     }
-    localStorage.setItem('codevault_demo_token', 'demo-token')
-    set({ user: demoUser, session: { access_token: 'demo-token' }, loading: false })
+  },
+
+  signOut: () => {
+    localStorage.removeItem('codevault_token')
+    localStorage.removeItem('codevault_user')
+    set({ user: null, token: null })
   },
 }))

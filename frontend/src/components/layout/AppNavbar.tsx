@@ -1,0 +1,193 @@
+import React, { useState, useRef, useEffect } from 'react'
+import { Link, useNavigate } from 'react-router-dom'
+import { motion, AnimatePresence } from 'framer-motion'
+import { Code2, Plus, LogOut, User as UserIcon, Sparkles, ChevronDown, Cpu } from 'lucide-react'
+import { useAuthStore } from '@/store/authStore'
+
+interface AppNavbarProps {
+  onAddSubject?: () => void
+  showAddSubject?: boolean
+}
+
+export const AppNavbar: React.FC<AppNavbarProps> = ({
+  onAddSubject,
+  showAddSubject = true,
+}) => {
+  const navigate = useNavigate()
+  const { user, signOut } = useAuthStore()
+  const [showUserMenu, setShowUserMenu] = useState(false)
+  const navRef = useRef<HTMLElement | null>(null)
+  const [mousePos, setMousePos] = useState({ x: 0 })
+
+  const handleMouseMove = (e: React.MouseEvent<HTMLElement>) => {
+    if (!navRef.current) return
+    const rect = navRef.current.getBoundingClientRect()
+    setMousePos({ x: e.clientX - rect.left })
+  }
+
+  const handleSignOut = () => {
+    signOut()
+    navigate('/auth')
+  }
+
+  const displayName = user?.display_name || user?.email?.split('@')[0] || 'Student'
+  const initials = displayName.slice(0, 2).toUpperCase()
+
+  return (
+    <header
+      ref={navRef}
+      onMouseMove={handleMouseMove}
+      className="sticky top-0 z-40 w-full bg-[#07070a]/75 backdrop-blur-2xl border-b border-white/[0.08] select-none transition-all"
+    >
+      {/* 1. Dynamic Cursor Spotlight across Top Bar */}
+      <div
+        className="absolute top-0 bottom-0 pointer-events-none transition-opacity duration-300 w-96 -translate-x-1/2 opacity-30 blur-2xl"
+        style={{
+          left: `${mousePos.x}px`,
+          background: 'radial-gradient(ellipse at top, rgba(244, 63, 94, 0.25), rgba(56, 189, 248, 0.2), transparent 70%)',
+        }}
+      />
+
+      {/* 2. Traveling Animated Laser Beam along the bottom edge */}
+      <div className="absolute bottom-0 left-0 right-0 h-[1.5px] overflow-hidden pointer-events-none">
+        <div className="w-[200%] h-full bg-gradient-to-r from-transparent via-pink-500 via-amber-300 via-emerald-400 via-sky-400 to-transparent animate-[laser-pan_6s_linear_infinite] opacity-60" />
+      </div>
+
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 h-15 flex items-center justify-between gap-4 relative z-10">
+        {/* Brand */}
+        <div className="flex items-center gap-4">
+          <Link to="/subjects" className="flex items-center gap-2.5 group">
+            <div className="w-8 h-8 rounded-xl bg-white/[0.08] border border-white/15 p-1 flex items-center justify-center group-hover:border-white/40 group-hover:bg-white/[0.12] transition-all shadow-sm">
+              <img
+                src="/logo-tight.png"
+                alt="CodeVault Logo"
+                className="w-full h-full object-contain filter drop-shadow-[0_0_8px_rgba(255,255,255,0.45)]"
+              />
+            </div>
+            <span className="font-bold text-base tracking-tight text-white font-['Manrope'] group-hover:opacity-90 transition-opacity">
+              CodeVault
+            </span>
+          </Link>
+        </div>
+
+        {/* Right Action Bar */}
+        <div className="flex items-center gap-3">
+          {/* Crazy Animated + Add Subject Button */}
+          {showAddSubject && onAddSubject && (
+            <motion.button
+              whileHover={{ scale: 1.03 }}
+              whileTap={{ scale: 0.97 }}
+              type="button"
+              onClick={onAddSubject}
+              className="relative group overflow-hidden px-4 py-2 rounded-xl bg-white hover:bg-neutral-100 text-black text-xs font-semibold flex items-center gap-2 shadow-[0_0_25px_rgba(255,255,255,0.22)] cursor-pointer transition-all duration-200"
+            >
+              {/* Shimmer light sweep */}
+              <div className="absolute inset-0 -translate-x-full group-hover:animate-[shimmer_1.5s_infinite] bg-gradient-to-r from-transparent via-black/10 to-transparent" />
+              <span className="tracking-tight font-medium">+ Add Subject</span>
+            </motion.button>
+          )}
+
+          {/* User Profile Capsule */}
+          <div className="relative">
+            <button
+              type="button"
+              onClick={() => setShowUserMenu(!showUserMenu)}
+              className="flex items-center gap-2.5 px-2.5 py-1.5 rounded-xl bg-[#14141a]/90 hover:bg-[#1e1e26] border border-white/10 hover:border-white/20 transition-all cursor-pointer shadow-sm group"
+            >
+              {/* Avatar / Initials with glowing border */}
+              <div className="relative">
+                <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-white/20 via-white/10 to-transparent border border-white/20 flex items-center justify-center text-xs font-mono font-bold text-white shadow-sm">
+                  {user?.avatar_url ? (
+                    <img
+                      src={user.avatar_url}
+                      alt={displayName}
+                      className="w-full h-full rounded-lg object-cover"
+                    />
+                  ) : (
+                    initials
+                  )}
+                </div>
+              </div>
+
+              <div className="hidden sm:block text-left">
+                <p className="text-xs font-medium text-white/90 leading-tight max-w-[110px] truncate">
+                  {displayName}
+                </p>
+                <p className="text-[10px] font-mono text-white/40 leading-none mt-0.5">
+                  {user?.semester || 'Semester 4'}
+                </p>
+              </div>
+
+              <ChevronDown className="w-3.5 h-3.5 text-white/40 group-hover:text-white transition-transform duration-200" />
+            </button>
+
+            {/* Dropdown Menu */}
+            <AnimatePresence>
+              {showUserMenu && (
+                <>
+                  <div
+                    onClick={() => setShowUserMenu(false)}
+                    className="fixed inset-0 z-40"
+                  />
+                  <motion.div
+                    initial={{ opacity: 0, scale: 0.95, y: -8 }}
+                    animate={{ opacity: 1, scale: 1, y: 0 }}
+                    exit={{ opacity: 0, scale: 0.95, y: -8 }}
+                    transition={{ type: 'spring', damping: 25, stiffness: 350 }}
+                    className="absolute right-0 top-12 w-64 bg-[#111116]/95 backdrop-blur-2xl border border-white/15 rounded-2xl shadow-[0_20px_60px_rgba(0,0,0,0.85)] p-2 z-50 text-xs text-[#F5F5F5] overflow-hidden"
+                  >
+                    {/* User Info Header */}
+                    <div className="px-3 py-2.5 bg-white/[0.03] rounded-xl border border-white/[0.06] mb-1.5">
+                      <p className="font-semibold text-white truncate text-sm">{displayName}</p>
+                      <p className="text-[11px] text-white/45 truncate font-mono mt-0.5">{user?.email}</p>
+                      {user?.college && (
+                        <p className="text-[10px] text-white/35 truncate mt-1">
+                          {user.college} {user.department ? `• ${user.department}` : ''}
+                        </p>
+                      )}
+                    </div>
+
+                    <div className="space-y-0.5">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setShowUserMenu(false)
+                          window.dispatchEvent(new CustomEvent('codevault:replay-intro'))
+                        }}
+                        className="w-full text-left px-3 py-2 rounded-lg text-white/70 hover:text-white hover:bg-white/[0.07] flex items-center gap-2.5 cursor-pointer transition-colors"
+                      >
+                        <Sparkles className="w-3.5 h-3.5 text-cyan-400" />
+                        <span>Replay Startup Intro</span>
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setShowUserMenu(false)
+                          navigate('/onboarding')
+                        }}
+                        className="w-full text-left px-3 py-2 rounded-lg text-white/70 hover:text-white hover:bg-white/[0.07] flex items-center gap-2.5 cursor-pointer transition-colors"
+                      >
+                        <UserIcon className="w-3.5 h-3.5 text-white/50" />
+                        <span>Academic Profile</span>
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={handleSignOut}
+                        className="w-full text-left px-3 py-2 rounded-lg text-rose-400 hover:text-rose-300 hover:bg-rose-500/10 flex items-center gap-2.5 cursor-pointer transition-colors"
+                      >
+                        <LogOut className="w-3.5 h-3.5" />
+                        <span>Sign Out</span>
+                      </button>
+                    </div>
+                  </motion.div>
+                </>
+              )}
+            </AnimatePresence>
+          </div>
+        </div>
+      </div>
+    </header>
+  )
+}

@@ -1,178 +1,168 @@
 """
-Conversations router: chat sessions with optional experiment context.
+Conversations router: contextual AI chat powered by Gemini and stored in SQLite.
 """
+import uuid
+import json
+from datetime import datetime, timezone
 from fastapi import APIRouter, Depends, HTTPException, status
 from middleware.auth import get_current_user
-from models.conversation import ConversationCreate, MessageCreate
-from services.supabase_client import supabase
+from models.conversation import ConversationCreate, MessageSend
+from services.db import get_connection
 import services.gemini_service as gemini_service
 
 router = APIRouter(prefix="/api/conversations", tags=["conversations"])
 
 
-def _supabase_error(e: Exception, detail: str = "Database error"):
-    raise HTTPException(status_code=500, detail=f"{detail}: {str(e)}")
-
-
 @router.get("")
 async def list_conversations(current_user: dict = Depends(get_current_user)):
+    """List conversations for user."""
+    conn = get_connection()
+    cursor = conn.cursor()
     try:
-        result = (
-            supabase.table("conversations")
-            .select("*")
-            .eq("user_id", current_user["id"])
-            .order("updated_at", desc=True)
-            .execute()
-        )
-        return result.data or []
-    except Exception as e:
-        _supabase_error(e, "Failed to list conversations")
+        cursor.execute("""
+            SELECT c.*, e.title as experiment_title
+            FROM conversations c
+            LEFT JOIN experiments e ON c.experiment_id = e.id
+            WHERE c.user_id = ?
+            ORDER BY c.updated_at DESC
+        """, (current_user["id"],))
+        rows = cursor.fetchall()
+        return [dict(r) for r in rows]
+    finally:
+        conn.close()
 
 
 @router.post("", status_code=status.HTTP_201_CREATED)
 async def create_conversation(
     payload: ConversationCreate, current_user: dict = Depends(get_current_user)
 ):
+    """Start a new conversation."""
+    conn = get_connection()
+    cursor = conn.cursor()
+    now = datetime.now(timezone.utc).isoformat()
+    conv_id = str(uuid.uuid4())
     try:
-        data = payload.model_dump()
-        data["user_id"] = current_user["id"]
-        result = supabase.table("conversations").insert(data).execute()
-        return result.data[0]
-    except Exception as e:
-        _supabase_error(e, "Failed to create conversation")
+        cursor.execute("""
+            INSERT INTO conversations (id, user_id, experiment_id, title, created_at, updated_at)
+            VALUES (?, ?, ?, ?, ?, ?)
+        """, (
+            conv_id,
+            current_user["id"],
+            payload.experiment_id,
+            payload.title or "New Discussion",
+            now,
+            now
+        ))
+        conn.commit()
+
+        cursor.execute("SELECT * FROM conversations WHERE id = ?", (conv_id,))
+        return dict(cursor.fetchone())
+    finally:
+        conn.close()
 
 
 @router.get("/{conversation_id}/messages")
 async def get_messages(
     conversation_id: str, current_user: dict = Depends(get_current_user)
 ):
+    """Get all messages in a conversation."""
+    conn = get_connection()
+    cursor = conn.cursor()
     try:
-        # Verify ownership
-        conv = (
-            supabase.table("conversations")
-            .select("id, experiment_id")
-            .eq("id", conversation_id)
-            .eq("user_id", current_user["id"])
-            .single()
-            .execute()
-        )
-        if not conv.data:
-            raise HTTPException(status_code=404, detail="Conversation not found.")
-
-        messages = (
-            supabase.table("messages")
-            .select("*")
-            .eq("conversation_id", conversation_id)
-            .order("created_at")
-            .execute()
-        )
-        return messages.data or []
-    except HTTPException:
-        raise
-    except Exception as e:
-        _supabase_error(e, "Failed to get messages")
+        cursor.execute("""
+            SELECT m.*
+            FROM messages m
+            JOIN conversations c ON m.conversation_id = c.id
+            WHERE m.conversation_id = ? AND c.user_id = ?
+            ORDER BY m.created_at ASC
+        """, (conversation_id, current_user["id"]))
+        rows = cursor.fetchall()
+        return [dict(r) for r in rows]
+    finally:
+        conn.close()
 
 
-@router.post("/{conversation_id}/messages", status_code=status.HTTP_201_CREATED)
+@router.post("/{conversation_id}/messages")
 async def send_message(
     conversation_id: str,
-    payload: MessageCreate,
+    payload: MessageSend,
     current_user: dict = Depends(get_current_user),
 ):
+    """Save user message, call Gemini with experiment context, and save AI response."""
+    conn = get_connection()
+    cursor = conn.cursor()
+    now = datetime.now(timezone.utc).isoformat()
+
     try:
-        # Verify ownership and get experiment context
-        conv = (
-            supabase.table("conversations")
-            .select("id, experiment_id")
-            .eq("id", conversation_id)
-            .eq("user_id", current_user["id"])
-            .single()
-            .execute()
-        )
-        if not conv.data:
-            raise HTTPException(status_code=404, detail="Conversation not found.")
+        cursor.execute("SELECT * FROM conversations WHERE id = ? AND user_id = ?", (conversation_id, current_user["id"]))
+        conv = cursor.fetchone()
+        if not conv:
+            raise HTTPException(status_code=404, detail="Conversation not found")
 
-        # Save user message
-        user_msg = (
-            supabase.table("messages")
-            .insert(
-                {
-                    "conversation_id": conversation_id,
-                    "role": "user",
-                    "content": payload.content,
-                }
-            )
-            .execute()
-        )
+        # 1. Save user message
+        user_msg_id = str(uuid.uuid4())
+        cursor.execute("""
+            INSERT INTO messages (id, conversation_id, role, content, created_at)
+            VALUES (?, ?, ?, ?, ?)
+        """, (user_msg_id, conversation_id, "user", payload.content, now))
+        conn.commit()
 
-        # Fetch conversation history for context
-        history = (
-            supabase.table("messages")
-            .select("role, content")
-            .eq("conversation_id", conversation_id)
-            .order("created_at")
-            .execute()
-        )
-        messages_history = history.data or []
+        # 2. Fetch past conversation history
+        cursor.execute("""
+            SELECT role, content FROM messages
+            WHERE conversation_id = ?
+            ORDER BY created_at ASC
+            LIMIT 10
+        """, (conversation_id,))
+        history = [dict(r) for r in cursor.fetchall()]
 
-        # Fetch experiment context if associated
-        experiment_context = None
-        if conv.data.get("experiment_id"):
-            exp = (
-                supabase.table("experiments")
-                .select("name, language, description, code")
-                .eq("id", conv.data["experiment_id"])
-                .single()
-                .execute()
-            )
-            experiment_context = exp.data
+        # 3. Fetch experiment context if attached
+        exp_context = None
+        exp_id = payload.experiment_id or conv["experiment_id"]
+        if exp_id:
+            cursor.execute("SELECT title, language, source_code, aim FROM experiments WHERE id = ?", (exp_id,))
+            exp_row = cursor.fetchone()
+            if exp_row:
+                exp_context = dict(exp_row)
 
-        # Generate AI response
-        ai_response = await gemini_service.chat_with_context(
-            messages=messages_history[:-1],  # Exclude just-added message
-            experiment_context=experiment_context,
+        # 4. Generate AI response
+        ai_reply = await gemini_service.chat_with_context(
+            messages=history,
+            experiment_context=exp_context,
             user_message=payload.content,
         )
 
-        # Save AI response
-        ai_msg = (
-            supabase.table("messages")
-            .insert(
-                {
-                    "conversation_id": conversation_id,
-                    "role": "assistant",
-                    "content": ai_response,
-                }
-            )
-            .execute()
-        )
+        # 5. Save assistant message
+        ai_msg_id = str(uuid.uuid4())
+        now_reply = datetime.now(timezone.utc).isoformat()
+        cursor.execute("""
+            INSERT INTO messages (id, conversation_id, role, content, created_at)
+            VALUES (?, ?, ?, ?, ?)
+        """, (ai_msg_id, conversation_id, "assistant", ai_reply, now_reply))
 
-        # Update conversation timestamp
-        supabase.table("conversations").update(
-            {"updated_at": "now()"}
-        ).eq("id", conversation_id).execute()
+        # Update conversation updated_at
+        cursor.execute("UPDATE conversations SET updated_at = ? WHERE id = ?", (now_reply, conversation_id))
+        conn.commit()
 
         return {
-            "user_message": user_msg.data[0] if user_msg.data else {},
-            "assistant_message": ai_msg.data[0] if ai_msg.data else {"content": ai_response},
+            "id": ai_msg_id,
+            "role": "assistant",
+            "content": ai_reply,
+            "created_at": now_reply,
         }
-    except HTTPException:
-        raise
-    except Exception as e:
-        _supabase_error(e, "Failed to send message")
+    finally:
+        conn.close()
 
 
 @router.delete("/{conversation_id}", status_code=status.HTTP_204_NO_CONTENT)
 async def delete_conversation(
     conversation_id: str, current_user: dict = Depends(get_current_user)
 ):
+    """Delete conversation and messages."""
+    conn = get_connection()
+    cursor = conn.cursor()
     try:
-        # Delete messages first (if no cascade set in DB)
-        supabase.table("messages").delete().eq(
-            "conversation_id", conversation_id
-        ).execute()
-        supabase.table("conversations").delete().eq("id", conversation_id).eq(
-            "user_id", current_user["id"]
-        ).execute()
-    except Exception as e:
-        _supabase_error(e, "Failed to delete conversation")
+        cursor.execute("DELETE FROM conversations WHERE id = ? AND user_id = ?", (conversation_id, current_user["id"]))
+        conn.commit()
+    finally:
+        conn.close()

@@ -1,18 +1,22 @@
 from pydantic import BaseModel
-from typing import Optional, List, Any
+from typing import Optional, List, Any, Dict
 
 
 class QuizGenerateRequest(BaseModel):
     experiment_id: Optional[str] = None
     subject_id: Optional[str] = None
-    quiz_type: str = "mcq"  # mcq | viva | output | fill_blanks | debug
-    count: int = 5
+    quiz_type: Optional[str] = "mcq"  # mcq | viva | output | fill_blanks | debug
+    title: Optional[str] = None
+    count: Optional[int] = 5
     difficulty: Optional[str] = "medium"
 
 
 class QuizAttemptRequest(BaseModel):
-    answers: List[Any]  # List of {question_id, selected_option} or {question_id, answer}
-    time_taken_seconds: Optional[int] = None
+    answers: Optional[Any] = {}
+    time_taken_seconds: Optional[int] = 0
+
+
+QuizAttemptSubmit = QuizAttemptRequest
 
 
 class QuizResponse(BaseModel):
@@ -32,7 +36,7 @@ class QuizAttemptResponse(BaseModel):
     user_id: str
     score: float
     total_questions: int
-    correct_answers: int
-    answers: Optional[List[Any]] = []
+    correct_answers: Optional[int] = 0
+    answers: Optional[Any] = None
     time_taken_seconds: Optional[int] = None
     created_at: Optional[str] = None

@@ -9,7 +9,11 @@ class ConversationCreate(BaseModel):
 
 class MessageCreate(BaseModel):
     content: str
-    role: str = "user"
+    role: Optional[str] = "user"
+    experiment_id: Optional[str] = None
+
+
+MessageSend = MessageCreate
 
 
 class ConversationResponse(BaseModel):

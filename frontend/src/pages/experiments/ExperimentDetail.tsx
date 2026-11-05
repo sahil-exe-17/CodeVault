@@ -20,10 +20,17 @@ import {
   ChevronUp,
   AlertTriangle,
   Lightbulb,
+  BookOpen,
+  ExternalLink,
+  Trash2,
+  Eye,
+  FileCheck,
+  Camera,
 } from 'lucide-react'
 import { Button } from '@/components/ui/Button'
 import { Badge } from '@/components/ui/Badge'
 import { Input } from '@/components/ui/Input'
+import { ScanPhotoModal } from '@/components/experiments/ScanPhotoModal'
 import { experimentsApi, subjectsApi, aiApi } from '@/lib/api'
 import type { Experiment, Subject, AIExplanation } from '@/types'
 import toast from 'react-hot-toast'
@@ -38,8 +45,15 @@ export const ExperimentDetail: React.FC<ExperimentDetailProps> = ({ mode = 'edit
   const navigate = useNavigate()
 
   // Main Tabs
-  const [leftTab, setLeftTab] = useState<'code' | 'info' | 'io' | 'notes'>('code')
+  const [leftTab, setLeftTab] = useState<'code' | 'info' | 'io' | 'notes' | 'notebook'>('code')
   const [rightTab, setRightTab] = useState<'ai' | 'viva' | 'related'>('ai')
+
+  // Notebook PDF upload state
+  const [isUploadingPdf, setIsUploadingPdf] = useState(false)
+  const [isDeletingPdf, setIsDeletingPdf] = useState(false)
+
+  // Photo code scan modal state
+  const [isScanModalOpen, setIsScanModalOpen] = useState(false)
 
   // Form State
   const [experiment, setExperiment] = useState<Partial<Experiment>>({
@@ -224,6 +238,73 @@ export const ExperimentDetail: React.FC<ExperimentDetailProps> = ({ mode = 'edit
     reader.readAsText(file)
   }
 
+  const handleNotebookPdfUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+
+    if (!file.name.toLowerCase().endsWith('.pdf') && file.type !== 'application/pdf') {
+      toast.error('Please upload a valid PDF file (.pdf)')
+      return
+    }
+
+    if (file.size > 50 * 1024 * 1024) {
+      toast.error('PDF file size exceeds 50MB limit')
+      return
+    }
+
+    if (!id || id === 'new') {
+      toast.error('Please save the experiment first before archiving the practical notebook PDF.')
+      return
+    }
+
+    const formData = new FormData()
+    formData.append('file', file)
+
+    setIsUploadingPdf(true)
+    const toastId = toast.loading('Archiving practical notebook PDF...')
+    try {
+      const res: any = await experimentsApi.uploadNotebookPdf(id, formData)
+      const data = res?.data || res
+      setExperiment((prev) => ({
+        ...prev,
+        notebook_pdf_url: data.notebook_pdf_url,
+        notebook_pdf_name: data.notebook_pdf_name,
+        notebook_pdf_size: data.notebook_pdf_size,
+        notebook_uploaded_at: data.notebook_uploaded_at,
+      }))
+      toast.success('Practical notebook PDF archived successfully!', { id: toastId })
+    } catch (err: any) {
+      toast.error(err.message || 'Failed to archive notebook PDF', { id: toastId })
+    } finally {
+      setIsUploadingPdf(false)
+      // Reset input value
+      e.target.value = ''
+    }
+  }
+
+  const handleDeleteNotebookPdf = async () => {
+    if (!id || id === 'new') return
+    if (!window.confirm('Are you sure you want to remove this practical notebook PDF backup?')) return
+
+    setIsDeletingPdf(true)
+    const toastId = toast.loading('Removing notebook backup...')
+    try {
+      await experimentsApi.removeNotebookPdf(id)
+      setExperiment((prev) => ({
+        ...prev,
+        notebook_pdf_url: undefined,
+        notebook_pdf_name: undefined,
+        notebook_pdf_size: undefined,
+        notebook_uploaded_at: undefined,
+      }))
+      toast.success('Practical notebook PDF backup removed', { id: toastId })
+    } catch (err: any) {
+      toast.error(err.message || 'Failed to remove notebook PDF', { id: toastId })
+    } finally {
+      setIsDeletingPdf(false)
+    }
+  }
+
   // Trigger AI explanation
   const handleExplainAI = async () => {
     setIsExplaining(true)
@@ -396,6 +477,12 @@ export const ExperimentDetail: React.FC<ExperimentDetailProps> = ({ mode = 'edit
                 { id: 'info', label: 'Theory & Algorithm', icon: Layers },
                 { id: 'io', label: 'Input / Output', icon: Terminal },
                 { id: 'notes', label: 'Complexity & Notes', icon: FileText },
+                {
+                  id: 'notebook',
+                  label: 'Practical Notebook',
+                  icon: BookOpen,
+                  badge: experiment.notebook_pdf_url ? 'PDF' : undefined,
+                },
               ].map((tab) => {
                 const Icon = tab.icon
                 const isActive = leftTab === tab.id
@@ -403,7 +490,7 @@ export const ExperimentDetail: React.FC<ExperimentDetailProps> = ({ mode = 'edit
                   <button
                     key={tab.id}
                     onClick={() => setLeftTab(tab.id as any)}
-                    className={`flex items-center gap-2 px-4 py-3 text-xs font-medium border-b-2 transition-all ${
+                    className={`flex items-center gap-2 px-3.5 py-3 text-xs font-medium border-b-2 transition-all ${
                       isActive
                         ? 'border-white text-white bg-[rgba(255,255,255,0.04)] font-semibold'
                         : 'border-transparent text-[#888888] hover:text-[#D4D4D4]'
@@ -411,6 +498,11 @@ export const ExperimentDetail: React.FC<ExperimentDetailProps> = ({ mode = 'edit
                   >
                     <Icon className="w-3.5 h-3.5" />
                     <span>{tab.label}</span>
+                    {tab.badge && (
+                      <span className="text-[9px] px-1.5 py-0.2 rounded-full font-mono bg-white text-black font-semibold">
+                        {tab.badge}
+                      </span>
+                    )}
                   </button>
                 )
               })}
@@ -419,6 +511,17 @@ export const ExperimentDetail: React.FC<ExperimentDetailProps> = ({ mode = 'edit
             {/* Code Tab Editor Controls */}
             {leftTab === 'code' && (
               <div className="flex items-center gap-1.5">
+                {/* Photo OCR scan button */}
+                <button
+                  type="button"
+                  onClick={() => setIsScanModalOpen(true)}
+                  className="flex items-center gap-1.5 px-2 py-1 text-xs text-[#D4D4D4] hover:text-white bg-[#171717] hover:bg-[#202020] border border-[rgba(255,255,255,0.08)] rounded-md transition-colors font-medium mr-1"
+                  title="Scan code from photo of notebook, textbook, or screen"
+                >
+                  <Camera className="w-3.5 h-3.5 text-white" />
+                  <span className="hidden sm:inline">Scan Photo</span>
+                </button>
+
                 {/* File upload hidden input */}
                 <label className="p-1.5 text-[#888888] hover:text-white rounded cursor-pointer transition-colors" title="Upload Code File">
                   <Upload className="w-3.5 h-3.5" />
@@ -667,6 +770,159 @@ export const ExperimentDetail: React.FC<ExperimentDetailProps> = ({ mode = 'edit
                   className="bg-[#111111] text-[#F5F5F5] text-xs rounded-lg border border-[rgba(255,255,255,0.09)] p-3 focus:border-white focus:outline-none leading-relaxed"
                 />
               </div>
+            </div>
+          )}
+
+          {/* TAB 5: PRACTICAL NOTEBOOK BACKUP & VIEWER */}
+          {leftTab === 'notebook' && (
+            <div className="p-6 flex flex-col gap-5 overflow-y-auto max-h-[660px]">
+              {/* Header Box */}
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-4 bg-[#111111] rounded-xl border border-[rgba(255,255,255,0.08)]">
+                <div>
+                  <div className="flex items-center gap-2">
+                    <BookOpen className="w-4 h-4 text-white" />
+                    <h3 className="text-sm font-semibold text-white font-['Manrope']">
+                      Practical Lab Notebook Archive
+                    </h3>
+                    {experiment.notebook_pdf_url && (
+                      <span className="text-[10px] px-2 py-0.5 rounded-full font-mono bg-white text-black font-semibold">
+                        Archived
+                      </span>
+                    )}
+                  </div>
+                  <p className="text-xs text-[#888888] mt-1 leading-relaxed">
+                    Upload a PDF copy or scan of your handwritten laboratory notebook. If your physical record is lost or submitted, your work is permanently preserved here.
+                  </p>
+                </div>
+
+                <div className="flex items-center gap-2 shrink-0">
+                  <label className="cursor-pointer">
+                    <input
+                      type="file"
+                      className="hidden"
+                      accept=".pdf,application/pdf"
+                      disabled={isUploadingPdf}
+                      onChange={handleNotebookPdfUpload}
+                    />
+                    <div className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium bg-white text-black hover:bg-[#E5E5E5] transition-colors cursor-pointer">
+                      <Upload className="w-3.5 h-3.5" />
+                      <span>{experiment.notebook_pdf_url ? 'Replace PDF' : 'Upload Notebook PDF'}</span>
+                    </div>
+                  </label>
+
+                  {experiment.notebook_pdf_url && (
+                    <button
+                      type="button"
+                      disabled={isDeletingPdf}
+                      onClick={handleDeleteNotebookPdf}
+                      className="p-1.5 text-[#888888] hover:text-[#FF6666] border border-[rgba(255,255,255,0.08)] hover:border-[#FF6666]/40 rounded-lg transition-colors"
+                      title="Remove PDF Backup"
+                    >
+                      <Trash2 className="w-3.5 h-3.5" />
+                    </button>
+                  )}
+                </div>
+              </div>
+
+              {/* Body: Either Empty Uploader State OR PDF Viewer */}
+              {!experiment.notebook_pdf_url ? (
+                <div className="border border-dashed border-[rgba(255,255,255,0.15)] hover:border-white/40 bg-[#111111]/40 rounded-xl p-8 flex flex-col items-center justify-center text-center gap-4 transition-colors">
+                  <div className="w-12 h-12 rounded-xl bg-[#171717] border border-[rgba(255,255,255,0.09)] flex items-center justify-center text-white">
+                    <BookOpen className="w-6 h-6" />
+                  </div>
+                  <div className="space-y-1 max-w-md">
+                    <h4 className="text-sm font-semibold text-white">No Practical Notebook Uploaded</h4>
+                    <p className="text-xs text-[#888888] leading-relaxed">
+                      Protect against lost lab manuals and submission deadlines. Upload scanned handwritten pages, printed code with professor signatures, or PDF assignments.
+                    </p>
+                  </div>
+
+                  <label className="cursor-pointer mt-2">
+                    <input
+                      type="file"
+                      className="hidden"
+                      accept=".pdf,application/pdf"
+                      disabled={isUploadingPdf}
+                      onChange={handleNotebookPdfUpload}
+                    />
+                    <div className="inline-flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-semibold bg-white text-black hover:bg-[#E5E5E5] transition-colors cursor-pointer shadow-sm">
+                      <Upload className="w-4 h-4" />
+                      <span>{isUploadingPdf ? 'Uploading Scan...' : 'Select PDF from Device'}</span>
+                    </div>
+                  </label>
+
+                  <div className="flex items-center gap-4 text-[11px] text-[#666666] font-mono mt-1">
+                    <span>• PDF format only</span>
+                    <span>• Up to 50 MB</span>
+                    <span>• Instant split-view reader</span>
+                  </div>
+                </div>
+              ) : (
+                <div className="flex flex-col gap-4">
+                  {/* File Metadata Bar */}
+                  <div className="flex flex-wrap items-center justify-between gap-3 p-3 bg-[#111111] border border-[rgba(255,255,255,0.08)] rounded-xl font-mono text-xs">
+                    <div className="flex items-center gap-2.5 truncate">
+                      <FileCheck className="w-4 h-4 text-white shrink-0" />
+                      <span className="text-[#F5F5F5] font-medium truncate max-w-[280px]">
+                        {experiment.notebook_pdf_name || 'Practical_Notebook.pdf'}
+                      </span>
+                      {experiment.notebook_pdf_size && (
+                        <span className="text-[#888888] text-[11px]">
+                          ({(experiment.notebook_pdf_size / (1024 * 1024) >= 1)
+                            ? `${(experiment.notebook_pdf_size / (1024 * 1024)).toFixed(2)} MB`
+                            : `${Math.round(experiment.notebook_pdf_size / 1024)} KB`})
+                        </span>
+                      )}
+                    </div>
+
+                    <div className="flex items-center gap-2 shrink-0">
+                      {/* Direct Download Backup */}
+                      <a
+                        href={`${(import.meta.env.VITE_API_URL || 'http://localhost:8000').replace(/\/$/, '')}${experiment.notebook_pdf_url}`}
+                        download={experiment.notebook_pdf_name || 'notebook.pdf'}
+                        className="inline-flex items-center gap-1.5 px-3 py-1 bg-[#171717] hover:bg-[#202020] text-white border border-[rgba(255,255,255,0.12)] hover:border-white/30 rounded-lg text-xs transition-colors"
+                        title="Download Backup Copy"
+                      >
+                        <Download className="w-3.5 h-3.5" />
+                        <span>Download Backup</span>
+                      </a>
+
+                      {/* Open Full Screen in New Tab */}
+                      <a
+                        href={`${(import.meta.env.VITE_API_URL || 'http://localhost:8000').replace(/\/$/, '')}${experiment.notebook_pdf_url}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center gap-1.5 px-3 py-1 bg-[#171717] hover:bg-[#202020] text-[#A1A1A1] hover:text-white border border-[rgba(255,255,255,0.12)] rounded-lg text-xs transition-colors"
+                        title="Open Fullscreen in New Window"
+                      >
+                        <ExternalLink className="w-3.5 h-3.5" />
+                        <span>Open Full Screen</span>
+                      </a>
+                    </div>
+                  </div>
+
+                  {/* Built-in Embedded PDF Reader */}
+                  <div className="relative w-full rounded-xl overflow-hidden border border-[rgba(255,255,255,0.09)] bg-[#090909] shadow-inner">
+                    <iframe
+                      src={`${(import.meta.env.VITE_API_URL || 'http://localhost:8000').replace(/\/$/, '')}${experiment.notebook_pdf_url}#toolbar=1&navpanes=0`}
+                      className="w-full h-[520px] rounded-xl border-none"
+                      title="Student Practical Notebook Viewer"
+                    />
+                  </div>
+                  <div className="flex items-center justify-between text-[11px] text-[#666666]">
+                    <span>Backup secured locally in CodeVault storage vault.</span>
+                    {experiment.notebook_uploaded_at && (
+                      <span>
+                        Uploaded: {new Date(experiment.notebook_uploaded_at).toLocaleDateString(undefined, {
+                          month: 'short',
+                          day: 'numeric',
+                          year: 'numeric',
+                        })}
+                      </span>
+                    )}
+                  </div>
+                </div>
+              )}
             </div>
           )}
         </div>
@@ -957,6 +1213,32 @@ export const ExperimentDetail: React.FC<ExperimentDetailProps> = ({ mode = 'edit
           )}
         </div>
       </div>
+
+      {/* AI Photo Code Scanner Modal */}
+      <ScanPhotoModal
+        isOpen={isScanModalOpen}
+        onClose={() => setIsScanModalOpen(false)}
+        experimentId={id !== 'new' ? id : undefined}
+        onExtracted={(res) => {
+          const extracted = res?.extracted || res?.data?.extracted || res
+          if (extracted?.source_code) {
+            handleFieldChange('source_code', extracted.source_code)
+          }
+          if (extracted?.language) {
+            handleFieldChange('language', extracted.language)
+          }
+          if (extracted?.aim && (!experiment.aim || experiment.aim.startsWith('Implementation of'))) {
+            handleFieldChange('aim', extracted.aim)
+          }
+          if (extracted?.algorithm && !experiment.algorithm) {
+            handleFieldChange('algorithm', extracted.algorithm)
+          }
+          if (extracted?.title && (!experiment.title || experiment.title === 'New Experiment' || experiment.title === 'Untitled Experiment')) {
+            handleFieldChange('title', extracted.title)
+          }
+        }}
+      />
     </div>
   )
 }
+

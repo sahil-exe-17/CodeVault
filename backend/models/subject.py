@@ -5,6 +5,7 @@ from typing import Optional
 class SubjectCreate(BaseModel):
     name: str
     description: Optional[str] = None
+    semester: Optional[str] = None
     color: Optional[str] = "#6366f1"
     icon: Optional[str] = None
 
@@ -12,6 +13,7 @@ class SubjectCreate(BaseModel):
 class SubjectUpdate(BaseModel):
     name: Optional[str] = None
     description: Optional[str] = None
+    semester: Optional[str] = None
     color: Optional[str] = None
     icon: Optional[str] = None
 
@@ -21,6 +23,7 @@ class SubjectResponse(BaseModel):
     user_id: str
     name: str
     description: Optional[str] = None
+    semester: Optional[str] = None
     color: Optional[str] = None
     icon: Optional[str] = None
     experiment_count: Optional[int] = 0

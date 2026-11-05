@@ -10,6 +10,7 @@ import {
   CheckCircle2,
   Clock,
   Sparkles,
+  Camera,
 } from 'lucide-react'
 import { Button } from '@/components/ui/Button'
 import { Badge } from '@/components/ui/Badge'
@@ -17,6 +18,7 @@ import { EmptyState } from '@/components/ui/EmptyState'
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog'
 import { ExperimentCard } from '@/components/experiments/ExperimentCard'
 import { NewExperimentModal } from '@/components/experiments/NewExperimentModal'
+import { ScanPhotoModal } from '@/components/experiments/ScanPhotoModal'
 import { experimentsApi, subjectsApi } from '@/lib/api'
 import type { Experiment, Subject } from '@/types'
 import toast from 'react-hot-toast'
@@ -40,6 +42,7 @@ export const AllExperiments: React.FC = () => {
 
   // Modals
   const [isNewModalOpen, setIsNewModalOpen] = useState(false)
+  const [isScanModalOpen, setIsScanModalOpen] = useState(false)
   const [deleteId, setDeleteId] = useState<string | null>(null)
 
   const sampleExperiments: Experiment[] = [
@@ -260,6 +263,14 @@ export const AllExperiments: React.FC = () => {
           <Button
             variant="secondary"
             size="sm"
+            onClick={() => setIsScanModalOpen(true)}
+            icon={<Camera className="w-3.5 h-3.5" />}
+          >
+            Scan from Photo
+          </Button>
+          <Button
+            variant="secondary"
+            size="sm"
             onClick={() => navigate('/ai/explain')}
             icon={<Sparkles className="w-3.5 h-3.5" />}
           >
@@ -445,15 +456,22 @@ export const AllExperiments: React.FC = () => {
                     {exp.time_complexity || 'O(n)'}
                   </td>
                   <td className="py-3.5 px-4">
-                    {exp.is_revised ? (
-                      <span className="inline-flex items-center gap-1 text-[11px] text-white">
-                        <CheckCircle2 className="w-3 h-3 text-white" /> Revised
-                      </span>
-                    ) : (
-                      <span className="inline-flex items-center gap-1 text-[11px] text-[#666666]">
-                        <Clock className="w-3 h-3" /> Pending
-                      </span>
-                    )}
+                    <div className="flex items-center gap-2">
+                      {exp.is_revised ? (
+                        <span className="inline-flex items-center gap-1 text-[11px] text-white">
+                          <CheckCircle2 className="w-3 h-3 text-white" /> Revised
+                        </span>
+                      ) : (
+                        <span className="inline-flex items-center gap-1 text-[11px] text-[#666666]">
+                          <Clock className="w-3 h-3" /> Pending
+                        </span>
+                      )}
+                      {exp.notebook_pdf_url && (
+                        <span className="text-[10px] px-1.5 py-0.5 rounded font-mono bg-white/10 text-[#D4D4D4] border border-white/20" title="Practical Notebook PDF Backed Up">
+                           PDF
+                        </span>
+                      )}
+                    </div>
                   </td>
                   <td className="py-3.5 px-4 text-right">
                     <button
@@ -489,6 +507,17 @@ export const AllExperiments: React.FC = () => {
         isOpen={isNewModalOpen}
         onClose={() => setIsNewModalOpen(false)}
       />
+
+      {/* Scan Photo AI Modal */}
+      <ScanPhotoModal
+        isOpen={isScanModalOpen}
+        onClose={() => {
+          setIsScanModalOpen(false)
+          loadData()
+        }}
+        subjectId={selectedSubject !== 'all' ? selectedSubject : undefined}
+      />
     </div>
   )
 }
+

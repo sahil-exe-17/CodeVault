@@ -1,13 +1,22 @@
 """
 CodeVault Backend Application.
-FastAPI REST API server with Supabase & Google Gemini AI integrations.
+FastAPI REST API server with local SQLite Database & Google Gemini 2.5 Flash AI integration.
 """
 import os
 import logging
 from fastapi import FastAPI, Request, status
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
+from fastapi.staticfiles import StaticFiles
 from dotenv import load_dotenv
+
+# Initialize SQLite database
+from services.db import init_db
+
+# Ensure uploads directory for student practical notebooks
+UPLOAD_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "uploads")
+NOTEBOOKS_DIR = os.path.join(UPLOAD_DIR, "notebooks")
+os.makedirs(NOTEBOOKS_DIR, exist_ok=True)
 
 # Import routers
 from routers import (
@@ -24,6 +33,7 @@ from routers import (
 from services.github_service import get_repo_files, get_file_content
 
 load_dotenv()
+init_db()
 
 logging.basicConfig(
     level=logging.INFO,
@@ -33,22 +43,14 @@ logger = logging.getLogger("codevault")
 
 app = FastAPI(
     title="CodeVault API",
-    description="Backend API for CodeVault - AI-Powered Coding Experiment & Revision Platform",
+    description="Backend API for CodeVault - AI-Powered Coding Experiment & Revision Platform (SQLite + Gemini 2.5 Flash)",
     version="1.0.0",
 )
 
 # CORS setup
-origins = [
-    "http://localhost:5173",
-    "http://127.0.0.1:5173",
-    "http://localhost:3000",
-    "http://127.0.0.1:3000",
-    os.getenv("FRONTEND_URL", "http://localhost:5173"),
-]
-
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # Development permissive
+    allow_origins=["*"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -65,6 +67,9 @@ app.include_router(quizzes.router)
 app.include_router(revision.router)
 app.include_router(analytics.router)
 
+# Mount Static Files for Uploaded Practical Notebooks
+app.mount("/uploads", StaticFiles(directory=UPLOAD_DIR), name="uploads")
+
 
 # Global Exception Handler
 @app.exception_handler(Exception)
@@ -80,14 +85,14 @@ async def global_exception_handler(request: Request, exc: Exception):
 @app.get("/api/health", tags=["system"])
 async def health_check():
     gemini_key = bool(os.getenv("GEMINI_API_KEY"))
-    supabase_configured = bool(os.getenv("SUPABASE_URL") and os.getenv("SUPABASE_SERVICE_KEY"))
+    db_path = os.getenv("DATABASE_PATH", "codevault.db")
     return {
         "status": "healthy",
         "service": "CodeVault API",
         "version": "1.0.0",
         "integrations": {
             "gemini_ai": "ready" if gemini_key else "not_configured",
-            "supabase": "ready" if supabase_configured else "offline_or_unconfigured",
+            "database": f"sqlite_active ({db_path})",
         }
     }
 

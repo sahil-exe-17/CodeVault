@@ -3,6 +3,8 @@ import { useNavigate } from 'react-router-dom'
 import { Modal } from '@/components/ui/Modal'
 import { Input } from '@/components/ui/Input'
 import { Button } from '@/components/ui/Button'
+import { Camera } from 'lucide-react'
+import { ScanPhotoModal } from '@/components/experiments/ScanPhotoModal'
 import { subjectsApi, experimentsApi } from '@/lib/api'
 import type { Subject } from '@/types'
 import toast from 'react-hot-toast'
@@ -24,6 +26,7 @@ export const NewExperimentModal: React.FC<NewExperimentModalProps> = ({
   const [experimentNumber, setExperimentNumber] = useState('EXP-01')
   const [topic, setTopic] = useState('')
   const [isLoading, setIsLoading] = useState(false)
+  const [isScanModalOpen, setIsScanModalOpen] = useState(false)
 
   useEffect(() => {
     if (isOpen) {
@@ -157,15 +160,42 @@ export const NewExperimentModal: React.FC<NewExperimentModalProps> = ({
           onChange={(e) => setTopic(e.target.value)}
         />
 
-        <div className="flex items-center justify-end gap-2 pt-3 border-t border-[rgba(255,255,255,0.08)]">
-          <Button variant="ghost" size="sm" type="button" onClick={onClose}>
-            Cancel
+        <p className="text-[11px] text-[#777777] bg-[#111111] p-2.5 rounded-lg border border-[rgba(255,255,255,0.06)] font-mono">
+           Tip: Once created, you can archive your handwritten lab notebook PDF scan in the split-view workspace to protect against lost physical records.
+        </p>
+
+        <div className="flex items-center justify-between gap-2 pt-3 border-t border-[rgba(255,255,255,0.08)]">
+          <Button
+            variant="outline"
+            size="sm"
+            type="button"
+            onClick={() => setIsScanModalOpen(true)}
+            icon={<Camera className="w-3.5 h-3.5 text-white" />}
+          >
+            Scan from Photo
           </Button>
-          <Button variant="primary" size="sm" type="submit" isLoading={isLoading}>
-            Create & Open Editor →
-          </Button>
+
+          <div className="flex items-center gap-2">
+            <Button variant="ghost" size="sm" type="button" onClick={onClose}>
+              Cancel
+            </Button>
+            <Button variant="primary" size="sm" type="submit" isLoading={isLoading}>
+              Create & Open Editor →
+            </Button>
+          </div>
         </div>
       </form>
+
+      {/* AI Photo Code Scanner Modal */}
+      <ScanPhotoModal
+        isOpen={isScanModalOpen}
+        onClose={() => {
+          setIsScanModalOpen(false)
+          onClose()
+        }}
+        subjectId={subjectId || undefined}
+      />
     </Modal>
   )
 }
+

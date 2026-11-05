@@ -1,40 +1,34 @@
 """
-Subjects router: CRUD for experiment subjects/categories.
+Subjects router: CRUD for experiment subjects using SQLite.
 """
+import uuid
+from datetime import datetime, timezone
 from fastapi import APIRouter, Depends, HTTPException, status
 from middleware.auth import get_current_user
 from models.subject import SubjectCreate, SubjectUpdate
-from services.supabase_client import supabase
+from services.db import get_connection
 
 router = APIRouter(prefix="/api/subjects", tags=["subjects"])
 
 
-def _handle_supabase_error(e: Exception, detail: str = "Database error"):
-    raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=f"{detail}: {str(e)}")
-
-
 @router.get("")
 async def list_subjects(current_user: dict = Depends(get_current_user)):
-    """List all subjects for the authenticated user, with experiment counts."""
+    """List all subjects for user, including experiment count."""
+    conn = get_connection()
+    cursor = conn.cursor()
     try:
-        result = (
-            supabase.table("subjects")
-            .select("*, experiments(count)")
-            .eq("user_id", current_user["id"])
-            .order("created_at", desc=True)
-            .execute()
-        )
-        subjects = result.data or []
-        # Flatten experiment count
-        for s in subjects:
-            count_data = s.pop("experiments", [])
-            if isinstance(count_data, list) and count_data:
-                s["experiment_count"] = count_data[0].get("count", 0)
-            else:
-                s["experiment_count"] = 0
-        return subjects
-    except Exception as e:
-        _handle_supabase_error(e, "Failed to list subjects")
+        cursor.execute("""
+            SELECT s.*, COUNT(e.id) as experiment_count
+            FROM subjects s
+            LEFT JOIN experiments e ON s.id = e.subject_id
+            WHERE s.user_id = ?
+            GROUP BY s.id
+            ORDER BY s.created_at DESC
+        """, (current_user["id"],))
+        rows = cursor.fetchall()
+        return [dict(r) for r in rows]
+    finally:
+        conn.close()
 
 
 @router.post("", status_code=status.HTTP_201_CREATED)
@@ -42,44 +36,51 @@ async def create_subject(
     payload: SubjectCreate, current_user: dict = Depends(get_current_user)
 ):
     """Create a new subject."""
+    conn = get_connection()
+    cursor = conn.cursor()
+    now = datetime.now(timezone.utc).isoformat()
+    sub_id = str(uuid.uuid4())
     try:
-        data = payload.model_dump()
-        data["user_id"] = current_user["id"]
-        result = supabase.table("subjects").insert(data).execute()
-        if not result.data:
-            raise HTTPException(status_code=500, detail="Insert returned no data.")
-        return result.data[0]
-    except HTTPException:
-        raise
-    except Exception as e:
-        _handle_supabase_error(e, "Failed to create subject")
+        cursor.execute("""
+            INSERT INTO subjects (id, user_id, name, description, semester, color, created_at, updated_at)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+        """, (
+            sub_id,
+            current_user["id"],
+            payload.name,
+            payload.description or "",
+            getattr(payload, "semester", "") or "",
+            getattr(payload, "color", "#ffffff") or "#ffffff",
+            now,
+            now
+        ))
+        conn.commit()
+
+        cursor.execute("SELECT *, 0 as experiment_count FROM subjects WHERE id = ?", (sub_id,))
+        return dict(cursor.fetchone())
+    finally:
+        conn.close()
 
 
 @router.get("/{subject_id}")
 async def get_subject(subject_id: str, current_user: dict = Depends(get_current_user)):
-    """Get a single subject with experiment count."""
+    """Get a single subject."""
+    conn = get_connection()
+    cursor = conn.cursor()
     try:
-        result = (
-            supabase.table("subjects")
-            .select("*, experiments(count)")
-            .eq("id", subject_id)
-            .eq("user_id", current_user["id"])
-            .single()
-            .execute()
-        )
-        if not result.data:
-            raise HTTPException(status_code=404, detail="Subject not found.")
-        s = result.data
-        count_data = s.pop("experiments", [])
-        if isinstance(count_data, list) and count_data:
-            s["experiment_count"] = count_data[0].get("count", 0)
-        else:
-            s["experiment_count"] = 0
-        return s
-    except HTTPException:
-        raise
-    except Exception as e:
-        _handle_supabase_error(e, "Failed to get subject")
+        cursor.execute("""
+            SELECT s.*, COUNT(e.id) as experiment_count
+            FROM subjects s
+            LEFT JOIN experiments e ON s.id = e.subject_id
+            WHERE s.id = ? AND s.user_id = ?
+            GROUP BY s.id
+        """, (subject_id, current_user["id"]))
+        row = cursor.fetchone()
+        if not row:
+            raise HTTPException(status_code=404, detail="Subject not found")
+        return dict(row)
+    finally:
+        conn.close()
 
 
 @router.put("/{subject_id}")
@@ -89,36 +90,39 @@ async def update_subject(
     current_user: dict = Depends(get_current_user),
 ):
     """Update a subject."""
+    conn = get_connection()
+    cursor = conn.cursor()
+    now = datetime.now(timezone.utc).isoformat()
     try:
-        data = {k: v for k, v in payload.model_dump().items() if v is not None}
-        result = (
-            supabase.table("subjects")
-            .update(data)
-            .eq("id", subject_id)
-            .eq("user_id", current_user["id"])
-            .execute()
-        )
-        if not result.data:
-            raise HTTPException(status_code=404, detail="Subject not found.")
-        return result.data[0]
-    except HTTPException:
-        raise
-    except Exception as e:
-        _handle_supabase_error(e, "Failed to update subject")
+        cursor.execute("SELECT id FROM subjects WHERE id = ? AND user_id = ?", (subject_id, current_user["id"]))
+        if not cursor.fetchone():
+            raise HTTPException(status_code=404, detail="Subject not found")
+
+        updates = payload.model_dump(exclude_unset=True)
+        if not updates:
+            cursor.execute("SELECT * FROM subjects WHERE id = ?", (subject_id,))
+            return dict(cursor.fetchone())
+
+        set_clauses = [f"{k} = ?" for k in updates.keys()]
+        set_clauses.append("updated_at = ?")
+        values = list(updates.values()) + [now, subject_id]
+
+        cursor.execute(f"UPDATE subjects SET {', '.join(set_clauses)} WHERE id = ?", values)
+        conn.commit()
+
+        cursor.execute("SELECT * FROM subjects WHERE id = ?", (subject_id,))
+        return dict(cursor.fetchone())
+    finally:
+        conn.close()
 
 
 @router.delete("/{subject_id}", status_code=status.HTTP_204_NO_CONTENT)
-async def delete_subject(
-    subject_id: str, current_user: dict = Depends(get_current_user)
-):
-    """Delete a subject and cascade-delete all its experiments."""
+async def delete_subject(subject_id: str, current_user: dict = Depends(get_current_user)):
+    """Delete a subject."""
+    conn = get_connection()
+    cursor = conn.cursor()
     try:
-        # Cascade delete experiments first (if not handled by DB)
-        supabase.table("experiments").delete().eq("subject_id", subject_id).eq(
-            "user_id", current_user["id"]
-        ).execute()
-        supabase.table("subjects").delete().eq("id", subject_id).eq(
-            "user_id", current_user["id"]
-        ).execute()
-    except Exception as e:
-        _handle_supabase_error(e, "Failed to delete subject")
+        cursor.execute("DELETE FROM subjects WHERE id = ? AND user_id = ?", (subject_id, current_user["id"]))
+        conn.commit()
+    finally:
+        conn.close()

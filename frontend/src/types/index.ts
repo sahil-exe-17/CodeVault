@@ -4,6 +4,20 @@ export interface User {
   username?: string
   display_name?: string
   avatar_url?: string
+  college?: string
+  department?: string
+  semester?: string
+  roll_number?: string
+  coding_goals?: string
+  is_profile_completed?: boolean
+  auth_provider?: string
+}
+
+export interface CodeSnippetItem {
+  id: string
+  title: string
+  language: string
+  code: string
 }
 
 export interface Subject {
@@ -27,7 +41,8 @@ export interface Experiment {
   title: string
   experiment_number?: string
   topic?: string
-  language: 'python' | 'java' | 'c' | 'cpp' | 'javascript' | 'typescript' | 'other'
+  language: string
+  code_files?: CodeSnippetItem[]
   aim?: string
   theory?: string
   algorithm?: string
@@ -39,6 +54,10 @@ export interface Experiment {
   personal_notes?: string
   time_complexity?: string
   space_complexity?: string
+  notebook_pdf_url?: string
+  notebook_pdf_name?: string
+  notebook_pdf_size?: number
+  notebook_uploaded_at?: string
   is_bookmarked: boolean
   is_revised: boolean
   revision_count: number
@@ -171,3 +190,4 @@ export interface AnalyticsOverview {
   bookmarked_count: number
   this_week_added: number
 }
+

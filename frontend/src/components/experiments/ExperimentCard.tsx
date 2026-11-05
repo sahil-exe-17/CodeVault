@@ -86,6 +86,11 @@ export const ExperimentCard: React.FC<ExperimentCardProps> = ({
                 Revised
               </Badge>
             )}
+            {experiment.notebook_pdf_url && (
+              <Badge variant="outline" size="sm" className="text-[#D4D4D4] border-white/20">
+                 Notebook
+              </Badge>
+            )}
           </div>
 
           <div className="flex items-center gap-1">
@@ -188,3 +193,4 @@ export const ExperimentCard: React.FC<ExperimentCardProps> = ({
     </div>
   )
 }
+

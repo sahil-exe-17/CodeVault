@@ -1,28 +1,33 @@
 import React from 'react'
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
 import { Toaster } from 'react-hot-toast'
-import { Layout } from '@/components/layout/Layout'
 import { AuthPage } from '@/pages/auth/AuthPage'
-import { Dashboard } from '@/pages/Dashboard'
-import { AllExperiments } from '@/pages/experiments/AllExperiments'
-import { ExperimentDetail } from '@/pages/experiments/ExperimentDetail'
-import { Subjects } from '@/pages/subjects/Subjects'
-import { Bookmarks } from '@/pages/Bookmarks'
-import { AIExplainer } from '@/pages/ai/AIExplainer'
-import { AskCodeVault } from '@/pages/ai/AskCodeVault'
-import { RevisionStudio } from '@/pages/ai/RevisionStudio'
-import { VivaPractice } from '@/pages/ai/VivaPractice'
-import { RevisionPlanner } from '@/pages/RevisionPlanner'
-import { ProgressAnalytics } from '@/pages/ProgressAnalytics'
-import { Settings } from '@/pages/Settings'
+import { ProfileSetup } from '@/pages/auth/ProfileSetup'
+import { SubjectsHome } from '@/pages/subjects/SubjectsHome'
+import { SubjectDetail } from '@/pages/subjects/SubjectDetail'
+import { ExperimentWorkspace } from '@/pages/experiments/ExperimentWorkspace'
+import { IntroSplash } from '@/components/common/IntroSplash'
 import { useAuthStore } from '@/store/authStore'
+
+const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const { user } = useAuthStore()
+  if (!user) {
+    return <Navigate to="/auth" replace />
+  }
+  if (!user.is_profile_completed) {
+    return <Navigate to="/onboarding" replace />
+  }
+  return <>{children}</>
+}
 
 export const App: React.FC = () => {
   const { user } = useAuthStore()
 
   return (
     <BrowserRouter>
-      {/* Monochrome notification toaster */}
+      {/* Starting Crazy Animated Intro Sequence */}
+      <IntroSplash />
+
       <Toaster
         position="top-right"
         toastOptions={{
@@ -38,135 +43,62 @@ export const App: React.FC = () => {
 
       <Routes>
         {/* Auth Route */}
-        <Route path="/auth" element={<AuthPage />} />
+        <Route
+          path="/auth"
+          element={
+            user ? (
+              <Navigate to={user.is_profile_completed ? '/subjects' : '/onboarding'} replace />
+            ) : (
+              <AuthPage />
+            )
+          }
+        />
 
-        {/* Protected Application Routes */}
+        {/* Profile Onboarding */}
+        <Route
+          path="/onboarding"
+          element={!user ? <Navigate to="/auth" replace /> : <ProfileSetup />}
+        />
+
+        {/* Main Application: Subjects & Experiments */}
         <Route
           path="/"
-          element={<Navigate to={user ? '/dashboard' : '/dashboard'} replace />}
-        />
-
-        <Route
-          path="/dashboard"
           element={
-            <Layout>
-              <Dashboard />
-            </Layout>
-          }
-        />
-
-        <Route
-          path="/experiments"
-          element={
-            <Layout>
-              <AllExperiments />
-            </Layout>
-          }
-        />
-
-        <Route
-          path="/experiments/new"
-          element={
-            <Layout>
-              <ExperimentDetail mode="create" />
-            </Layout>
-          }
-        />
-
-        <Route
-          path="/experiments/:id"
-          element={
-            <Layout>
-              <ExperimentDetail mode="edit" />
-            </Layout>
+            <ProtectedRoute>
+              <Navigate to="/subjects" replace />
+            </ProtectedRoute>
           }
         />
 
         <Route
           path="/subjects"
           element={
-            <Layout>
-              <Subjects />
-            </Layout>
+            <ProtectedRoute>
+              <SubjectsHome />
+            </ProtectedRoute>
           }
         />
 
         <Route
-          path="/bookmarks"
+          path="/subjects/:subjectId"
           element={
-            <Layout>
-              <Bookmarks />
-            </Layout>
-          }
-        />
-
-        {/* AI Workspace */}
-        <Route
-          path="/ai/explain"
-          element={
-            <Layout>
-              <AIExplainer />
-            </Layout>
+            <ProtectedRoute>
+              <SubjectDetail />
+            </ProtectedRoute>
           }
         />
 
         <Route
-          path="/ai/ask"
+          path="/experiments/:id"
           element={
-            <Layout>
-              <AskCodeVault />
-            </Layout>
+            <ProtectedRoute>
+              <ExperimentWorkspace />
+            </ProtectedRoute>
           }
         />
 
-        <Route
-          path="/ai/revision-studio"
-          element={
-            <Layout>
-              <RevisionStudio />
-            </Layout>
-          }
-        />
-
-        <Route
-          path="/ai/viva-practice"
-          element={
-            <Layout>
-              <VivaPractice />
-            </Layout>
-          }
-        />
-
-        {/* Productivity & Settings */}
-        <Route
-          path="/revision-planner"
-          element={
-            <Layout>
-              <RevisionPlanner />
-            </Layout>
-          }
-        />
-
-        <Route
-          path="/analytics"
-          element={
-            <Layout>
-              <ProgressAnalytics />
-            </Layout>
-          }
-        />
-
-        <Route
-          path="/settings"
-          element={
-            <Layout>
-              <Settings />
-            </Layout>
-          }
-        />
-
-        {/* Fallback */}
-        <Route path="*" element={<Navigate to="/dashboard" replace />} />
+        {/* Catch-all */}
+        <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </BrowserRouter>
   )

@@ -325,3 +325,4 @@ export const ProgressAnalytics: React.FC = () => {
     </div>
   )
 }
+

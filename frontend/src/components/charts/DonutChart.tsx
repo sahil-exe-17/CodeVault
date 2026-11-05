@@ -89,3 +89,4 @@ export const DonutChart: React.FC<DonutChartProps> = ({ data }) => {
     </div>
   )
 }
+

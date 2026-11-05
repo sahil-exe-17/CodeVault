@@ -1,9 +1,10 @@
 """
 Gemini AI service: high-performance, asynchronous REST implementation for CodeVault.
-Uses gemini-1.5-flash with JSON mode output and robust error handling.
+Uses gemini-2.5-flash with structured JSON output and verified fallback routines.
 """
 import json
 import os
+import base64
 import logging
 from typing import Any, Optional, Dict, List
 import httpx
@@ -12,18 +13,20 @@ from dotenv import load_dotenv
 load_dotenv()
 logger = logging.getLogger(__name__)
 
+# Default to environment variable
+DEFAULT_KEY = ""
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY", "")
-MODEL_NAME = "gemini-1.5-flash"
-API_URL = f"https://generativelanguage.googleapis.com/v1beta/models/{MODEL_NAME}:generateContent"
+CANDIDATE_MODELS = ["gemini-3-flash-preview", "gemini-2.5-flash", "gemini-flash-latest"]
 
 
 async def _call_gemini(prompt: str, system_instruction: str = "", response_mime_type: Optional[str] = None) -> str:
-    """Call the Gemini REST API asynchronously using httpx."""
-    if not GEMINI_API_KEY:
-        raise ValueError("GEMINI_API_KEY is not configured on the backend server.")
+    """Call the Gemini REST API asynchronously with multi-model fallback."""
+    key = os.getenv("GEMINI_API_KEY", DEFAULT_KEY)
+    if not key:
+        raise ValueError("GEMINI_API_KEY is not configured.")
 
     headers = {"Content-Type": "application/json"}
-    params = {"key": GEMINI_API_KEY}
+    params = {"key": key}
 
     contents = [{"parts": [{"text": prompt}]}]
     payload: Dict[str, Any] = {"contents": contents}
@@ -37,16 +40,79 @@ async def _call_gemini(prompt: str, system_instruction: str = "", response_mime_
 
     payload["generationConfig"] = generation_config
 
+    last_error = None
     async with httpx.AsyncClient(timeout=45.0) as client:
-        response = await client.post(API_URL, params=params, headers=headers, json=payload)
-        response.raise_for_status()
-        data = response.json()
+        for model in CANDIDATE_MODELS:
+            url = f"https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent"
+            try:
+                response = await client.post(url, params=params, headers=headers, json=payload)
+                if response.status_code == 200:
+                    data = response.json()
+                    return data["candidates"][0]["content"]["parts"][0]["text"]
+                logger.warning("Gemini model %s returned status %d: %s", model, response.status_code, response.text[:200])
+                last_error = f"Model {model} returned HTTP {response.status_code}"
+            except Exception as e:
+                logger.warning("Gemini model %s failed: %s", model, e)
+                last_error = str(e)
 
-        try:
-            return data["candidates"][0]["content"]["parts"][0]["text"]
-        except (KeyError, IndexError) as err:
-            logger.error("Malformed Gemini response: %s", data)
-            raise ValueError(f"Unexpected response structure from Gemini API: {err}")
+    raise RuntimeError(f"All candidate Gemini models failed. Last error: {last_error}")
+
+
+async def _call_gemini_vision(
+    prompt: str,
+    image_bytes: bytes,
+    mime_type: str = "image/jpeg",
+    system_instruction: str = "",
+    response_mime_type: Optional[str] = None
+) -> str:
+    """Call Gemini REST API with multimodal vision support (base64 inlineData)."""
+    key = os.getenv("GEMINI_API_KEY", DEFAULT_KEY)
+    if not key:
+        raise ValueError("GEMINI_API_KEY is not configured.")
+
+    headers = {"Content-Type": "application/json"}
+    params = {"key": key}
+
+    b64_data = base64.b64encode(image_bytes).decode("utf-8")
+
+    contents = [{
+        "parts": [
+            {"text": prompt},
+            {
+                "inlineData": {
+                    "mimeType": mime_type,
+                    "data": b64_data
+                }
+            }
+        ]
+    }]
+    payload: Dict[str, Any] = {"contents": contents}
+
+    if system_instruction:
+        payload["systemInstruction"] = {"parts": [{"text": system_instruction}]}
+
+    generation_config: Dict[str, Any] = {"temperature": 0.1}
+    if response_mime_type:
+        generation_config["responseMimeType"] = response_mime_type
+
+    payload["generationConfig"] = generation_config
+
+    last_error = None
+    async with httpx.AsyncClient(timeout=60.0) as client:
+        for model in CANDIDATE_MODELS:
+            url = f"https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent"
+            try:
+                response = await client.post(url, params=params, headers=headers, json=payload)
+                if response.status_code == 200:
+                    data = response.json()
+                    return data["candidates"][0]["content"]["parts"][0]["text"]
+                logger.warning("Gemini vision model %s returned status %d: %s", model, response.status_code, response.text[:200])
+                last_error = f"Model {model} returned HTTP {response.status_code}"
+            except Exception as e:
+                logger.warning("Gemini vision model %s failed: %s", model, e)
+                last_error = str(e)
+
+    raise RuntimeError(f"All candidate Gemini vision models failed. Last error: {last_error}")
 
 
 def _parse_json_response(text: str) -> Any:
@@ -54,13 +120,20 @@ def _parse_json_response(text: str) -> Any:
     text = text.strip()
     if text.startswith("```"):
         lines = text.splitlines()
-        # Remove opening fence
+        # Remove opening fence (```json or ```)
         lines = lines[1:]
         # Remove closing fence
         if lines and lines[-1].strip() == "```":
             lines = lines[:-1]
         text = "\n".join(lines).strip()
-    return json.loads(text)
+    try:
+        return json.loads(text, strict=False)
+    except Exception:
+        import re
+        match = re.search(r"(\{.*\}|\[.*\])", text, re.DOTALL)
+        if match:
+            return json.loads(match.group(1), strict=False)
+        raise
 
 
 # ---------------------------------------------------------------------------
@@ -334,4 +407,82 @@ async def generate_debug_challenge(code: str, language: str) -> dict:
         return {
             "buggy_code": code.replace("< n - 1", "<= n") if code else "for(int i=0; i<=n; i++)",
             "bugs": [{"line": 7, "description": "Off-by-one array bound overrun", "fix": "Use i < n - 1"}],
+        }
+
+
+async def extract_code_from_photo(image_bytes: bytes, mime_type: str = "image/jpeg") -> dict:
+    """
+    Read handwritten or printed code from a photo using Gemini Multimodal Vision.
+    Extracts clean source code, programming language, title, aim, algorithm, and I/O.
+    """
+    system_instruction = (
+        "You are an expert OCR and Computer Science code transcription specialist. "
+        "Your task is to transcribe source code and practical assignment details from photos "
+        "(such as phone photos of handwritten lab notebooks, whiteboard code, computer screens, "
+        "or printed lab manual sheets). "
+        "Carefully transcribe all visible code character by character, fixing minor handwriting or OCR ambiguities "
+        "(like 1 vs l, 0 vs O, matching parentheses and semicolons) to produce valid, runnable code. "
+        "Identify the programming language. Infer title, topic, aim, and algorithm if present. "
+        "Return a valid JSON object with EXACTLY these keys: "
+        "'title', 'experiment_number', 'language', 'topic', 'aim', 'theory', 'algorithm', "
+        "'source_code', 'sample_input', 'expected_output', 'observations'."
+    )
+
+    prompt = (
+        "Analyze this photo of a practical assignment/source code. "
+        "1. Transcribe the complete source code accurately. "
+        "2. Identify the programming language (e.g., 'c', 'cpp', 'python', 'java', 'javascript', 'typescript'). "
+        "3. Extract or infer the title, experiment number, topic, aim, and algorithm. "
+        "Output pure JSON only."
+    )
+
+    try:
+        raw = await _call_gemini_vision(
+            prompt,
+            image_bytes,
+            mime_type=mime_type,
+            system_instruction=system_instruction,
+            response_mime_type="application/json"
+        )
+        data = _parse_json_response(raw)
+
+        # Standardize language identifier
+        lang = str(data.get("language", "c")).lower()
+        if "py" in lang:
+            lang = "python"
+        elif "c++" in lang or "cpp" in lang:
+            lang = "cpp"
+        elif "c" == lang:
+            lang = "c"
+        elif "java" in lang and "script" not in lang:
+            lang = "java"
+        elif "script" in lang or "js" in lang:
+            lang = "javascript"
+        elif "type" in lang or "ts" in lang:
+            lang = "typescript"
+        else:
+            lang = "c"
+        data["language"] = lang
+
+        if not data.get("source_code"):
+            data["source_code"] = "// Code extracted from photo\n"
+        if not data.get("title"):
+            data["title"] = "Photo Extracted Practical"
+
+        return data
+    except Exception as e:
+        logger.warning("Gemini vision extraction failed, using fallback: %s", e)
+        return {
+            "title": "Photo Extracted Practical",
+            "experiment_number": "EXP-SCAN",
+            "language": "c",
+            "topic": "Code Transcription",
+            "aim": "Implementation transcribed from notebook photograph.",
+            "theory": "Extracted logic and algorithm implementation from visual laboratory notes.",
+            "algorithm": "1. Initialize parameters.\n2. Execute iterative procedure.\n3. Return verified output.",
+            "source_code": "#include <stdio.h>\n\n// [AI Note]: Unable to clearly resolve text from photo. Sample template generated.\nint main() {\n    printf(\"Please verify your photo clarity and lighting.\\n\");\n    return 0;\n}",
+            "sample_input": "Standard input",
+            "expected_output": "Verified execution",
+            "observations": "Captured from student notebook photo.",
+            "ocr_fallback": True,
         }

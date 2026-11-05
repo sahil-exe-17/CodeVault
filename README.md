@@ -1,161 +1,358 @@
-# CodeVault — AI-Powered Coding Experiment & Revision Platform
+# CodeVault — The Intelligent Engineering Lab & Code Revision Platform
 
-> **Engineered for Computer Science & Engineering Students**  
-> A desktop-first, monochromatic developer workspace for organizing laboratory practicals, generating line-by-line AI code breakdowns, simulating oral viva exams, and mastering algorithms via spaced repetition.
-
----
-
-## 1. Design Philosophy
-
-CodeVault is built with an **uncompromising pure monochrome aesthetic** inspired by Linear, Raycast, Arc Browser, and Apple macOS:
-
-- **Strict Monochrome Palette**:
-  - Main Background: `#090909`
-  - Secondary Background: `#111111`
-  - Elevated Surfaces: `#171717`
-  - Glass Surfaces: `rgba(255, 255, 255, 0.035)` with `backdrop-filter: blur(12px)`
-  - Primary Text: `#F5F5F5`
-  - Secondary Text: `#A1A1A1`
-  - Muted Text: `#666666`
-  - Subtle Borders: `rgba(255, 255, 255, 0.09)`
-  - Accent: `#FFFFFF`
-- **Typography**:
-  - Headings: `Manrope`
-  - Body & Controls: `Inter`
-  - Code & Metadata: `JetBrains Mono`
-- **Zero Distractions**: Strictly no neon gradients, glowing blue/purple borders, or generic SaaS templates.
+[![Live App on Vercel](https://img.shields.io/badge/Production-Live%20on%20Vercel-000000?style=for-the-badge&logo=vercel&logoColor=white)](https://codevault-app-azure.vercel.app)
+[![GitHub Repository](https://img.shields.io/badge/GitHub-sahil--exe--17%2FCodeVault-181717?style=for-the-badge&logo=github&logoColor=white)](https://github.com/sahil-exe-17/CodeVault.git)
+[![Built with React](https://img.shields.io/badge/Frontend-React%2019%20%2B%20Vite%20%2B%20TypeScript-61DAFB?style=for-the-badge&logo=react&logoColor=black)](https://react.dev)
+[![Backend FastAPI](https://img.shields.io/badge/Backend-FastAPI%20%2B%20Python%203.11-009688?style=for-the-badge&logo=fastapi&logoColor=white)](https://fastapi.tiangolo.com)
+[![AI Gemini Vision](https://img.shields.io/badge/AI%20Engine-Google%20Gemini%20Flash%20Vision-4285F4?style=for-the-badge&logo=google&logoColor=white)](https://ai.google.dev)
 
 ---
 
-## 2. Key Modules & Capabilities
+> **Engineered for Computer Science & Engineering Students and Developers.**  
+> CodeVault is a brutalist, distraction-free laboratory notebook and code mastery platform. It turns physical university lab manuals into searchable digital repositories, extracts code from handwritten notebook photos via AI Vision, generates deep line-by-line algorithmic explanations, and simulates university viva exams with real-time feedback.
 
-### 🧪 Experiment Management
-- Full CRUD for university lab assignments and coding experiments.
-- Real-time search, filters by Subject, Programming Language (Python, C, C++, Java, JS, TS), and Revision Status.
-- Grid & compact table views, bookmarking, and duplication.
-- File upload support (`.c`, `.cpp`, `.py`, `.java`, `.js`, `.ts`, `.txt`).
+**Live Production URL:** [https://codevault-app-azure.vercel.app](https://codevault-app-azure.vercel.app)  
+**Official Repository:** [https://github.com/sahil-exe-17/CodeVault.git](https://github.com/sahil-exe-17/CodeVault.git)
 
-### 💻 Experiment Workspace (Monaco Editor Split-View)
-- **Left Panel**:
-  - Full Monaco Editor with syntax highlighting, font scaling, line numbering, code copying, and downloading.
-  - Form tabs for Aim, Theory, Step-by-Step Algorithm, Sample I/O, Observations, and Complexity ($O(n)$, $O(1)$).
-- **Right Panel**:
-  - AI Code Explainer with 12 collapsible sections:
-    1. Program Overview
-    2. Simple Explanation
-    3. Line-by-Line Breakdown
-    4. Logic Breakdown
-    5. Execution Flow Diagram
-    6. Variables & Functions Table
-    7. Algorithm Explanation
-    8. Sample Input & Output
-    9. Time Complexity Proof
-    10. Space Complexity Proof
-    11. Common Mistakes
-    12. Practical Exam Points
-  - Dynamic Viva Q&A generation with clickable answer reveals.
-  - Related practicals within the same academic subject.
+---
 
-### 🤖 Ask CodeVault (Contextual Assistant)
-- Linear/Raycast-styled developer chat workspace.
-- Conversation history persistence and one-click prompt templates.
-- Context-aware querying attached to any active experiment.
-- Instantaneous answer copy and code fence rendering.
+## Table of Contents
+- [1. Why CodeVault?](#1-why-codevault)
+- [2. Design & Visual Identity](#2-design--visual-identity)
+- [3. Core Features & Capabilities](#3-core-features--capabilities)
+- [4. System Architecture](#4-system-architecture)
+- [5. Technology Stack](#5-technology-stack)
+- [6. Getting Started (Local Development)](#6-getting-started-local-development)
+- [7. Environment Configuration](#7-environment-configuration)
+- [8. API Endpoints Overview](#8-api-endpoints-overview)
+- [9. Production Deployment](#9-production-deployment)
+- [10. Project Structure](#10-project-structure)
+- [11. License](#11-license)
 
-### 🧠 Revision Studio
+---
+
+## 1. Why CodeVault?
+
+During university laboratory coursework, engineering students face several recurring hurdles:
+1. **Scattered Coursework**: Practical codes, output screenshots, algorithms, and manual scans get lost across folders, thumb drives, and chat groups.
+2. **Physical Lab Notebook Risk**: University practical books are frequently lost, damaged, or permanently retained by external examiners before finals.
+3. **Viva Voce Anxiety**: Oral viva examinations require instant recall of time complexities, pointer logic, edge cases, and memory models.
+4. **Painful Handwritten Code Digitization**: Manually re-typing handwritten notebook codes or textbook assignments into IDEs is tedious and error-prone.
+
+**CodeVault solves all four in a single unified workspace.**
+
+---
+
+## 2. Design & Visual Identity
+
+CodeVault follows an uncompromising **dark brutalist aesthetic** inspired by Linear, Raycast, and Apple macOS:
+- **Palette**: Deep pitch black (`#050507`), secondary obsidian (`#0e0e12`), subtle hairline borders (`rgba(255, 255, 255, 0.08)`), and high-contrast stark white typography (`#FFFFFF`).
+- **Kinetic Intro**: A procedural kinetic typography splash sequence featuring the geometric CodeVault monogram logo.
+- **Pure Focus**: Zero neon gradients or distracting gamification badges. Everything is optimized for readability, keyboard ergonomics, and focus.
+- **Mobile Responsive**: Native touch-friendly interactions, bottom sheets, drawer navigation, and safe-area scaling for handheld devices.
+
+---
+
+## 3. Core Features & Capabilities
+
+### 🗂️ Clean Subject & Experiment Hierarchy
+- Create custom academic subjects (e.g., *Data Structures & Algorithms*, *Operating Systems*, *Design and Analysis of Algorithms*, *Computer Networks*).
+- Zero mock/demo clutter: Every workspace is clean and user-scoped.
+- Filter experiments by subject, programming language (C, C++, Python, Java, JS, TS, Rust, Go), and revision status.
+
+### 📷 AI Vision Photo-to-Code Scanner
+- Snap or upload a photo of a handwritten lab notebook, whiteboard diagram, textbook page, or monitor screen.
+- **Google Gemini Multimodal Vision** automatically extracts the code, recognizes the programming language, infers Title, Aim, and Algorithm steps, and populates the editor with zero retyping needed.
+
+### 📓 Physical Notebook PDF Archive
+- Upload and archive full PDF scans or high-res photos of your verified university lab manual.
+- Built-in in-browser document reader allows you to review your handwritten work anywhere—even when your physical book is submitted to examiners.
+
+### 💻 Split-View Monaco Code Workspace
+- **Desktop & Tablet Optimized**: Left panel hosts Microsoft Monaco Editor (the core editor powering VS Code) with syntax highlighting, font scaling, auto-formatting, line numbering, and one-click code copy or download.
+- Full experiment documentation tabs:
+  - **Aim & Objectives**
+  - **Theoretical Background**
+  - **Step-by-Step Algorithm**
+  - **Sample Inputs & Outputs**
+  - **Observations & Results**
+  - **Time & Space Complexity** ($O(n \log n)$, $O(1)$)
+  - **Lab Notebook PDF Viewer**
+
+### 🎙️ AI Viva Voce Examination Simulator
+- Simulates an oral university viva with an AI professor.
+- Dynamic difficulty scaling (Easy, Medium, Hard).
+- Evaluates student responses out of 10, pinpoints conceptual mistakes, and provides an authoritative model answer.
+
+### 🔍 12-Section AI Algorithmic Explainer
+- One-click deep algorithmic breakdown powered by Gemini:
+  1. High-Level Program Overview
+  2. Plain English Explanation (ELI5)
+  3. Line-by-Line Code Breakdown
+  4. Core Logic & Control Flow
+  5. ASCII Execution Flow Diagram
+  6. Variables, Data Types & Function Signatures Table
+  7. Step-by-Step Algorithm
+  8. Sample Input & Output Traces
+  9. Mathematical Time Complexity Proof
+  10. Space Complexity Proof & Memory Profile
+  11. Common Pitfalls & Edge Cases
+  12. Frequently Asked Exam Questions
+
+### 🧠 Revision Studio & Spaced Repetition
 - **Flashcards**: Interactive 3D flip cards with active recall tracking ("Got It" vs "Still Learning").
-- **MCQ Practice**: 4-option quizzes with instantaneous monochrome feedback, scoring, and explanations.
-- **Quick Notes**: High-yield bullet points formatted for whiteboards and printouts.
-- **Output Quiz**: Terminal output prediction on tricky pointer/loop code snippets.
-- **Debug Challenge**: Spot off-by-one errors and memory leaks.
-- **Mock Practical Exam**: Timed 30-minute exam simulation with comprehensive theoretical evaluation.
+- **MCQ Quizzes**: 4-option code comprehension tests with immediate feedback and scoring.
+- **Output Prediction Quiz**: Guess terminal output for tricky pointer arithmetic, scoping, and recursion snippets.
+- **Bug Hunt Challenge**: Identify off-by-one errors, memory leaks, and logic flaws.
+- **Spaced Repetition Scheduler**: Automated 1-day, 3-day, 7-day, and 14-day review prompts.
 
-### 🎙️ Viva Simulator
-- Simulates an oral university viva with an AI examiner.
-- Easy, Medium, and Hard difficulty escalation.
-- Grades student responses out of 10, pinpoints missing concepts, and provides a verified model answer.
+### 🤖 Ask CodeVault Contextual Assistant
+- Full conversational AI terminal embedded directly in the workspace.
+- Retains context of your active experiment code and subject syllabus to answer questions, suggest optimizations, or write test cases.
 
-### 📅 Revision Planner & Progress Analytics
-- Spaced repetition algorithm (1 day, 3 days, 7 days, 14 days).
-- Upcoming university exam countdown indicators.
-- Monochrome Recharts visualizations (weekly activity area charts, language donut charts, quiz scoring progression lines).
-
-### 🐙 GitHub Repository Import
-- Enter any GitHub repo URL to inspect and import source files directly into your workspace.
+### 🔐 True Account Persistence
+- Google OAuth 2.0 and direct browser profile authentication.
+- Deterministic cryptographic user hashing with offline-first local storage caching and SQLite server backup.
+- Never loses user subjects or loads into someone else's account.
 
 ---
 
-## 3. Architecture & Tech Stack
+## 4. System Architecture
 
 ```
-CodeVault/
-├── frontend/             # React 19 + Vite + TypeScript + Tailwind CSS
-│   ├── src/
-│   │   ├── components/   # Layout (Sidebar, TopNav), UI primitives, Monaco & Recharts
-│   │   ├── pages/        # Dashboard, Experiments, AI Studio, Planner, Analytics, Settings
-│   │   ├── lib/          # Typed API services & Supabase client
-│   │   └── store/        # Zustand state store
-├── backend/              # Python FastAPI REST API
-│   ├── routers/          # auth, subjects, experiments, ai, conversations, quizzes, revision, analytics
-│   ├── services/         # gemini_service (Gemini 1.5 Flash), supabase_client, github_service
-│   └── middleware/       # JWT extraction & authentication
-└── supabase/             # PostgreSQL migrations & seed data
-    ├── migrations/       # 001_initial_schema.sql (15 tables, RLS, triggers)
-    └── seed.sql          # Realistic practical assignments in C, C++, and Python
+                                  ┌─────────────────────────────┐
+                                  │      Client Browser         │
+                                  │   (Desktop & Mobile Web)    │
+                                  └──────────────┬──────────────┘
+                                                 │
+                                                 ▼
+                                  ┌─────────────────────────────┐
+                                  │     Vercel Edge Network     │
+                                  │   (Static Assets & SPA)     │
+                                  └──────────────┬──────────────┘
+                                                 │
+                                                 ▼
+                                  ┌─────────────────────────────┐
+                                  │    React 19 + TypeScript    │
+                                  │   - Monaco Code Editor      │
+                                  │   - Zustand State Store     │
+                                  │   - Tailwind CSS & Motion   │
+                                  └──────────────┬──────────────┘
+                                                 │
+                                     REST APIs / JSON / Multipart
+                                                 │
+                                                 ▼
+                                  ┌─────────────────────────────┐
+                                  │     FastAPI Backend         │
+                                  │  - Auth & Profile Manager   │
+                                  │  - Subjects & Experiments   │
+                                  │  - Revision & Quiz Engine   │
+                                  └──────┬───────────────┬──────┘
+                                         │               │
+                     Local SQL / Foreign Keys            │ Async Multimodal Prompt
+                                         │               │
+                                         ▼               ▼
+                        ┌───────────────────┐  ┌───────────────────┐
+                        │ SQLite 3 Database │  │ Google Gemini API │
+                        │  (13 Tables, RLS) │  │  (Vision & LLM)   │
+                        └───────────────────┘  └───────────────────┘
 ```
 
 ---
 
-## 4. Setup & Installation
+## 5. Technology Stack
+
+### Frontend
+- **Framework**: [React 19](https://react.dev/) + [Vite](https://vitejs.dev/)
+- **Language**: [TypeScript](https://www.typescriptlang.org/) (Strict Mode)
+- **Styling**: [Tailwind CSS 3.4](https://tailwindcss.com/)
+- **Animations**: [Framer Motion](https://www.framer.com/motion/)
+- **Code Editor**: [@monaco-editor/react](https://github.com/suren-atoyan/monaco-react)
+- **Icons**: [Lucide React](https://lucide.dev/)
+- **State Management**: [Zustand](https://github.com/pmndrs/zustand)
+- **Charts**: [Recharts](https://recharts.org/)
+- **Notifications**: [react-hot-toast](https://react-hot-toast.com/)
+
+### Backend
+- **Framework**: [FastAPI](https://fastapi.tiangolo.com/) (Asynchronous ASGI)
+- **Runtime**: Python 3.10+ / 3.11
+- **Database**: SQLite3 with thread-safe connection pooling
+- **Validation**: [Pydantic v2](https://docs.pydantic.dev/)
+- **Server**: [Uvicorn](https://www.uvicorn.org/)
+
+### Artificial Intelligence
+- **Provider**: Google AI Studio / Gemini API
+- **Models**: `gemini-2.5-flash`, `gemini-1.5-flash`, `gemini-1.5-pro`
+- **Capabilities**: Multimodal Document Vision, Code OCR, Algorithmic Analysis, Viva Generation.
+
+---
+
+## 6. Getting Started (Local Development)
 
 ### Prerequisites
-- Node.js 18+ (tested on Node v24)
-- Python 3.10+
-- (Optional) Free Supabase project for persistent cloud database
-- (Optional) Gemini API Key from [Google AI Studio](https://aistudio.google.com)
+- [Node.js](https://nodejs.org/) v18+ (v20+ recommended)
+- [Python](https://www.python.org/) 3.10 or higher
+- Git
 
-### 1. Frontend Setup
+### 1. Clone the Repository
 ```bash
-cd frontend
-npm install
-npm run build
-npm run dev
+git clone https://github.com/sahil-exe-17/CodeVault.git
+cd CodeVault
 ```
-The frontend starts at `http://localhost:5173`. You can immediately use the **⚡ Instant Developer Demo Login** to explore all features with rich pre-seeded data.
 
 ### 2. Backend Setup
 ```bash
 cd backend
-python -m venv .venv
+
+# Create and activate virtual environment
 # On Windows:
+python -m venv .venv
 .\.venv\Scripts\activate
-# On Linux/macOS:
+
+# On macOS/Linux:
+python3 -m venv .venv
 source .venv/bin/activate
 
+# Install dependencies
 pip install -r requirements.txt
-```
 
-Create a `.env` file in `backend/`:
-```env
-SUPABASE_URL=https://your-project.supabase.co
-SUPABASE_ANON_KEY=your-anon-key
-SUPABASE_SERVICE_KEY=your-service-role-key
-GEMINI_API_KEY=your-gemini-api-key
-FRONTEND_URL=http://localhost:5173
-```
+# Create your environment file
+cp .env.example .env
+# Open .env and add your GEMINI_API_KEY from https://aistudio.google.com/
 
-Run the backend server:
+# Start the FastAPI server
+uvicorn main:app --host 127.0.0.1 --port 8000 --reload
+```
+The backend will run on `http://127.0.0.1:8000`.
+- API Health Check: `http://127.0.0.1:8000/api/health`
+- Interactive Swagger UI: `http://127.0.0.1:8000/docs`
+
+### 3. Frontend Setup
+Open a second terminal window:
 ```bash
-python main.py
-```
-FastAPI runs at `http://localhost:8000` with interactive Swagger docs at `http://localhost:8000/docs`.
+cd frontend
 
-### 3. Database Schema Setup
-1. In your Supabase Dashboard, go to the **SQL Editor**.
-2. Run `supabase/migrations/001_initial_schema.sql` to create all tables, indexes, and Row Level Security policies.
-3. Run `supabase/seed.sql` to insert sample course experiments, flashcards, and quizzes.
+# Install packages
+npm install
+
+# Start Vite development server
+npm run dev
+```
+The application will launch at `http://localhost:5173`.
 
 ---
 
-## 5. License
-MIT License. Built for developers and students worldwide.
+## 7. Environment Configuration
+
+### Backend (`backend/.env`)
+```env
+# Google Gemini API Key (Get free key from https://aistudio.google.com)
+GEMINI_API_KEY=your_gemini_api_key_here
+
+# Frontend CORS URL
+FRONTEND_URL=http://localhost:5173
+
+# Optional Google OAuth Client ID
+GOOGLE_CLIENT_ID=your_google_oauth_client_id.apps.googleusercontent.com
+```
+
+### Frontend (`frontend/.env` or Vercel Environment Variables)
+```env
+# Backend API Base URL
+VITE_API_URL=http://localhost:8000
+
+# Optional Google OAuth Client ID
+VITE_GOOGLE_CLIENT_ID=your_google_oauth_client_id.apps.googleusercontent.com
+```
+
+---
+
+## 8. API Endpoints Overview
+
+| Method | Endpoint | Description |
+| :--- | :--- | :--- |
+| `POST` | `/api/auth/signup` | Create student profile with password hash |
+| `POST` | `/api/auth/login` | Authenticate and obtain session token |
+| `GET` | `/api/auth/me` | Fetch active user credentials and preferences |
+| `GET` | `/api/subjects` | List all academic subjects belonging to user |
+| `POST` | `/api/subjects` | Create a new subject module |
+| `DELETE`| `/api/subjects/{id}` | Delete subject and cascade delete experiments |
+| `GET` | `/api/experiments` | List experiments (supports `subject_id`, `search`, `language`) |
+| `POST` | `/api/experiments` | Create experiment with code, aim, and complexity |
+| `POST` | `/api/ai/scan-notebook` | Multimodal Vision OCR extraction from photo upload |
+| `POST` | `/api/ai/explain` | Generate 12-section algorithmic breakdown |
+| `POST` | `/api/ai/viva` | Interactive Viva simulator with scoring & feedback |
+| `POST` | `/api/ai/chat` | Context-aware Ask CodeVault conversational assistant |
+| `GET` | `/api/analytics/overview`| Real-time study statistics and completion rate |
+
+---
+
+## 9. Production Deployment
+
+### Frontend (Vercel)
+The frontend is configured with `vercel.json` for seamless Single Page Application (SPA) routing:
+```bash
+cd frontend
+npx vercel --prod
+```
+Current Live URL: **[https://codevault-app-azure.vercel.app](https://codevault-app-azure.vercel.app)**
+
+### Backend
+The backend can be deployed to any container or cloud provider supporting Python ASGI (e.g., Render, Railway, Google Cloud Run, AWS EC2):
+```bash
+uvicorn main:app --host 0.0.0.0 --port $PORT
+```
+
+---
+
+## 10. Project Structure
+
+```
+CodeVault/
+├── backend/
+│   ├── main.py                  # FastAPI initialization & CORS
+│   ├── codevault.db             # SQLite database engine
+│   ├── middleware/              # Authentication & JWT security
+│   ├── models/                  # Pydantic v2 schemas
+│   ├── routers/                 # Modular API endpoints
+│   │   ├── ai.py                # Gemini Vision OCR & Viva simulation
+│   │   ├── analytics.py         # Revision statistics & progress charts
+│   │   ├── auth.py              # User authentication & registration
+│   │   ├── experiments.py       # Experiment CRUD & file uploads
+│   │   ├── quizzes.py           # MCQ & debug challenges
+│   │   └── subjects.py          # Academic course management
+│   ├── services/
+│   │   ├── db.py                # Database schema, connection pool & migrations
+│   │   └── gemini_service.py    # Google Gemini API connector
+│   └── uploads/                 # Storage for notebook scans & PDFs
+├── frontend/
+│   ├── index.html               # App entrypoint & high-res branding
+│   ├── package.json
+│   ├── tailwind.config.js       # Brutalist design tokens & font definitions
+│   ├── vercel.json              # Vercel deployment & rewrite configuration
+│   └── src/
+│       ├── components/
+│       │   ├── auth/            # Google OAuth modal & glass inputs
+│       │   ├── common/          # Kinetic typography intro splash & logo
+│       │   ├── experiments/     # Photo scanner modal & notebook reader
+│       │   ├── layout/          # Desktop sidebar, mobile navbar & topnav
+│       │   └── ui/              # Buttons, inputs, modals, empty states
+│       ├── pages/
+│       │   ├── auth/            # Sign In & Sign Up pages
+│       │   ├── experiments/     # Experiment list & Monaco workspace
+│       │   ├── subjects/        # Subject catalog & subject detail
+│       │   ├── ai/              # AI Explainer, Viva, & Revision Studio
+│       │   ├── Dashboard.tsx    # Command center & recent practicals
+│       │   └── Settings.tsx     # Profile preferences & API keys
+│       └── store/
+│           └── authStore.ts     # Persistent user state & auth cache
+└── README.md
+```
+
+---
+
+## 11. License
+
+Distributed under the **MIT License**. Free for academic, personal, and commercial usage.
+
+Developed with precision for engineering excellence.

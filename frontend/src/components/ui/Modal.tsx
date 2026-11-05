@@ -61,7 +61,7 @@ export const Modal: React.FC<ModalProps> = ({
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.96, y: 10 }}
             transition={{ duration: 0.2, ease: [0.16, 1, 0.3, 1] }}
-            className={`relative w-full ${maxWidthClasses[maxWidth]} bg-[#111111] border border-[rgba(255,255,255,0.12)] rounded-xl shadow-2xl p-6 z-10 overflow-hidden`}
+            className={`relative w-full ${maxWidthClasses[maxWidth]} max-h-[90vh] overflow-y-auto bg-[#111111] border border-[rgba(255,255,255,0.12)] rounded-2xl shadow-2xl p-5 sm:p-6 z-10`}
           >
             <div className="flex items-start justify-between mb-4">
               <div>
@@ -88,3 +88,4 @@ export const Modal: React.FC<ModalProps> = ({
     </AnimatePresence>
   )
 }
+

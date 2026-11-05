@@ -28,7 +28,7 @@ export const Settings: React.FC = () => {
   // Profile Form
   const [displayName, setDisplayName] = useState(user?.display_name || 'Alex Rivera')
   const [username, setUsername] = useState(user?.username || 'alexdev')
-  const [email] = useState(user?.email || 'alex@codevault.dev')
+  const [email] = useState(user?.email || '')
 
   // UI Preferences
   const [fontSize, setFontSize] = useState('medium')
@@ -424,8 +424,8 @@ export const Settings: React.FC = () => {
                   <div className="text-white font-semibold">Core Stack:</div>
                   <div className="text-[#888888]">• Frontend: React 19, Vite, TypeScript, Tailwind CSS, Monaco Editor, Recharts</div>
                   <div className="text-[#888888]">• Backend: Python FastAPI, Pydantic v2, REST</div>
-                  <div className="text-[#888888]">• Database: Supabase / PostgreSQL with Row Level Security</div>
-                  <div className="text-[#888888]">• AI Intelligence: Google Gemini 1.5 Flash Model</div>
+                  <div className="text-[#888888]">• Database: SQLite Relational Database (13 tables, zero external dependency)</div>
+                  <div className="text-[#888888]">• AI Intelligence: Google Gemini 3 Flash / 2.5 Flash via REST</div>
                 </div>
               </div>
             </div>
