@@ -11,6 +11,7 @@ import {
 } from 'lucide-react'
 import { Button } from '@/components/ui/Button'
 import { Badge } from '@/components/ui/Badge'
+import { Select, SelectOption } from '@/components/ui/Select'
 import { experimentsApi, aiApi } from '@/lib/api'
 import type { Experiment } from '@/types'
 import toast from 'react-hot-toast'
@@ -182,17 +183,16 @@ export const VivaPractice: React.FC = () => {
           <div className="space-y-4">
             <div className="flex flex-col gap-1.5">
               <label className="text-xs font-medium text-[#A1A1A1]">Target Experiment *</label>
-              <select
+              <Select
+                title="Select Target Experiment"
+                placeholder="Choose experiment…"
                 value={selectedExpId}
-                onChange={(e) => setSelectedExpId(e.target.value)}
-                className="bg-[#111111] text-xs text-white rounded-lg border border-[rgba(255,255,255,0.09)] px-3 py-2.5 focus:border-white focus:outline-none"
-              >
-                {experiments.map((e) => (
-                  <option key={e.id} value={e.id}>
-                    {e.experiment_number ? `${e.experiment_number}: ` : ''}{e.title}
-                  </option>
-                ))}
-              </select>
+                onChange={setSelectedExpId}
+                options={experiments.map((e) => ({
+                  value: e.id,
+                  label: `${e.experiment_number ? `${e.experiment_number}: ` : ''}${e.title}`,
+                }))}
+              />
             </div>
 
             <div className="flex flex-col gap-1.5">

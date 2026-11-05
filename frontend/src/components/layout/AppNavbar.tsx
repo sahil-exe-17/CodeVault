@@ -1,8 +1,9 @@
 import React, { useState, useRef, useEffect } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Code2, Plus, LogOut, User as UserIcon, Sparkles, ChevronDown, Cpu } from 'lucide-react'
+import { Code2, Plus, LogOut, User as UserIcon, Sparkles, ChevronDown, Cpu, Sun, Moon } from 'lucide-react'
 import { useAuthStore } from '@/store/authStore'
+import { useThemeStore } from '@/store/themeStore'
 
 interface AppNavbarProps {
   onAddSubject?: () => void
@@ -15,6 +16,7 @@ export const AppNavbar: React.FC<AppNavbarProps> = ({
 }) => {
   const navigate = useNavigate()
   const { user, signOut } = useAuthStore()
+  const { theme, toggle: toggleTheme } = useThemeStore()
   const [showUserMenu, setShowUserMenu] = useState(false)
   const navRef = useRef<HTMLElement | null>(null)
   const [mousePos, setMousePos] = useState({ x: 0 })
@@ -86,6 +88,19 @@ export const AppNavbar: React.FC<AppNavbarProps> = ({
               <span className="tracking-tight font-medium">+ Add Subject</span>
             </motion.button>
           )}
+
+          {/* Theme Toggle */}
+          <button
+            type="button"
+            onClick={toggleTheme}
+            title={theme === 'dark' ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
+            className="w-8 h-8 flex items-center justify-center rounded-xl border border-white/10 hover:border-white/25 bg-white/[0.05] hover:bg-white/[0.10] transition-all cursor-pointer text-white/60 hover:text-white"
+          >
+            {theme === 'dark'
+              ? <Sun className="w-3.5 h-3.5" />
+              : <Moon className="w-3.5 h-3.5" />
+            }
+          </button>
 
           {/* User Profile Capsule */}
           <div className="relative">

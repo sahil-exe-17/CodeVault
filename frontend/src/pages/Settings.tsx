@@ -16,13 +16,16 @@ import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
 import { Modal } from '@/components/ui/Modal'
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog'
+import { Select, SelectOption } from '@/components/ui/Select'
 import { useAuthStore } from '@/store/authStore'
+import { useThemeStore } from '@/store/themeStore'
 import { githubApi } from '@/lib/api'
 import axios from 'axios'
 import toast from 'react-hot-toast'
 
 export const Settings: React.FC = () => {
   const { user, setUser } = useAuthStore()
+  const { theme, setTheme } = useThemeStore()
   const [activeSection, setActiveSection] = useState<'profile' | 'appearance' | 'ai' | 'integrations' | 'data' | 'about'>('profile')
 
   // Profile Form
@@ -206,24 +209,28 @@ export const Settings: React.FC = () => {
 
               <div className="space-y-4 max-w-md">
                 <div className="space-y-1.5">
-                  <label className="text-xs font-medium text-[#A1A1A1]">Interface Palette</label>
-                  <div className="p-3 rounded-lg bg-[#111111] border border-[rgba(255,255,255,0.09)] flex items-center justify-between text-xs">
-                    <span className="text-white font-medium">Pure Monochrome Dark</span>
-                    <span className="text-[10px] text-[#666666] uppercase font-mono">Active</span>
-                  </div>
+                  <label className="text-xs font-medium text-[#A1A1A1]">Interface Theme</label>
+                  <Select
+                    title="Choose Interface Theme"
+                    value={theme}
+                    onChange={(val) => setTheme(val as any)}
+                  >
+                    <SelectOption value="dark">Pure Monochrome Dark (Default)</SelectOption>
+                    <SelectOption value="light">Crisp Modern Light</SelectOption>
+                  </Select>
                 </div>
 
                 <div className="space-y-1.5">
                   <label className="text-xs font-medium text-[#A1A1A1]">Monaco Code Font Size</label>
-                  <select
+                  <Select
+                    title="Code Font Size"
                     value={fontSize}
-                    onChange={(e) => setFontSize(e.target.value)}
-                    className="w-full bg-[#111111] text-xs text-white rounded-lg border border-[rgba(255,255,255,0.09)] px-3 py-2 focus:border-white focus:outline-none"
+                    onChange={setFontSize}
                   >
-                    <option value="small">Small (12px)</option>
-                    <option value="medium">Medium (14px - Recommended)</option>
-                    <option value="large">Large (16px)</option>
-                  </select>
+                    <SelectOption value="small">Small (12px)</SelectOption>
+                    <SelectOption value="medium">Medium (14px - Recommended)</SelectOption>
+                    <SelectOption value="large">Large (16px)</SelectOption>
+                  </Select>
                 </div>
 
                 <div className="flex items-center justify-between p-3 rounded-lg bg-[#111111] border border-[rgba(255,255,255,0.09)]">
@@ -282,28 +289,28 @@ export const Settings: React.FC = () => {
 
                 <div className="space-y-1.5">
                   <label className="text-xs font-medium text-[#A1A1A1]">Default Explanation Rigour</label>
-                  <select
+                  <Select
+                    title="Explanation Rigour"
                     value={aiDefaultMode}
-                    onChange={(e) => setAiDefaultMode(e.target.value)}
-                    className="w-full bg-[#111111] text-xs text-white rounded-lg border border-[rgba(255,255,255,0.09)] px-3 py-2 focus:border-white focus:outline-none"
+                    onChange={setAiDefaultMode}
                   >
-                    <option value="beginner">Beginner Mode (Analogy & simplified concepts)</option>
-                    <option value="detailed">Detailed Mode (Deep technical structure)</option>
-                    <option value="exam">Practical Exam Mode (Viva questions & proofs)</option>
-                  </select>
+                    <SelectOption value="beginner">Beginner Mode (Analogy & simplified concepts)</SelectOption>
+                    <SelectOption value="detailed">Detailed Mode (Deep technical structure)</SelectOption>
+                    <SelectOption value="exam">Practical Exam Mode (Viva questions & proofs)</SelectOption>
+                  </Select>
                 </div>
 
                 <div className="space-y-1.5">
                   <label className="text-xs font-medium text-[#A1A1A1]">Default Viva Difficulty</label>
-                  <select
+                  <Select
+                    title="Viva Difficulty"
                     value={vivaDifficulty}
-                    onChange={(e) => setVivaDifficulty(e.target.value)}
-                    className="w-full bg-[#111111] text-xs text-white rounded-lg border border-[rgba(255,255,255,0.09)] px-3 py-2 focus:border-white focus:outline-none"
+                    onChange={setVivaDifficulty}
                   >
-                    <option value="easy">Easy (Core definitions & fundamentals)</option>
-                    <option value="medium">Medium (Algorithmic steps & loops)</option>
-                    <option value="hard">Hard (Edge cases & complexity derivations)</option>
-                  </select>
+                    <SelectOption value="easy">Easy (Core definitions & fundamentals)</SelectOption>
+                    <SelectOption value="medium">Medium (Algorithmic steps & loops)</SelectOption>
+                    <SelectOption value="hard">Hard (Edge cases & complexity derivations)</SelectOption>
+                  </Select>
                 </div>
               </div>
             </div>

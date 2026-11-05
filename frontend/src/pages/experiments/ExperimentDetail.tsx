@@ -28,6 +28,7 @@ import {
   Camera,
 } from 'lucide-react'
 import { Button } from '@/components/ui/Button'
+import { Select, SelectOption } from '@/components/ui/Select'
 import { Badge } from '@/components/ui/Badge'
 import { Input } from '@/components/ui/Input'
 import { ScanPhotoModal } from '@/components/experiments/ScanPhotoModal'
@@ -572,19 +573,21 @@ export const ExperimentDetail: React.FC<ExperimentDetailProps> = ({ mode = 'edit
               <div className="bg-[#0f0f0f] px-4 py-2 border-b border-[rgba(255,255,255,0.06)] flex items-center justify-between text-xs">
                 <div className="flex items-center gap-2">
                   <span className="text-[#666666] font-mono text-[11px]">LANGUAGE:</span>
-                  <select
+                  <Select
+                    size="compact"
+                    title="Select Language"
                     value={experiment.language || 'c'}
-                    onChange={(e: any) => handleFieldChange('language', e.target.value)}
-                    className="bg-[#171717] text-white text-xs rounded border border-[rgba(255,255,255,0.09)] px-2 py-1 focus:outline-none"
+                    onChange={(val) => handleFieldChange('language', val)}
+                    className="w-32"
                   >
-                    <option value="python">Python</option>
-                    <option value="c">C</option>
-                    <option value="cpp">C++</option>
-                    <option value="java">Java</option>
-                    <option value="javascript">JavaScript</option>
-                    <option value="typescript">TypeScript</option>
-                    <option value="other">Text / Other</option>
-                  </select>
+                    <SelectOption value="python">Python</SelectOption>
+                    <SelectOption value="c">C</SelectOption>
+                    <SelectOption value="cpp">C++</SelectOption>
+                    <SelectOption value="java">Java</SelectOption>
+                    <SelectOption value="javascript">JavaScript</SelectOption>
+                    <SelectOption value="typescript">TypeScript</SelectOption>
+                    <SelectOption value="other">Text / Other</SelectOption>
+                  </Select>
                 </div>
 
                 <div className="flex items-center gap-2 text-[11px] text-[#666666] font-mono">
@@ -634,18 +637,13 @@ export const ExperimentDetail: React.FC<ExperimentDetailProps> = ({ mode = 'edit
               <div className="grid grid-cols-2 gap-4">
                 <div className="flex flex-col gap-1.5">
                   <label className="text-xs font-medium text-[#A1A1A1]">Subject</label>
-                  <select
+                  <Select
+                    title="Select Subject"
+                    placeholder="Select subject…"
                     value={experiment.subject_id || ''}
-                    onChange={(e) => handleFieldChange('subject_id', e.target.value)}
-                    className="bg-[#111111] text-[#F5F5F5] text-xs rounded-lg border border-[rgba(255,255,255,0.09)] px-3 py-2 focus:border-white focus:outline-none"
-                  >
-                    <option value="">Select subject...</option>
-                    {subjects.map((s) => (
-                      <option key={s.id} value={s.id}>
-                        {s.name}
-                      </option>
-                    ))}
-                  </select>
+                    onChange={(val) => handleFieldChange('subject_id', val)}
+                    options={subjects.map((s) => ({ value: s.id, label: s.name }))}
+                  />
                 </div>
 
                 <Input

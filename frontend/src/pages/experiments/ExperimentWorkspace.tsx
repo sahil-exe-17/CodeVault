@@ -23,6 +23,7 @@ import {
 import { Button } from '@/components/ui/Button'
 import { Modal } from '@/components/ui/Modal'
 import { Input } from '@/components/ui/Input'
+import { Select, SelectOption } from '@/components/ui/Select'
 import { AppNavbar } from '@/components/layout/AppNavbar'
 import { ScanPhotoModal } from '@/components/experiments/ScanPhotoModal'
 import { AIRecommendationsModal, type CodeRecommendationData } from '@/components/experiments/AIRecommendationsModal'
@@ -582,22 +583,24 @@ export const ExperimentWorkspace: React.FC = () => {
               />
 
               {/* Language Selector */}
-              <select
+              <Select
+                size="compact"
+                title="Select Language"
                 value={activeSnippet.language}
-                onChange={(e) => updateActiveSnippet('language', e.target.value)}
-                className="bg-[#171717] text-white text-xs px-2 py-1 rounded border border-[rgba(255,255,255,0.1)] focus:border-white focus:outline-none font-mono"
+                onChange={(val) => updateActiveSnippet('language', val)}
+                className="w-24 sm:w-28"
               >
-                <option value="c">C</option>
-                <option value="cpp">C++</option>
-                <option value="python">Python</option>
-                <option value="java">Java</option>
-                <option value="javascript">JavaScript</option>
-                <option value="typescript">TypeScript</option>
-                <option value="sql">SQL</option>
-                <option value="go">Go</option>
-                <option value="rust">Rust</option>
-                <option value="other">Other</option>
-              </select>
+                <SelectOption value="c">C</SelectOption>
+                <SelectOption value="cpp">C++</SelectOption>
+                <SelectOption value="python">Python</SelectOption>
+                <SelectOption value="java">Java</SelectOption>
+                <SelectOption value="javascript">JavaScript</SelectOption>
+                <SelectOption value="typescript">TypeScript</SelectOption>
+                <SelectOption value="sql">SQL</SelectOption>
+                <SelectOption value="go">Go</SelectOption>
+                <SelectOption value="rust">Rust</SelectOption>
+                <SelectOption value="other">Other</SelectOption>
+              </Select>
 
               <button
                 type="button"

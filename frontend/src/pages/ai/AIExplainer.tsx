@@ -16,6 +16,7 @@ import {
 } from 'lucide-react'
 import { Button } from '@/components/ui/Button'
 import { Badge } from '@/components/ui/Badge'
+import { Select, SelectOption } from '@/components/ui/Select'
 import { experimentsApi, aiApi } from '@/lib/api'
 import type { Experiment, AIExplanation } from '@/types'
 import toast from 'react-hot-toast'
@@ -50,8 +51,7 @@ export const AIExplainer: React.FC = () => {
     }).catch(() => {})
   }, [selectedExpId])
 
-  const handleSelectExperiment = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    const id = e.target.value
+  const handleSelectExperiment = (id: string) => {
     setSelectedExpId(id)
     const found = experiments.find((exp) => exp.id === id)
     if (found) {
@@ -134,32 +134,34 @@ export const AIExplainer: React.FC = () => {
           <div className="p-4 bg-[#111111] border-b border-[rgba(255,255,255,0.08)] space-y-3">
             <div className="flex flex-col sm:flex-row items-center gap-3">
               <div className="flex-1 w-full">
-                <select
+                <Select
+                  title="Choose Experiment"
+                  placeholder="Paste custom code or choose experiment…"
                   value={selectedExpId}
                   onChange={handleSelectExperiment}
-                  className="w-full bg-[#171717] text-xs text-[#D4D4D4] rounded-lg border border-[rgba(255,255,255,0.09)] px-3 py-2 focus:border-white focus:outline-none"
-                >
-                  <option value="">Paste custom code below...</option>
-                  {experiments.map((e) => (
-                    <option key={e.id} value={e.id}>
-                      {e.experiment_number ? `${e.experiment_number}: ` : ''}{e.title} ({e.language})
-                    </option>
-                  ))}
-                </select>
+                  options={[
+                    { value: '', label: 'Paste custom code below...' },
+                    ...experiments.map((e) => ({
+                      value: e.id,
+                      label: `${e.experiment_number ? `${e.experiment_number}: ` : ''}${e.title} (${e.language})`,
+                    })),
+                  ]}
+                />
               </div>
 
-              <select
+              <Select
+                title="Code Language"
                 value={language}
-                onChange={(e) => setLanguage(e.target.value)}
-                className="w-full sm:w-auto bg-[#171717] text-xs text-[#D4D4D4] rounded-lg border border-[rgba(255,255,255,0.09)] px-3 py-2 focus:border-white focus:outline-none"
+                onChange={setLanguage}
+                className="w-full sm:w-36"
               >
-                <option value="python">Python</option>
-                <option value="c">C</option>
-                <option value="cpp">C++</option>
-                <option value="java">Java</option>
-                <option value="javascript">JavaScript</option>
-                <option value="typescript">TypeScript</option>
-              </select>
+                <SelectOption value="python">Python</SelectOption>
+                <SelectOption value="c">C</SelectOption>
+                <SelectOption value="cpp">C++</SelectOption>
+                <SelectOption value="java">Java</SelectOption>
+                <SelectOption value="javascript">JavaScript</SelectOption>
+                <SelectOption value="typescript">TypeScript</SelectOption>
+              </Select>
             </div>
 
             {/* Mode selection buttons */}

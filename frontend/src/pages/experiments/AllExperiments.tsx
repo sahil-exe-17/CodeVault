@@ -16,6 +16,7 @@ import { Button } from '@/components/ui/Button'
 import { Badge } from '@/components/ui/Badge'
 import { EmptyState } from '@/components/ui/EmptyState'
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog'
+import { Select, SelectOption } from '@/components/ui/Select'
 import { ExperimentCard } from '@/components/experiments/ExperimentCard'
 import { NewExperimentModal } from '@/components/experiments/NewExperimentModal'
 import { ScanPhotoModal } from '@/components/experiments/ScanPhotoModal'
@@ -305,56 +306,61 @@ export const AllExperiments: React.FC = () => {
           {/* Controls: Subject, Language, Status, Sort */}
           <div className="flex items-center gap-2 w-full md:w-auto overflow-x-auto pb-1 md:pb-0">
             {/* Subject */}
-            <select
+            <Select
+              size="compact"
+              title="Filter by Subject"
               value={selectedSubject}
-              onChange={(e) => setSelectedSubject(e.target.value)}
-              className="bg-[#111111] text-xs text-[#D4D4D4] rounded-lg border border-[rgba(255,255,255,0.09)] px-3 py-2 focus:border-white focus:outline-none"
-            >
-              <option value="all">All Subjects</option>
-              {subjects.map((s) => (
-                <option key={s.id} value={s.id}>
-                  {s.name}
-                </option>
-              ))}
-            </select>
+              onChange={setSelectedSubject}
+              className="w-36"
+              options={[
+                { value: 'all', label: 'All Subjects' },
+                ...subjects.map((s) => ({ value: s.id, label: s.name })),
+              ]}
+            />
 
             {/* Language */}
-            <select
+            <Select
+              size="compact"
+              title="Filter by Language"
               value={selectedLanguage}
-              onChange={(e) => setSelectedLanguage(e.target.value)}
-              className="bg-[#111111] text-xs text-[#D4D4D4] rounded-lg border border-[rgba(255,255,255,0.09)] px-3 py-2 focus:border-white focus:outline-none"
+              onChange={setSelectedLanguage}
+              className="w-36"
             >
-              <option value="all">All Languages</option>
-              <option value="python">Python</option>
-              <option value="c">C</option>
-              <option value="cpp">C++</option>
-              <option value="java">Java</option>
-              <option value="javascript">JavaScript</option>
-              <option value="typescript">TypeScript</option>
-            </select>
+              <SelectOption value="all">All Languages</SelectOption>
+              <SelectOption value="python">Python</SelectOption>
+              <SelectOption value="c">C</SelectOption>
+              <SelectOption value="cpp">C++</SelectOption>
+              <SelectOption value="java">Java</SelectOption>
+              <SelectOption value="javascript">JavaScript</SelectOption>
+              <SelectOption value="typescript">TypeScript</SelectOption>
+            </Select>
 
             {/* Status */}
-            <select
+            <Select
+              size="compact"
+              title="Filter by Status"
               value={selectedStatus}
-              onChange={(e) => setSelectedStatus(e.target.value)}
-              className="bg-[#111111] text-xs text-[#D4D4D4] rounded-lg border border-[rgba(255,255,255,0.09)] px-3 py-2 focus:border-white focus:outline-none"
+              onChange={setSelectedStatus}
+              className="w-32"
             >
-              <option value="all">All Status</option>
-              <option value="revised">Revised Only</option>
-              <option value="pending">Pending Only</option>
-            </select>
+              <SelectOption value="all">All Status</SelectOption>
+              <SelectOption value="revised">Revised Only</SelectOption>
+              <SelectOption value="pending">Pending Only</SelectOption>
+            </Select>
 
             {/* Sort */}
-            <select
+            <Select
+              size="compact"
+              title="Sort Experiments"
               value={sortBy}
-              onChange={(e: any) => setSortBy(e.target.value)}
-              className="bg-[#111111] text-xs text-[#D4D4D4] rounded-lg border border-[rgba(255,255,255,0.09)] px-3 py-2 focus:border-white focus:outline-none"
+              onChange={(val) => setSortBy(val as any)}
+              className="w-36"
             >
-              <option value="newest">Newest First</option>
-              <option value="oldest">Oldest First</option>
-              <option value="az">Title A-Z</option>
-              <option value="za">Title Z-A</option>
-            </select>
+              <SelectOption value="newest">Newest First</SelectOption>
+              <SelectOption value="oldest">Oldest First</SelectOption>
+              <SelectOption value="az">Title A-Z</SelectOption>
+              <SelectOption value="za">Title Z-A</SelectOption>
+            </Select>
 
             {/* Bookmarks Toggle */}
             <button

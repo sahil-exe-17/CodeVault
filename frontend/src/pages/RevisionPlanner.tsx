@@ -15,6 +15,7 @@ import { Button } from '@/components/ui/Button'
 import { Badge } from '@/components/ui/Badge'
 import { Modal } from '@/components/ui/Modal'
 import { Input } from '@/components/ui/Input'
+import { Select, SelectOption } from '@/components/ui/Select'
 import { revisionApi, experimentsApi, subjectsApi } from '@/lib/api'
 import type { RevisionSession, ExamSchedule, Experiment, Subject } from '@/types'
 import toast from 'react-hot-toast'
@@ -424,17 +425,13 @@ export const RevisionPlanner: React.FC = () => {
         <form onSubmit={handleAddSession} className="space-y-4">
           <div className="flex flex-col gap-1.5">
             <label className="text-xs font-medium text-[#A1A1A1]">Experiment</label>
-            <select
+            <Select
+              title="Select Experiment"
+              placeholder="Select experiment…"
               value={targetExpId}
-              onChange={(e) => setTargetExpId(e.target.value)}
-              className="bg-[#111111] text-xs text-white rounded-lg border border-[rgba(255,255,255,0.09)] px-3 py-2 focus:border-white focus:outline-none"
-            >
-              {experiments.map((e) => (
-                <option key={e.id} value={e.id}>
-                  {e.title}
-                </option>
-              ))}
-            </select>
+              onChange={setTargetExpId}
+              options={experiments.map((e) => ({ value: e.id, label: e.title }))}
+            />
           </div>
 
           <Input
@@ -447,16 +444,16 @@ export const RevisionPlanner: React.FC = () => {
 
           <div className="flex flex-col gap-1.5">
             <label className="text-xs font-medium text-[#A1A1A1]">Session Type</label>
-            <select
+            <Select
+              title="Select Session Type"
               value={sessionType}
-              onChange={(e: any) => setSessionType(e.target.value)}
-              className="bg-[#111111] text-xs text-white rounded-lg border border-[rgba(255,255,255,0.09)] px-3 py-2 focus:border-white focus:outline-none"
+              onChange={(val) => setSessionType(val as any)}
             >
-              <option value="flashcard">Flashcards</option>
-              <option value="viva">Viva Simulator</option>
-              <option value="mcq">MCQ Practice</option>
-              <option value="quick">Quick Notes Review</option>
-            </select>
+              <SelectOption value="flashcard">Flashcards</SelectOption>
+              <SelectOption value="viva">Viva Simulator</SelectOption>
+              <SelectOption value="mcq">MCQ Practice</SelectOption>
+              <SelectOption value="quick">Quick Notes Review</SelectOption>
+            </Select>
           </div>
 
           <div className="flex items-center justify-end gap-2 pt-3 border-t border-[rgba(255,255,255,0.08)]">
@@ -488,17 +485,13 @@ export const RevisionPlanner: React.FC = () => {
 
           <div className="flex flex-col gap-1.5">
             <label className="text-xs font-medium text-[#A1A1A1]">Subject</label>
-            <select
+            <Select
+              title="Select Subject"
+              placeholder="Select subject…"
               value={examSubjectId}
-              onChange={(e) => setExamSubjectId(e.target.value)}
-              className="bg-[#111111] text-xs text-white rounded-lg border border-[rgba(255,255,255,0.09)] px-3 py-2 focus:border-white focus:outline-none"
-            >
-              {subjects.map((s) => (
-                <option key={s.id} value={s.id}>
-                  {s.name}
-                </option>
-              ))}
-            </select>
+              onChange={setExamSubjectId}
+              options={subjects.map((s) => ({ value: s.id, label: s.name }))}
+            />
           </div>
 
           <Input

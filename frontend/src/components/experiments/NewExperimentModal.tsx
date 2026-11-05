@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { Modal } from '@/components/ui/Modal'
 import { Input } from '@/components/ui/Input'
 import { Button } from '@/components/ui/Button'
+import { Select, SelectOption } from '@/components/ui/Select'
 import { Camera, Sparkles, Code2, ChevronDown, ChevronUp } from 'lucide-react'
 import { ScanPhotoModal } from '@/components/experiments/ScanPhotoModal'
 import { subjectsApi, experimentsApi, aiApi } from '@/lib/api'
@@ -193,19 +194,19 @@ export const NewExperimentModal: React.FC<NewExperimentModalProps> = ({
             <label className="text-xs font-medium text-[#A1A1A1]">
               Language
             </label>
-            <select
+            <Select
+              title="Select Language"
               value={language}
-              onChange={(e: any) => setLanguage(e.target.value)}
-              className="bg-[#111111] text-[#F5F5F5] text-sm rounded-lg border border-[rgba(255,255,255,0.09)] px-3 py-2 focus:border-white focus:outline-none"
+              onChange={(val) => setLanguage(val as any)}
             >
-              <option value="c">C</option>
-              <option value="cpp">C++</option>
-              <option value="python">Python</option>
-              <option value="java">Java</option>
-              <option value="javascript">JavaScript</option>
-              <option value="typescript">TypeScript</option>
-              <option value="other">Other</option>
-            </select>
+              <SelectOption value="c">C</SelectOption>
+              <SelectOption value="cpp">C++</SelectOption>
+              <SelectOption value="python">Python</SelectOption>
+              <SelectOption value="java">Java</SelectOption>
+              <SelectOption value="javascript">JavaScript</SelectOption>
+              <SelectOption value="typescript">TypeScript</SelectOption>
+              <SelectOption value="other">Other</SelectOption>
+            </Select>
           </div>
         </div>
 
@@ -214,17 +215,12 @@ export const NewExperimentModal: React.FC<NewExperimentModalProps> = ({
             <label className="text-xs font-medium text-[#A1A1A1]">
               Subject / Course
             </label>
-            <select
+            <Select
+              title="Select Subject"
               value={subjectId}
-              onChange={(e) => setSubjectId(e.target.value)}
-              className="bg-[#111111] text-[#F5F5F5] text-sm rounded-lg border border-[rgba(255,255,255,0.09)] px-3 py-2 focus:border-white focus:outline-none"
-            >
-              {subjects.map((s) => (
-                <option key={s.id} value={s.id}>
-                  {s.name}
-                </option>
-              ))}
-            </select>
+              onChange={setSubjectId}
+              options={subjects.map((s) => ({ value: s.id, label: s.name }))}
+            />
           </div>
         )}
 

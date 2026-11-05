@@ -18,6 +18,7 @@ import {
 } from 'lucide-react'
 import { Button } from '@/components/ui/Button'
 import { Badge } from '@/components/ui/Badge'
+import { Select, SelectOption } from '@/components/ui/Select'
 import { experimentsApi, aiApi } from '@/lib/api'
 import type { Experiment, Flashcard } from '@/types'
 import toast from 'react-hot-toast'
@@ -250,17 +251,17 @@ export const RevisionStudio: React.FC = () => {
         {/* Experiment Context Selector */}
         <div className="flex items-center gap-2">
           <span className="text-[11px] text-[#666666] font-mono">TARGET:</span>
-          <select
+          <Select
+            size="compact"
+            title="Choose Target Experiment"
             value={selectedExpId}
-            onChange={(e) => setSelectedExpId(e.target.value)}
-            className="bg-[#141414] text-xs text-[#D4D4D4] rounded-lg border border-[rgba(255,255,255,0.09)] px-3 py-1.5 focus:border-white focus:outline-none"
-          >
-            {experiments.map((e) => (
-              <option key={e.id} value={e.id}>
-                {e.experiment_number ? `${e.experiment_number}: ` : ''}{e.title}
-              </option>
-            ))}
-          </select>
+            onChange={setSelectedExpId}
+            className="w-48 sm:w-60"
+            options={experiments.map((e) => ({
+              value: e.id,
+              label: `${e.experiment_number ? `${e.experiment_number}: ` : ''}${e.title}`,
+            }))}
+          />
         </div>
       </div>
 

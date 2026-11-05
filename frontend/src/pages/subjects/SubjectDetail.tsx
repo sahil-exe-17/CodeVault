@@ -18,6 +18,7 @@ import { Button } from '@/components/ui/Button'
 import { Modal } from '@/components/ui/Modal'
 import { Input } from '@/components/ui/Input'
 import { Badge } from '@/components/ui/Badge'
+import { Select, SelectOption } from '@/components/ui/Select'
 import { AppNavbar } from '@/components/layout/AppNavbar'
 import { ScanPhotoModal } from '@/components/experiments/ScanPhotoModal'
 import { subjectsApi, experimentsApi, aiApi } from '@/lib/api'
@@ -468,19 +469,19 @@ export const SubjectDetail: React.FC = () => {
               <label className="text-xs font-medium text-[#A1A1A1]">
                 Initial Language
               </label>
-              <select
+              <Select
+                title="Select Initial Language"
                 value={expLang}
-                onChange={(e) => setExpLang(e.target.value)}
-                className="bg-[#171717] text-[#F5F5F5] text-xs rounded-lg border border-[rgba(255,255,255,0.09)] px-3 py-2.5 focus:border-white focus:outline-none font-mono"
+                onChange={setExpLang}
               >
-                <option value="c">C</option>
-                <option value="cpp">C++</option>
-                <option value="python">Python</option>
-                <option value="java">Java</option>
-                <option value="javascript">JavaScript</option>
-                <option value="typescript">TypeScript</option>
-                <option value="other">Other</option>
-              </select>
+                <SelectOption value="c">C</SelectOption>
+                <SelectOption value="cpp">C++</SelectOption>
+                <SelectOption value="python">Python</SelectOption>
+                <SelectOption value="java">Java</SelectOption>
+                <SelectOption value="javascript">JavaScript</SelectOption>
+                <SelectOption value="typescript">TypeScript</SelectOption>
+                <SelectOption value="other">Other</SelectOption>
+              </Select>
             </div>
           </div>
 

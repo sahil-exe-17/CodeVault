@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { Modal } from '@/components/ui/Modal'
 import { Button } from '@/components/ui/Button'
 import { Badge } from '@/components/ui/Badge'
+import { Select, SelectOption } from '@/components/ui/Select'
 import { Camera, Upload, RefreshCw, Sparkles, FileCode, ArrowRight, Lightbulb, Check } from 'lucide-react'
 import { experimentsApi } from '@/lib/api'
 import toast from 'react-hot-toast'
@@ -376,19 +377,21 @@ export const ScanPhotoModal: React.FC<ScanPhotoModalProps> = ({
                         className="bg-[#0c0c0e] text-white font-bold text-xs sm:text-sm px-3 py-1.5 rounded-lg border border-white/10 focus:border-white focus:outline-none w-full"
                       />
                     </div>
-                    <select
+                    <Select
+                      size="compact"
+                      title="Select Language"
                       value={editedLanguage}
-                      onChange={(e) => setEditedLanguage(e.target.value)}
-                      className="bg-[#0c0c0e] text-white text-xs px-2.5 py-1.5 rounded-lg border border-white/10 focus:border-white focus:outline-none font-mono shrink-0 w-full sm:w-auto"
+                      onChange={setEditedLanguage}
+                      className="shrink-0 w-full sm:w-auto"
                     >
-                      <option value="c">C</option>
-                      <option value="cpp">C++</option>
-                      <option value="python">Python</option>
-                      <option value="java">Java</option>
-                      <option value="javascript">JavaScript</option>
-                      <option value="typescript">TypeScript</option>
-                      <option value="other">Other</option>
-                    </select>
+                      <SelectOption value="c">C</SelectOption>
+                      <SelectOption value="cpp">C++</SelectOption>
+                      <SelectOption value="python">Python</SelectOption>
+                      <SelectOption value="java">Java</SelectOption>
+                      <SelectOption value="javascript">JavaScript</SelectOption>
+                      <SelectOption value="typescript">TypeScript</SelectOption>
+                      <SelectOption value="other">Other</SelectOption>
+                    </Select>
                   </div>
                 </div>
 

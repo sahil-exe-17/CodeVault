@@ -12,6 +12,7 @@ import {
 } from 'lucide-react'
 import { Button } from '@/components/ui/Button'
 import { Badge } from '@/components/ui/Badge'
+import { Select, SelectOption } from '@/components/ui/Select'
 import { conversationsApi, experimentsApi } from '@/lib/api'
 import type { Conversation, Message, Experiment } from '@/types'
 import toast from 'react-hot-toast'
@@ -311,18 +312,21 @@ If someone alters the condition to \`>=\`, Bubble Sort becomes **unstable** beca
         <div className="h-12 bg-[#121212] border-b border-[rgba(255,255,255,0.08)] px-4 flex items-center justify-between gap-3 text-xs">
           <div className="flex items-center gap-2 overflow-hidden">
             <span className="text-[#666666] font-mono text-[11px] shrink-0">ACTIVE CONTEXT:</span>
-            <select
+            <Select
+              size="compact"
+              title="Attach Experiment Context"
+              placeholder="No context attached"
               value={selectedExpId}
-              onChange={(e) => setSelectedExpId(e.target.value)}
-              className="bg-[#1a1a1a] text-xs text-[#D4D4D4] rounded-md border border-[rgba(255,255,255,0.09)] px-2.5 py-1 focus:border-white focus:outline-none truncate max-w-xs"
-            >
-              <option value="">No context attached</option>
-              {experiments.map((e) => (
-                <option key={e.id} value={e.id}>
-                  {e.experiment_number ? `${e.experiment_number}: ` : ''}{e.title} ({e.language})
-                </option>
-              ))}
-            </select>
+              onChange={setSelectedExpId}
+              className="w-48 sm:w-64"
+              options={[
+                { value: '', label: 'No context attached' },
+                ...experiments.map((e) => ({
+                  value: e.id,
+                  label: `${e.experiment_number ? `${e.experiment_number}: ` : ''}${e.title} (${e.language})`,
+                })),
+              ]}
+            />
             {selectedExperiment && (
               <Badge variant="mono" size="sm" className="hidden sm:inline-flex">
                 {selectedExperiment.language}
