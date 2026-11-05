@@ -24,6 +24,7 @@ import { Modal } from '@/components/ui/Modal'
 import { Input } from '@/components/ui/Input'
 import { AppNavbar } from '@/components/layout/AppNavbar'
 import { ScanPhotoModal } from '@/components/experiments/ScanPhotoModal'
+import { AIRecommendationsModal, type CodeRecommendationData } from '@/components/experiments/AIRecommendationsModal'
 import { experimentsApi, aiApi } from '@/lib/api'
 import type { Experiment, CodeSnippetItem } from '@/types'
 import toast from 'react-hot-toast'
@@ -66,6 +67,11 @@ export const ExperimentWorkspace: React.FC = () => {
 
   // Scan Photo Modal
   const [isScanOpen, setIsScanOpen] = useState(false)
+
+  // AI Recommendations State
+  const [isRecModalOpen, setIsRecModalOpen] = useState(false)
+  const [isRecLoading, setIsRecLoading] = useState(false)
+  const [recData, setRecData] = useState<CodeRecommendationData | null>(null)
 
   // AI Feature Modal
   const [isAiModalOpen, setIsAiModalOpen] = useState(false)
@@ -339,6 +345,41 @@ export const ExperimentWorkspace: React.FC = () => {
     }
   }
 
+  const handleGetRecommendations = async () => {
+    setIsRecModalOpen(true)
+    setIsRecLoading(true)
+    setRecData(null)
+
+    try {
+      const res: any = await aiApi.recommendCode({
+        code: activeSnippet.code,
+        language: activeSnippet.language,
+        experiment_id: id && id !== 'new' ? id : undefined,
+      })
+      const data = res?.data || res
+      setRecData(data)
+    } catch {
+      toast.error('Using algorithm heuristics for recommendations.')
+      setRecData({
+        suggested_title: `${activeSnippet.language.toUpperCase()} Practical Implementation`,
+        aim: `Implementation and algorithmic analysis of ${activeSnippet.title}.`,
+        detected_language: activeSnippet.language,
+        topic: 'Algorithm Analysis',
+        time_complexity: 'O(n)',
+        space_complexity: 'O(1)',
+        recommendations: [
+          'Add boundary condition validation for arrays or user inputs.',
+          'Document time and space complexity in function headers.',
+          'Consider handling edge cases like empty collections or negative values.',
+        ],
+        sample_input: 'Standard test input',
+        expected_output: 'Verified output conforming to algorithm specifications',
+      })
+    } finally {
+      setIsRecLoading(false)
+    }
+  }
+
   const subjectId = experiment.subject_id || 'sub-1'
   const subjectName = experiment.subjects?.name || 'Subject'
 
@@ -358,7 +399,7 @@ export const ExperimentWorkspace: React.FC = () => {
               <span>Back to {subjectName}</span>
             </Link>
 
-            <div className="flex items-center gap-2">
+            <div className="flex flex-wrap items-center gap-2">
               <span className="font-mono text-xs text-[#888888] bg-[#141414] px-2 py-0.5 rounded border border-[rgba(255,255,255,0.08)]">
                 {experiment.experiment_number || 'EXP'}
               </span>
@@ -369,6 +410,15 @@ export const ExperimentWorkspace: React.FC = () => {
                 placeholder="Experiment Title"
                 className="text-lg sm:text-xl font-bold font-['Manrope'] text-white bg-transparent border-b border-transparent hover:border-[rgba(255,255,255,0.2)] focus:border-white focus:outline-none px-1 py-0.5 max-w-md"
               />
+              <button
+                type="button"
+                onClick={handleGetRecommendations}
+                className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-medium bg-white/10 hover:bg-white/20 text-white border border-white/10 transition-colors cursor-pointer shadow-sm"
+                title="Get AI recommended name and optimizations for this code"
+              >
+                <Sparkles className="w-3 h-3 text-white" />
+                <span>Auto-Name</span>
+              </button>
             </div>
           </div>
 
@@ -382,6 +432,17 @@ export const ExperimentWorkspace: React.FC = () => {
               className="h-8 text-xs font-semibold px-4"
             >
               Save
+            </Button>
+
+            <Button
+              variant="secondary"
+              size="sm"
+              onClick={handleGetRecommendations}
+              className="h-8 text-xs font-semibold px-3 bg-white text-black hover:bg-neutral-200 border-none shadow-[0_0_15px_rgba(255,255,255,0.15)] flex items-center gap-1.5"
+              title="Get AI recommended name, aim, complexities and optimizations for this code"
+            >
+              <Sparkles className="w-3.5 h-3.5" />
+              <span>AI Recommendations</span>
             </Button>
 
             <Button
@@ -814,6 +875,50 @@ export const ExperimentWorkspace: React.FC = () => {
           </div>
         </div>
       </Modal>
+
+      {/* AI Recommendations & Auto-Naming Modal */}
+      <AIRecommendationsModal
+        isOpen={isRecModalOpen}
+        onClose={() => setIsRecModalOpen(false)}
+        data={recData}
+        isLoading={isRecLoading}
+        onApplyTitle={(title) => {
+          setExperiment((p) => ({ ...p, title }))
+          updateActiveSnippet('title', title)
+          toast.success(`Title updated to: ${title}`)
+        }}
+        onApplyLanguage={(lang) => {
+          setExperiment((p) => ({ ...p, language: lang as any }))
+          updateActiveSnippet('language', lang)
+          toast.success(`Language updated to ${lang.toUpperCase()}`)
+        }}
+        onApplyAim={(aim) => {
+          setExperiment((p) => ({ ...p, aim }))
+          toast.success('Aim updated!')
+        }}
+        onApplyComplexity={(time, space) => {
+          setExperiment((p) => ({ ...p, time_complexity: time, space_complexity: space }))
+          toast.success(`Complexity set: ${time} | ${space}`)
+        }}
+        onApplyAll={(rec) => {
+          setExperiment((p) => ({
+            ...p,
+            title: rec.suggested_title || p.title,
+            aim: rec.aim || p.aim,
+            language: (rec.detected_language as any) || p.language,
+            time_complexity: rec.time_complexity || p.time_complexity,
+            space_complexity: rec.space_complexity || p.space_complexity,
+            topic: rec.topic || p.topic,
+          }))
+          if (rec.suggested_title) {
+            updateActiveSnippet('title', rec.suggested_title)
+          }
+          if (rec.detected_language) {
+            updateActiveSnippet('language', rec.detected_language)
+          }
+          toast.success('Applied all AI recommendations!')
+        }}
+      />
     </div>
   )
 }

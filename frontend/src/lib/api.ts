@@ -91,14 +91,18 @@ export const experimentsApi = {
   extractCodeFromPhoto: (formData: FormData) =>
     api.post('/api/experiments/extract-code-photo', formData, {
       headers: { 'Content-Type': 'multipart/form-data' },
+      timeout: 90000,
     }),
   extractAndUpdateFromPhoto: (id: string, formData: FormData) =>
     api.post(`/api/experiments/${id}/extract-from-photo`, formData, {
       headers: { 'Content-Type': 'multipart/form-data' },
+      timeout: 90000,
     }),
 }
 
 export const aiApi = {
+  recommendCode: (data: { code: string; language?: string; experiment_id?: string }) =>
+    api.post('/api/ai/recommend-code', data),
   explain: (data: any) => api.post('/api/ai/explain', data),
   explainCode: (data: any) => api.post('/api/ai/explain', data),
   getExplanation: (id: string) => api.get(`/api/ai/explanation/${id}`),

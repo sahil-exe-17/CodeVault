@@ -1,9 +1,9 @@
-import React, { useState, useRef } from 'react'
+import React, { useState, useRef, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Modal } from '@/components/ui/Modal'
 import { Button } from '@/components/ui/Button'
 import { Badge } from '@/components/ui/Badge'
-import { Camera, Upload, CheckCircle2, AlertCircle, RefreshCw, Sparkles, FileCode, ArrowRight } from 'lucide-react'
+import { Camera, Upload, RefreshCw, Sparkles, FileCode, ArrowRight, Lightbulb, Check } from 'lucide-react'
 import { experimentsApi } from '@/lib/api'
 import toast from 'react-hot-toast'
 
@@ -13,6 +13,72 @@ interface ScanPhotoModalProps {
   experimentId?: string
   subjectId?: string
   onExtracted?: (extractedData: any) => void
+}
+
+/**
+ * High-performance client-side image compression.
+ * Scales down high-res phone camera snapshots (e.g. 4000x3000, 10MB+)
+ * to max 1800px width/height and ~350KB JPEG without losing OCR text crispness.
+ */
+const compressImageIfNeeded = async (file: File): Promise<File> => {
+  return new Promise((resolve) => {
+    // If already under 600KB, use directly
+    if (file.size <= 600 * 1024) {
+      resolve(file)
+      return
+    }
+
+    const reader = new FileReader()
+    reader.onload = (e) => {
+      const img = new Image()
+      img.onload = () => {
+        const MAX_DIM = 1800
+        let { width, height } = img
+
+        if (width > MAX_DIM || height > MAX_DIM) {
+          if (width > height) {
+            height = Math.round((height * MAX_DIM) / width)
+            width = MAX_DIM
+          } else {
+            width = Math.round((width * MAX_DIM) / height)
+            height = MAX_DIM
+          }
+        }
+
+        const canvas = document.createElement('canvas')
+        canvas.width = width
+        canvas.height = height
+        const ctx = canvas.getContext('2d')
+
+        if (!ctx) {
+          resolve(file)
+          return
+        }
+
+        ctx.drawImage(img, 0, 0, width, height)
+        canvas.toBlob(
+          (blob) => {
+            if (!blob) {
+              resolve(file)
+              return
+            }
+            const cleanName = file.name.replace(/\.[^/.]+$/, '') + '.jpg'
+            const compressedFile = new File([blob], cleanName, {
+              type: 'image/jpeg',
+              lastModified: Date.now(),
+            })
+            resolve(compressedFile)
+          },
+          'image/jpeg',
+          0.85
+        )
+      }
+      img.onerror = () => resolve(file)
+      img.src = e.target?.result as string
+    }
+    reader.onerror = () => resolve(file)
+    reader.readAsDataURL(file)
+  })
 }
 
 export const ScanPhotoModal: React.FC<ScanPhotoModalProps> = ({
@@ -28,13 +94,29 @@ export const ScanPhotoModal: React.FC<ScanPhotoModalProps> = ({
   const [selectedFile, setSelectedFile] = useState<File | null>(null)
   const [previewUrl, setPreviewUrl] = useState<string | null>(null)
   const [isScanning, setIsScanning] = useState(false)
+  const [scanSeconds, setScanSeconds] = useState(0)
+  const [scanStatus, setScanStatus] = useState('')
   const [extractedData, setExtractedData] = useState<any | null>(null)
   const [editedCode, setEditedCode] = useState('')
   const [editedTitle, setEditedTitle] = useState('')
   const [editedLanguage, setEditedLanguage] = useState('c')
   const [isSaving, setIsSaving] = useState(false)
 
-  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+  // Timer while scanning so the user always sees real-time progress
+  useEffect(() => {
+    let timer: any = null
+    if (isScanning) {
+      setScanSeconds(0)
+      timer = setInterval(() => {
+        setScanSeconds((s) => s + 1)
+      }, 1000)
+    }
+    return () => {
+      if (timer) clearInterval(timer)
+    }
+  }, [isScanning])
+
+  const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
     if (!file) return
 
@@ -43,19 +125,27 @@ export const ScanPhotoModal: React.FC<ScanPhotoModalProps> = ({
       return
     }
 
-    if (file.size > 20 * 1024 * 1024) {
-      toast.error('Image size exceeds 20MB limit')
+    if (file.size > 25 * 1024 * 1024) {
+      toast.error('Image size exceeds 25MB limit')
       return
     }
 
-    setSelectedFile(file)
     setExtractedData(null)
 
+    // Fast preview
     const reader = new FileReader()
     reader.onload = () => {
       setPreviewUrl(reader.result as string)
     }
     reader.readAsDataURL(file)
+
+    // Auto-compress large phone photos in background
+    if (file.size > 800 * 1024) {
+      const compressed = await compressImageIfNeeded(file)
+      setSelectedFile(compressed)
+    } else {
+      setSelectedFile(file)
+    }
   }
 
   const handleScanPhoto = async () => {
@@ -64,27 +154,37 @@ export const ScanPhotoModal: React.FC<ScanPhotoModalProps> = ({
       return
     }
 
+    if (isScanning) return // Prevent duplicate concurrent requests
+
     setIsScanning(true)
-    const toastId = toast.loading('AI Vision reading handwritten & printed code...')
+    setScanStatus('Optimizing image & preparing AI Vision...')
+    const toastId = toast.loading('Reading handwritten & printed code...')
 
     try {
+      // Ensure image is compressed before sending
+      let fileToSend = selectedFile
+      if (selectedFile.size > 600 * 1024) {
+        fileToSend = await compressImageIfNeeded(selectedFile)
+        setSelectedFile(fileToSend)
+      }
+
+      setScanStatus('Gemini Vision reading code & identifying algorithm...')
+
       const formData = new FormData()
-      formData.append('file', selectedFile)
+      formData.append('file', fileToSend)
 
       if (experimentId) {
-        // Direct extract for existing experiment
         const res: any = await experimentsApi.extractAndUpdateFromPhoto(experimentId, formData)
         const extracted = res?.extracted || res?.data?.extracted || res
         setExtractedData(extracted)
         setEditedCode(extracted.source_code || '')
         setEditedTitle(extracted.title || 'Photo Extracted Experiment')
         setEditedLanguage(extracted.language || 'c')
-        toast.success('Code transcribed successfully from photo!', { id: toastId })
+        toast.success('Code transcribed successfully!', { id: toastId })
         if (onExtracted) {
           onExtracted(res)
         }
       } else {
-        // General extract (can preview then create)
         if (subjectId) {
           formData.append('subject_id', subjectId)
         }
@@ -96,24 +196,24 @@ export const ScanPhotoModal: React.FC<ScanPhotoModalProps> = ({
         setEditedCode(data.source_code || '')
         setEditedTitle(data.title || 'Photo Extracted Experiment')
         setEditedLanguage(data.language || 'c')
-        toast.success('Code transcribed successfully from photo!', { id: toastId })
+        toast.success('Code transcribed successfully!', { id: toastId })
       }
     } catch (err: any) {
-      toast.error(err.message || 'Failed to extract code from photo', { id: toastId })
+      console.error('Scan error:', err)
+      toast.error(err.message || 'Failed to extract code from photo. Please verify image clarity.', { id: toastId })
     } finally {
       setIsScanning(false)
+      setScanStatus('')
     }
   }
 
   const handleApplyOrSave = async () => {
     if (experimentId) {
-      // Already updated or update with edits
       toast.success('Code applied to experiment!')
       onClose()
       return
     }
 
-    // Creating new experiment from photo
     setIsSaving(true)
     try {
       const payload = {
@@ -150,6 +250,7 @@ export const ScanPhotoModal: React.FC<ScanPhotoModalProps> = ({
     setPreviewUrl(null)
     setExtractedData(null)
     setEditedCode('')
+    setEditedTitle('')
     if (fileInputRef.current) {
       fileInputRef.current.value = ''
     }
@@ -160,7 +261,7 @@ export const ScanPhotoModal: React.FC<ScanPhotoModalProps> = ({
       isOpen={isOpen}
       onClose={onClose}
       title="Scan Code from Photo (AI Vision)"
-      description="Upload a photo of your handwritten lab notebook, textbook, or computer monitor. AI will transcribe the code and link it to this experiment."
+      description="Upload a photo of your handwritten lab notebook, textbook, or computer monitor. Gemini Vision transcribes the code and recommends the program name."
       maxWidth="2xl"
     >
       <div className="space-y-4">
@@ -170,7 +271,7 @@ export const ScanPhotoModal: React.FC<ScanPhotoModalProps> = ({
             onClick={() => fileInputRef.current?.click()}
             className="border-2 border-dashed border-[rgba(255,255,255,0.15)] hover:border-white/40 bg-[#111111]/40 rounded-xl p-8 flex flex-col items-center justify-center text-center gap-3 transition-colors cursor-pointer"
           >
-            <div className="w-12 h-12 rounded-xl bg-[#171717] border border-[rgba(255,255,255,0.09)] flex items-center justify-center text-white">
+            <div className="w-12 h-12 rounded-xl bg-[#171717] border border-[rgba(255,255,255,0.09)] flex items-center justify-center text-white shadow-md">
               <Camera className="w-6 h-6" />
             </div>
             <div className="space-y-1">
@@ -178,7 +279,7 @@ export const ScanPhotoModal: React.FC<ScanPhotoModalProps> = ({
                 Take or Select Photo of Code
               </h4>
               <p className="text-xs text-[#888888] max-w-sm leading-relaxed">
-                Supports phone snapshots of handwritten notebook pages, whiteboard algorithms, lab manual prints, or monitor screens.
+                Supports handwritten lab notebook pages, whiteboard algorithms, lab manual prints, or monitor screens.
               </p>
             </div>
             <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-lg text-xs font-medium bg-white text-black hover:bg-[#E5E5E5] transition-colors mt-2">
@@ -198,7 +299,7 @@ export const ScanPhotoModal: React.FC<ScanPhotoModalProps> = ({
             {/* Photo Preview & Controls */}
             <div className="flex flex-col sm:flex-row items-center gap-4 p-3.5 bg-[#111111] rounded-xl border border-[rgba(255,255,255,0.08)]">
               {previewUrl && (
-                <div className="w-24 h-24 rounded-lg overflow-hidden border border-[rgba(255,255,255,0.1)] bg-black shrink-0 relative group">
+                <div className="w-20 h-20 rounded-lg overflow-hidden border border-[rgba(255,255,255,0.1)] bg-black shrink-0 relative group">
                   <img
                     src={previewUrl}
                     alt="Code snapshot"
@@ -208,7 +309,7 @@ export const ScanPhotoModal: React.FC<ScanPhotoModalProps> = ({
               )}
               <div className="flex-1 min-w-0 space-y-1">
                 <div className="flex items-center gap-2">
-                  <span className="text-xs font-semibold text-white truncate max-w-[240px]">
+                  <span className="text-xs font-semibold text-white truncate max-w-[200px]">
                     {selectedFile.name}
                   </span>
                   <Badge variant="mono" size="sm">
@@ -216,9 +317,11 @@ export const ScanPhotoModal: React.FC<ScanPhotoModalProps> = ({
                   </Badge>
                 </div>
                 <p className="text-[11px] text-[#888888]">
-                  {extractedData
-                    ? 'AI code transcription complete. Review the extracted code below.'
-                    : 'Photo ready for scanning. Click below to transcribe.'}
+                  {isScanning
+                    ? `${scanStatus || 'AI reading code...'} (${scanSeconds}s)`
+                    : extractedData
+                    ? 'AI code transcription complete. Review the code and recommended name below.'
+                    : 'Photo optimized. Ready to transcribe.'}
                 </p>
               </div>
 
@@ -238,33 +341,45 @@ export const ScanPhotoModal: React.FC<ScanPhotoModalProps> = ({
                     size="sm"
                     onClick={handleScanPhoto}
                     isLoading={isScanning}
+                    disabled={isScanning}
                   >
-                    Read Code with AI
+                    <Sparkles className="w-3.5 h-3.5 mr-1.5" />
+                    <span>{isScanning ? `Reading (${scanSeconds}s)...` : 'Read Code with AI'}</span>
                   </Button>
                 )}
               </div>
             </div>
 
-            {/* Step 2: Extracted Code Review */}
+            {/* Step 2: Extracted Code Review & AI Recommendations */}
             {extractedData && (
               <div className="space-y-3 pt-1">
-                <div className="flex flex-wrap items-center justify-between gap-2">
-                  <div className="flex items-center gap-2 flex-1 min-w-[200px]">
-                    <FileCode className="w-4 h-4 text-white shrink-0" />
-                    <input
-                      type="text"
-                      value={editedTitle}
-                      onChange={(e) => setEditedTitle(e.target.value)}
-                      placeholder="Experiment Title"
-                      className="bg-[#111111] text-white font-semibold text-xs px-2.5 py-1 rounded border border-[rgba(255,255,255,0.1)] focus:border-white focus:outline-none w-full"
-                    />
+                {/* AI Recommended Title & Language */}
+                <div className="p-3 bg-[#111116] rounded-xl border border-white/10 space-y-2">
+                  <div className="flex items-center justify-between">
+                    <span className="text-[11px] font-semibold text-white/80 flex items-center gap-1.5">
+                      <Sparkles className="w-3 h-3 text-white" />
+                      AI Recommended Program Name:
+                    </span>
+                    <Badge variant="mono" size="sm" className="uppercase">
+                      {editedLanguage}
+                    </Badge>
                   </div>
-                  <div className="flex items-center gap-2 shrink-0">
-                    <span className="text-[11px] text-[#888888]">Language:</span>
+
+                  <div className="flex flex-col sm:flex-row items-center gap-2">
+                    <div className="flex items-center gap-2 flex-1 w-full">
+                      <FileCode className="w-4 h-4 text-white/60 shrink-0" />
+                      <input
+                        type="text"
+                        value={editedTitle}
+                        onChange={(e) => setEditedTitle(e.target.value)}
+                        placeholder="Experiment Title"
+                        className="bg-[#0c0c0e] text-white font-bold text-xs sm:text-sm px-3 py-1.5 rounded-lg border border-white/10 focus:border-white focus:outline-none w-full"
+                      />
+                    </div>
                     <select
                       value={editedLanguage}
                       onChange={(e) => setEditedLanguage(e.target.value)}
-                      className="bg-[#111111] text-white text-xs px-2 py-1 rounded border border-[rgba(255,255,255,0.1)] focus:border-white focus:outline-none font-mono"
+                      className="bg-[#0c0c0e] text-white text-xs px-2.5 py-1.5 rounded-lg border border-white/10 focus:border-white focus:outline-none font-mono shrink-0 w-full sm:w-auto"
                     >
                       <option value="c">C</option>
                       <option value="cpp">C++</option>
@@ -277,6 +392,7 @@ export const ScanPhotoModal: React.FC<ScanPhotoModalProps> = ({
                   </div>
                 </div>
 
+                {/* Transcribed Code Editor */}
                 <div className="space-y-1">
                   <div className="flex items-center justify-between text-[11px] text-[#888888]">
                     <span>Transcribed Source Code:</span>
@@ -285,17 +401,21 @@ export const ScanPhotoModal: React.FC<ScanPhotoModalProps> = ({
                     </span>
                   </div>
                   <textarea
-                    rows={10}
+                    rows={9}
                     value={editedCode}
                     onChange={(e) => setEditedCode(e.target.value)}
                     className="w-full bg-[#090909] text-[#F5F5F5] font-mono text-xs rounded-xl border border-[rgba(255,255,255,0.09)] p-3 focus:border-white focus:outline-none leading-relaxed resize-none shadow-inner"
                   />
                 </div>
 
+                {/* Aim & Algorithmic Notes */}
                 {extractedData.aim && (
-                  <div className="p-2.5 bg-[#111111] rounded-lg border border-[rgba(255,255,255,0.06)] text-xs text-[#A1A1A1] space-y-0.5">
-                    <span className="text-white font-medium text-[11px]">Detected Aim:</span>
-                    <p className="text-[11px] leading-relaxed">{extractedData.aim}</p>
+                  <div className="p-3 bg-[#111111] rounded-lg border border-[rgba(255,255,255,0.06)] text-xs text-[#A1A1A1] space-y-1">
+                    <span className="text-white font-medium text-[11px] flex items-center gap-1">
+                      <Lightbulb className="w-3 h-3 text-white" />
+                      Inferred Academic Aim:
+                    </span>
+                    <p className="text-[11px] leading-relaxed text-[#CCCCCC]">{extractedData.aim}</p>
                   </div>
                 )}
               </div>
@@ -324,4 +444,3 @@ export const ScanPhotoModal: React.FC<ScanPhotoModalProps> = ({
     </Modal>
   )
 }
-

@@ -248,3 +248,26 @@ async def evaluate_answer_endpoint(
         user_answer=payload.user_answer,
         experiment_context=context,
     )
+
+
+from pydantic import BaseModel
+class CodeRecommendationRequest(BaseModel):
+    code: Optional[str] = None
+    language: Optional[str] = None
+    experiment_id: Optional[str] = None
+
+
+@router.post("/recommend-code")
+async def recommend_code_endpoint(
+    payload: CodeRecommendationRequest, current_user: dict = Depends(get_current_user)
+):
+    """Analyze code entered by user and return recommendations (name/title, aim, complexities, and code advice)."""
+    code = payload.code
+    language = payload.language
+    if payload.experiment_id and not code:
+        exp = _get_experiment(payload.experiment_id, current_user["id"])
+        code = exp.get("source_code", "")
+        language = language or exp.get("language", "c")
+
+    return await gemini_service.recommend_code_metadata(code=code or "", language=language)
+

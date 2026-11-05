@@ -16,7 +16,8 @@ logger = logging.getLogger(__name__)
 # Default to environment variable
 DEFAULT_KEY = ""
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY", "")
-CANDIDATE_MODELS = ["gemini-3-flash-preview", "gemini-2.5-flash", "gemini-flash-latest"]
+# Prioritize fast, reliable gemini-2.5-flash for both text and multimodal vision
+CANDIDATE_MODELS = ["gemini-2.5-flash", "gemini-3-flash-preview"]
 
 
 async def _call_gemini(prompt: str, system_instruction: str = "", response_mime_type: Optional[str] = None) -> str:
@@ -98,7 +99,7 @@ async def _call_gemini_vision(
     payload["generationConfig"] = generation_config
 
     last_error = None
-    async with httpx.AsyncClient(timeout=60.0) as client:
+    async with httpx.AsyncClient(timeout=30.0) as client:
         for model in CANDIDATE_MODELS:
             url = f"https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent"
             try:
@@ -486,3 +487,136 @@ async def extract_code_from_photo(image_bytes: bytes, mime_type: str = "image/jp
             "observations": "Captured from student notebook photo.",
             "ocr_fallback": True,
         }
+
+
+async def recommend_code_metadata(code: str, language: Optional[str] = None) -> dict:
+    """
+    Analyze code entered by the user and return comprehensive recommendations:
+    - suggested_title: Concise, descriptive title (e.g. 'Optimized Bubble Sort Implementation')
+    - aim: Academic laboratory objective statement
+    - detected_language: 'c', 'cpp', 'python', 'java', 'javascript', 'typescript', etc.
+    - topic: Core category/topic (e.g. 'Sorting Algorithms', 'Dynamic Programming', 'Graph Theory')
+    - time_complexity: Big-O worst/best notation (e.g. 'O(n^2) worst / O(n) best')
+    - space_complexity: Big-O auxiliary notation (e.g. 'O(1) in-place')
+    - recommendations: Array of 3-4 specific engineering improvements/optimizations for this code
+    - sample_input: Sample test input
+    - expected_output: Expected test output
+    """
+    clean_code = (code or "").strip()
+    if not clean_code:
+        return {
+            "suggested_title": "Practical Implementation",
+            "aim": "Implementation and analysis of algorithm.",
+            "detected_language": language or "c",
+            "topic": "Computer Science Practical",
+            "time_complexity": "O(n)",
+            "space_complexity": "O(1)",
+            "recommendations": [
+                "Enter or paste source code to receive AI recommendations.",
+                "Ensure standard library headers and entry functions are included.",
+                "Add meaningful comments to document variable roles."
+            ],
+            "sample_input": "Sample test data",
+            "expected_output": "Expected verification output"
+        }
+
+    system_instruction = (
+        "You are an expert Computer Science Professor and code analysis engine. "
+        "Analyze the provided source code and generate precise, highly relevant recommendations. "
+        "Determine the exact name of the code/algorithm, academic aim, language, topic category, "
+        "complexities, and 3-4 actionable engineering improvements or edge-case warnings. "
+        "Return pure JSON with EXACTLY these keys: "
+        "'suggested_title', 'aim', 'detected_language', 'topic', 'time_complexity', "
+        "'space_complexity', 'recommendations', 'sample_input', 'expected_output'."
+    )
+
+    prompt = (
+        f"Language hint: {language or 'auto-detect'}\n\n"
+        f"Analyze this source code:\n```\n{clean_code[:4000]}\n```\n\n"
+        "Provide recommended experiment title/name, aim, detected language, topic, complexities, "
+        "recommendations array (3-4 bullet points), sample_input, and expected_output. Return valid JSON only."
+    )
+
+    try:
+        raw = await _call_gemini(prompt, system_instruction=system_instruction, response_mime_type="application/json")
+        data = _parse_json_response(raw)
+
+        # Normalize detected language
+        lang = str(data.get("detected_language") or language or "c").lower()
+        if "py" in lang:
+            lang = "python"
+        elif "c++" in lang or "cpp" in lang:
+            lang = "cpp"
+        elif "c" == lang:
+            lang = "c"
+        elif "java" in lang and "script" not in lang:
+            lang = "java"
+        elif "script" in lang or "js" in lang:
+            lang = "javascript"
+        elif "type" in lang or "ts" in lang:
+            lang = "typescript"
+        else:
+            lang = language or "c"
+        data["detected_language"] = lang
+
+        if not data.get("suggested_title"):
+            data["suggested_title"] = f"{lang.upper()} Practical Implementation"
+
+        if not isinstance(data.get("recommendations"), list):
+            data["recommendations"] = [
+                "Consider validating input boundaries to prevent runtime exceptions.",
+                "Document time and space complexity in header comments.",
+                "Write modular helper functions for readability."
+            ]
+
+        return data
+    except Exception as e:
+        logger.warning("Gemini code recommendation failed, using local fallback: %s", e)
+        # Derive an intelligent fallback title from code tokens
+        derived_title = "Algorithm Implementation"
+        lower = clean_code.lower()
+        if "bubble" in lower:
+            derived_title = "Bubble Sort Implementation"
+        elif "quick" in lower:
+            derived_title = "Quick Sort Algorithm"
+        elif "merge" in lower:
+            derived_title = "Merge Sort Algorithm"
+        elif "dijkstra" in lower:
+            derived_title = "Dijkstra's Shortest Path Algorithm"
+        elif "binary search" in lower or "binsearch" in lower or "binarysearch" in lower:
+            derived_title = "Binary Search Algorithm"
+        elif "linear search" in lower:
+            derived_title = "Linear Search Implementation"
+        elif "stack" in lower:
+            derived_title = "Stack Data Structure Operations"
+        elif "queue" in lower:
+            derived_title = "Queue Data Structure Operations"
+        elif "linkedlist" in lower or "linked_list" in lower or "node" in lower:
+            derived_title = "Linked List Data Structure"
+        elif "tree" in lower or "bst" in lower:
+            derived_title = "Binary Search Tree Operations"
+        elif "graph" in lower or "bfs" in lower or "dfs" in lower:
+            derived_title = "Graph Traversal (BFS / DFS)"
+        elif "matrix" in lower:
+            derived_title = "Matrix Manipulation Program"
+
+        detected_lang = language or ("python" if ("def " in clean_code or "import " in clean_code and ";" not in clean_code) else "c")
+
+        return {
+            "suggested_title": derived_title,
+            "aim": f"To implement and verify {derived_title} with optimal time and space complexity.",
+            "detected_language": detected_lang,
+            "topic": "Algorithms & Data Structures",
+            "time_complexity": "O(n log n) average",
+            "space_complexity": "O(1) auxiliary",
+            "recommendations": [
+                "Add defensive parameter checks for null or empty collection boundaries.",
+                "Consider modularizing helper logic into distinct functions.",
+                "Measure execution time using standard library profiling tools.",
+                "Document loop invariants to facilitate oral viva questions."
+            ],
+            "sample_input": "Standard test array or dataset",
+            "expected_output": "Verified output conforming to algorithm specifications",
+            "is_fallback": True
+        }
+
