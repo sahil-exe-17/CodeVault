@@ -17,10 +17,11 @@ import {
   Code2,
   FileCheck,
   Eye,
-  ZoomIn,
+  Award,
+  BookOpen,
 } from 'lucide-react'
 import { useAuthStore } from '@/store/authStore'
-import type { Experiment, Subject, CodeSnippetItem } from '@/types'
+import type { Experiment, CodeSnippetItem } from '@/types'
 import toast from 'react-hot-toast'
 
 interface OfficialLabRecordModalProps {
@@ -30,6 +31,15 @@ interface OfficialLabRecordModalProps {
   subject?: any
   activeCodeSnippet?: CodeSnippetItem
   allCodeSnippets?: CodeSnippetItem[]
+}
+
+const escapeHtml = (unsafe: string): string => {
+  return (unsafe || '')
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#039;')
 }
 
 export const OfficialLabRecordModal: React.FC<OfficialLabRecordModalProps> = ({
@@ -80,7 +90,7 @@ export const OfficialLabRecordModal: React.FC<OfficialLabRecordModalProps> = ({
   // Handwritten Notebook Photos / Scanned Observation Sheets
   const [handwrittenImages, setHandwrittenImages] = useState<string[]>([])
   const [isAttachingPhoto, setIsAttachingPhoto] = useState(false)
-  const printPreviewRef = useRef<HTMLDivElement | null>(null)
+  const [isPrinting, setIsPrinting] = useState(false)
   const fileInputRef = useRef<HTMLInputElement | null>(null)
 
   // Load any previously attached photos from localStorage for this experiment
@@ -153,303 +163,6 @@ export const OfficialLabRecordModal: React.FC<OfficialLabRecordModalProps> = ({
     toast.success('Handwritten photo removed.')
   }
 
-  // 1-Click Print & PDF Export Execution
-  const handlePrint = () => {
-    if (!printPreviewRef.current) return
-
-    const printContents = printPreviewRef.current.innerHTML
-
-    // Open a clean dedicated print window for vector-crisp A4 print
-    const printWindow = window.open('', '_blank', 'width=900,height=1000')
-    if (!printWindow) {
-      toast.error('Pop-up blocked. Please allow pop-ups to print or export PDF.')
-      return
-    }
-
-    printWindow.document.open()
-    printWindow.document.write(`
-      <!DOCTYPE html>
-      <html lang="en">
-      <head>
-        <meta charset="utf-8">
-        <title>${experiment.experiment_number || 'EXP'} — ${experiment.title} — Official Lab Record</title>
-        <style>
-          @import url('https://fonts.googleapis.com/css2?family=Crimson+Pro:ital,wght@0,400;0,600;0,700;1,400&family=JetBrains+Mono:wght@400;500;600&family=Inter:wght@400;500;600;700&display=swap');
-          
-          @page {
-            size: A4 portrait;
-            margin: 12mm 15mm 12mm 15mm;
-          }
-
-          * {
-            box-sizing: border-box;
-            -webkit-print-color-adjust: exact !important;
-            print-color-adjust: exact !important;
-          }
-
-          body {
-            margin: 0;
-            padding: 0;
-            background: #ffffff !important;
-            color: #000000 !important;
-            font-family: 'Crimson Pro', Georgia, serif;
-            font-size: 13pt;
-            line-height: 1.45;
-          }
-
-          .cv-print-sheet {
-            width: 100%;
-            background: #ffffff;
-            color: #000000;
-          }
-
-          .avoid-break {
-            page-break-inside: avoid !important;
-            break-inside: avoid !important;
-          }
-
-          .header-box {
-            border: 2px solid #000000;
-            padding: 12px 16px;
-            text-align: center;
-            margin-bottom: 14px;
-            background: #ffffff;
-          }
-
-          .college-title {
-            font-size: 17pt;
-            font-weight: 700;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            margin: 0 0 4px 0;
-            font-family: 'Crimson Pro', Georgia, serif;
-          }
-
-          .dept-title {
-            font-size: 12pt;
-            font-weight: 600;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            margin: 0 0 6px 0;
-            color: #222222;
-          }
-
-          .record-banner {
-            display: inline-block;
-            background: #000000;
-            color: #ffffff;
-            padding: 3px 18px;
-            font-size: 11pt;
-            font-weight: 700;
-            text-transform: uppercase;
-            letter-spacing: 1.5px;
-            border-radius: 2px;
-            margin-top: 4px;
-            font-family: 'Inter', sans-serif;
-          }
-
-          .meta-table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-bottom: 16px;
-            font-size: 10.5pt;
-            font-family: 'Inter', sans-serif;
-          }
-
-          .meta-table td {
-            border: 1px solid #333333;
-            padding: 6px 10px;
-          }
-
-          .meta-label {
-            font-weight: 700;
-            color: #222222;
-            width: 18%;
-            background: #f7f7f7;
-          }
-
-          .meta-val {
-            width: 32%;
-            font-weight: 500;
-          }
-
-          .exp-banner {
-            border-left: 4px solid #000000;
-            border-top: 1px solid #cccccc;
-            border-bottom: 1px solid #cccccc;
-            border-right: 1px solid #cccccc;
-            padding: 8px 12px;
-            margin-bottom: 16px;
-            background: #fafafa;
-          }
-
-          .exp-no {
-            font-size: 11pt;
-            font-weight: 700;
-            font-family: 'Inter', sans-serif;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            color: #444444;
-          }
-
-          .exp-title {
-            font-size: 14pt;
-            font-weight: 700;
-            margin: 2px 0 0 0;
-            color: #000000;
-          }
-
-          .section-heading {
-            font-size: 12pt;
-            font-weight: 700;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            border-bottom: 1.5px solid #000000;
-            padding-bottom: 3px;
-            margin: 14px 0 8px 0;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            font-family: 'Inter', sans-serif;
-          }
-
-          .section-body {
-            font-size: 11pt;
-            line-height: 1.5;
-            margin-bottom: 12px;
-            color: #111111;
-          }
-
-          .code-block {
-            font-family: 'JetBrains Mono', Consolas, monospace;
-            font-size: 9.5pt;
-            line-height: 1.45;
-            background: #ffffff;
-            border: 1px solid #333333;
-            padding: 10px 14px;
-            white-space: pre-wrap;
-            word-break: break-all;
-            margin-bottom: 14px;
-            position: relative;
-          }
-
-          .code-badge {
-            display: inline-block;
-            font-family: 'Inter', sans-serif;
-            font-size: 8pt;
-            font-weight: 700;
-            text-transform: uppercase;
-            background: #eeeeee;
-            padding: 2px 8px;
-            border: 1px solid #cccccc;
-            margin-bottom: 6px;
-          }
-
-          .output-box {
-            background: #fbfbfb;
-            border: 1.5px dashed #444444;
-            padding: 10px 14px;
-            font-family: 'JetBrains Mono', Consolas, monospace;
-            font-size: 9.5pt;
-            line-height: 1.4;
-            margin-bottom: 14px;
-            color: #111111;
-          }
-
-          .handwritten-page {
-            page-break-inside: avoid;
-            margin-bottom: 16px;
-            text-align: center;
-          }
-
-          .handwritten-img {
-            max-width: 100%;
-            max-height: 500px;
-            border: 1px solid #555555;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-            object-fit: contain;
-          }
-
-          .handwritten-caption {
-            font-size: 9.5pt;
-            font-style: italic;
-            color: #555555;
-            margin-top: 4px;
-            font-family: 'Inter', sans-serif;
-          }
-
-          .rubric-table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 18px;
-            margin-bottom: 18px;
-            font-size: 10pt;
-            font-family: 'Inter', sans-serif;
-          }
-
-          .rubric-table th, .rubric-table td {
-            border: 1px solid #333333;
-            padding: 8px 10px;
-            text-align: center;
-          }
-
-          .rubric-table th {
-            background: #f2f2f2;
-            font-weight: 700;
-            text-transform: uppercase;
-            font-size: 9pt;
-            letter-spacing: 0.5px;
-          }
-
-          .sig-box {
-            display: flex;
-            justify-content: space-between;
-            align-items: flex-end;
-            margin-top: 35px;
-            padding-top: 10px;
-            font-family: 'Inter', sans-serif;
-            font-size: 10.5pt;
-          }
-
-          .sig-line {
-            border-top: 1.5px solid #000000;
-            width: 200px;
-            text-align: center;
-            padding-top: 6px;
-            font-weight: 700;
-          }
-
-          .page-footer {
-            margin-top: 25px;
-            padding-top: 8px;
-            border-top: 1px solid #cccccc;
-            display: flex;
-            justify-content: space-between;
-            font-size: 8.5pt;
-            font-family: 'Inter', sans-serif;
-            color: #666666;
-          }
-        </style>
-      </head>
-      <body>
-        <div class="cv-print-sheet">
-          ${printContents}
-        </div>
-        <script>
-          window.onload = function() {
-            setTimeout(function() {
-              window.print();
-            }, 300);
-          };
-        </script>
-      </body>
-      </html>
-    `)
-    printWindow.document.close()
-  }
-
-  if (!isOpen) return null
-
   const activeSnippet = activeCodeSnippet || experiment.code_files?.[0] || {
     id: 'c1',
     title: 'Code 1',
@@ -457,32 +170,658 @@ export const OfficialLabRecordModal: React.FC<OfficialLabRecordModalProps> = ({
     code: experiment.source_code || '',
   }
 
+  // Formatted source code with clean line numbers
+  const formatCodeWithLineNumbers = (code: string) => {
+    const lines = (code || '').split('\n')
+    return lines
+      .map((line, idx) => {
+        const lineNum = String(idx + 1).padStart(2, '0')
+        return `<span class="line-num">${lineNum}</span>${escapeHtml(line)}`
+      })
+      .join('\n')
+  }
+
+  /**
+   * Generates the self-contained, 100% styled official university print sheet
+   */
+  const generateOfficialLabRecordHtml = (): string => {
+    const subjectTitle = subject?.name || 'Practical Laboratory'
+    const expNum = experiment.experiment_number || 'EXP-01'
+    const expTitle = experiment.title || 'Practical Experiment'
+    const lang = (activeSnippet.language || 'c').toUpperCase()
+
+    const aimHtml = includeAim
+      ? `
+      <div class="section-box avoid-break">
+        <div class="section-title">
+          <span>1. AIM & OBJECTIVES</span>
+        </div>
+        <p class="section-text font-serif">
+          ${escapeHtml(experiment.aim || `To design, implement, test, and analyze the execution of ${expTitle}.`)}
+        </p>
+      </div>`
+      : ''
+
+    const theoryHtml = includeTheory
+      ? `
+      <div class="section-box avoid-break">
+        <div class="section-title">
+          <span>2. PREREQUISITES & THEORETICAL BACKGROUND</span>
+        </div>
+        <div class="section-text font-serif">
+          ${escapeHtml(
+            experiment.theory ||
+              `Fundamental principles, data structures, and algorithmic concepts related to ${expTitle}. Covers syntax semantics, memory management, and input-output operations in ${lang}.`
+          )}
+        </div>
+        ${
+          experiment.time_complexity || experiment.space_complexity
+            ? `
+          <div class="complexity-matrix">
+            <div><strong>Time Complexity:</strong> <span class="mono">${escapeHtml(experiment.time_complexity || 'O(n)')}</span></div>
+            <div><strong>Space / Memory Complexity:</strong> <span class="mono">${escapeHtml(experiment.space_complexity || 'O(1)')}</span></div>
+          </div>`
+            : ''
+        }
+      </div>`
+      : ''
+
+    const algorithmHtml = includeAlgorithm
+      ? `
+      <div class="section-box avoid-break">
+        <div class="section-title">
+          <span>3. ALGORITHM / STEP-BY-STEP PROCEDURE</span>
+        </div>
+        <div class="section-text font-serif" style="white-space: pre-line; padding-left: 6px;">
+          ${escapeHtml(
+            experiment.algorithm ||
+              `Step 1: Start the program execution.\nStep 2: Declare variables and allocate required memory.\nStep 3: Accept user input parameters.\nStep 4: Execute core computational logic.\nStep 5: Display results on console and verify output.\nStep 6: Stop.`
+          )}
+        </div>
+      </div>`
+      : ''
+
+    const codeHtml = includeCode
+      ? `
+      <div class="section-box">
+        <div class="section-title">
+          <span>4. SOURCE CODE IMPLEMENTATION</span>
+          <span class="badge">${escapeHtml(lang)} • ${escapeHtml(activeSnippet.title)}</span>
+        </div>
+        <div class="code-container">
+          <pre class="code-pre">${formatCodeWithLineNumbers(activeSnippet.code)}</pre>
+        </div>
+      </div>`
+      : ''
+
+    const outputHtml = includeOutput
+      ? `
+      <div class="section-box avoid-break">
+        <div class="section-title">
+          <span>5. SAMPLE INPUT & VERIFIED EXECUTION OUTPUT</span>
+        </div>
+        ${
+          experiment.sample_input
+            ? `
+          <div style="margin-bottom: 8px;">
+            <div style="font-size: 9pt; font-weight: bold; margin-bottom: 3px;">Input Test Data:</div>
+            <pre class="terminal-box" style="margin-bottom: 8px;">${escapeHtml(experiment.sample_input)}</pre>
+          </div>`
+            : ''
+        }
+        <div class="terminal-box">
+          <div class="terminal-header">
+            <span>TERMINAL CONSOLE EXECUTION</span>
+            <span style="color: #047857; font-weight: bold;">[VERIFIED • EXIT CODE 0]</span>
+          </div>
+          <pre style="margin: 0; white-space: pre-wrap; word-break: break-all;">${escapeHtml(
+            experiment.actual_output ||
+              experiment.expected_output ||
+              `--- Program Executed Successfully ---\nOutput:\nOperation completed with sample test inputs.\nCalculations and execution verified successfully.`
+          )}</pre>
+        </div>
+      </div>`
+      : ''
+
+    const handwrittenHtml =
+      includeHandwrittenScans && handwrittenImages.length > 0
+        ? `
+      <div class="section-box page-break-before">
+        <div class="section-title">
+          <span>6. ATTACHED HANDWRITTEN LABORATORY OBSERVATION SHEETS</span>
+          <span class="badge">${handwrittenImages.length} SHEET(S)</span>
+        </div>
+        <p style="font-size: 9.5pt; font-style: italic; color: #555; margin: 4px 0 12px 0;">
+          Physical laboratory notebook pages, observation readings, and verified graphical records.
+        </p>
+        <div class="handwritten-gallery">
+          ${handwrittenImages
+            .map(
+              (img, idx) => `
+            <div class="handwritten-card avoid-break">
+              <img src="${img}" alt="Handwritten Record Sheet ${idx + 1}" class="handwritten-image" />
+              <div class="handwritten-caption">
+                Sheet ${idx + 1}: Physical Laboratory Observation & Verification Record
+              </div>
+            </div>`
+            )
+            .join('')}
+        </div>
+      </div>`
+        : ''
+
+    const rubricHtml = includeRubric
+      ? `
+      <div class="section-box avoid-break" style="margin-top: 24px;">
+        <div class="section-title">
+          <span>7. CONTINUOUS ASSESSMENT & EVALUATION RUBRIC</span>
+        </div>
+        <table class="rubric-table">
+          <thead>
+            <tr>
+              <th>Performance & Conduction (05)</th>
+              <th>Code Quality & Syntax (05)</th>
+              <th>Viva-Voce & Concept (05)</th>
+              <th>Total Marks (15)</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td class="marks-cell">/ 05</td>
+              <td class="marks-cell">/ 05</td>
+              <td class="marks-cell">/ 05</td>
+              <td class="marks-cell total-marks">/ 15</td>
+            </tr>
+          </tbody>
+        </table>
+
+        <div class="signature-row">
+          <div class="sig-col">
+            <div><strong>Date of Checking:</strong> __________________</div>
+            <div style="margin-top: 6px;"><strong>Remarks:</strong> __________________________</div>
+          </div>
+          <div class="sig-col" style="text-align: right;">
+            <div class="sig-line"></div>
+            <div style="font-weight: bold; text-transform: uppercase; font-size: 10pt;">${escapeHtml(facultyName)}</div>
+            <div style="font-size: 9pt; color: #555;">Faculty In-Charge / Examiner Signature</div>
+          </div>
+        </div>
+      </div>`
+      : ''
+
+    return `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>${escapeHtml(expNum)} — ${escapeHtml(expTitle)} — Official Lab Record</title>
+  <style>
+    @page {
+      size: A4 portrait;
+      margin: 12mm 14mm 12mm 14mm;
+    }
+    * {
+      box-sizing: border-box;
+      -webkit-print-color-adjust: exact !important;
+      print-color-adjust: exact !important;
+    }
+    html, body {
+      margin: 0;
+      padding: 0;
+      background: #ffffff !important;
+      color: #000000 !important;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      font-size: 10.5pt;
+      line-height: 1.45;
+    }
+    .font-serif {
+      font-family: "Crimson Pro", Georgia, "Times New Roman", serif;
+      font-size: 11pt;
+    }
+    .mono {
+      font-family: "JetBrains Mono", Consolas, "Courier New", monospace;
+    }
+    .page-container {
+      width: 100%;
+      max-width: 100%;
+      margin: 0 auto;
+      background: #ffffff;
+    }
+    .avoid-break {
+      page-break-inside: avoid !important;
+      break-inside: avoid !important;
+    }
+    .page-break-before {
+      page-break-before: always !important;
+      break-before: page !important;
+    }
+
+    /* Double Border Institutional Header */
+    .univ-header-box {
+      border: 2.5px solid #000000;
+      outline: 1px solid #000000;
+      outline-offset: 3px;
+      padding: 14px 18px;
+      text-align: center;
+      margin-bottom: 16px;
+      background: #ffffff;
+    }
+    .univ-title {
+      font-size: 16pt;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin: 0 0 3px 0;
+      font-family: "Crimson Pro", Georgia, serif;
+      color: #000000;
+    }
+    .dept-title {
+      font-size: 11pt;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin: 0 0 8px 0;
+      color: #222222;
+    }
+    .record-pill {
+      display: inline-block;
+      background: #000000;
+      color: #ffffff;
+      padding: 3px 18px;
+      font-size: 9.5pt;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 1.5px;
+      border-radius: 2px;
+    }
+
+    /* Student Information Matrix */
+    .meta-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-bottom: 16px;
+      font-size: 9.5pt;
+    }
+    .meta-table td {
+      border: 1px solid #000000;
+      padding: 6px 10px;
+    }
+    .meta-label {
+      background: #f3f4f6;
+      font-weight: 700;
+      color: #111827;
+      width: 22%;
+    }
+    .meta-val {
+      width: 28%;
+      font-weight: 500;
+    }
+
+    /* Experiment Banner */
+    .exp-banner {
+      border-left: 4.5px solid #000000;
+      border-top: 1px solid #d1d5db;
+      border-bottom: 1px solid #d1d5db;
+      border-right: 1px solid #d1d5db;
+      padding: 10px 14px;
+      margin-bottom: 16px;
+      background: #f9fafb;
+    }
+    .exp-num {
+      font-size: 9pt;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: #4b5563;
+      margin-bottom: 2px;
+    }
+    .exp-heading {
+      font-size: 13pt;
+      font-weight: 800;
+      margin: 0;
+      color: #000000;
+      font-family: "Crimson Pro", Georgia, serif;
+    }
+
+    /* Sections */
+    .section-box {
+      margin-bottom: 16px;
+    }
+    .section-title {
+      font-size: 10pt;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      border-bottom: 1.5px solid #000000;
+      padding-bottom: 4px;
+      margin-bottom: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .badge {
+      font-size: 8pt;
+      font-weight: 700;
+      background: #e5e7eb;
+      color: #111827;
+      padding: 2px 8px;
+      border-radius: 2px;
+      border: 1px solid #d1d5db;
+      text-transform: uppercase;
+      font-family: monospace;
+    }
+    .section-text {
+      font-size: 10.5pt;
+      line-height: 1.55;
+      color: #111827;
+      margin: 0;
+    }
+
+    /* Complexity Matrix */
+    .complexity-matrix {
+      margin-top: 8px;
+      padding: 8px 12px;
+      background: #f3f4f6;
+      border: 1px solid #e5e7eb;
+      font-size: 9pt;
+      display: flex;
+      gap: 24px;
+    }
+
+    /* Code Block */
+    .code-container {
+      background: #ffffff;
+      border: 1.5px solid #000000;
+      overflow: hidden;
+      margin-top: 4px;
+    }
+    .code-pre {
+      font-family: "JetBrains Mono", Consolas, "Courier New", monospace;
+      font-size: 9pt;
+      line-height: 1.45;
+      padding: 10px 12px;
+      margin: 0;
+      white-space: pre-wrap;
+      word-break: break-all;
+      background: #ffffff;
+      color: #000000;
+    }
+    .line-num {
+      display: inline-block;
+      width: 24px;
+      text-align: right;
+      color: #6b7280;
+      user-select: none;
+      margin-right: 10px;
+      border-right: 1px solid #d1d5db;
+      padding-right: 6px;
+      font-weight: 600;
+    }
+
+    /* Terminal Console Output */
+    .terminal-box {
+      border: 1.5px dashed #000000;
+      background: #f9fafb;
+      padding: 10px 14px;
+      font-family: "JetBrains Mono", Consolas, monospace;
+      font-size: 9pt;
+      line-height: 1.4;
+      color: #000000;
+    }
+    .terminal-header {
+      display: flex;
+      justify-content: space-between;
+      border-bottom: 1px solid #e5e7eb;
+      padding-bottom: 4px;
+      margin-bottom: 6px;
+      font-size: 8pt;
+      font-weight: 700;
+      color: #4b5563;
+    }
+
+    /* Handwritten Pages Section */
+    .handwritten-gallery {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+    .handwritten-card {
+      border: 1.5px solid #000000;
+      background: #ffffff;
+      padding: 8px;
+      text-align: center;
+    }
+    .handwritten-image {
+      max-width: 100%;
+      max-height: 600px;
+      object-fit: contain;
+      border: 1px solid #e5e7eb;
+      margin: 0 auto;
+      display: block;
+    }
+    .handwritten-caption {
+      font-size: 9.5pt;
+      font-style: italic;
+      color: #374151;
+      margin-top: 6px;
+      font-family: "Crimson Pro", Georgia, serif;
+    }
+
+    /* Rubric Table */
+    .rubric-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 6px;
+      margin-bottom: 16px;
+      font-size: 9pt;
+      text-align: center;
+    }
+    .rubric-table th, .rubric-table td {
+      border: 1.5px solid #000000;
+      padding: 8px 10px;
+    }
+    .rubric-table th {
+      background: #f3f4f6;
+      font-weight: 700;
+      text-transform: uppercase;
+      font-size: 8.5pt;
+    }
+    .marks-cell {
+      font-family: "JetBrains Mono", monospace;
+      font-size: 11pt;
+      font-weight: 700;
+      padding: 12px !important;
+    }
+    .total-marks {
+      background: #f9fafb;
+    }
+
+    /* Signature Area */
+    .signature-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-end;
+      margin-top: 30px;
+      padding-top: 10px;
+    }
+    .sig-col {
+      flex: 1;
+      font-size: 9.5pt;
+    }
+    .sig-line {
+      width: 220px;
+      border-bottom: 2px solid #000000;
+      margin-left: auto;
+      margin-bottom: 6px;
+    }
+
+    /* Footer */
+    .page-footer {
+      margin-top: 25px;
+      padding-top: 6px;
+      border-top: 1px solid #d1d5db;
+      display: flex;
+      justify-content: space-between;
+      font-size: 8pt;
+      color: #6b7280;
+    }
+  </style>
+</head>
+<body>
+  <div class="page-container">
+    <!-- Header -->
+    <div class="univ-header-box">
+      <h1 class="univ-title">${escapeHtml(collegeName)}</h1>
+      <h2 class="dept-title">${escapeHtml(departmentName)}</h2>
+      <div class="record-pill">Official Laboratory Practical Record</div>
+    </div>
+
+    <!-- Student Credentials Table -->
+    <table class="meta-table avoid-break">
+      <tbody>
+        <tr>
+          <td class="meta-label">Name of Student:</td>
+          <td class="meta-val" style="font-weight: 700;">${escapeHtml(studentName)}</td>
+          <td class="meta-label">Roll No. / PRN:</td>
+          <td class="meta-val mono" style="font-weight: 700;">${escapeHtml(rollNumber)}</td>
+        </tr>
+        <tr>
+          <td class="meta-label">Subject / Course:</td>
+          <td class="meta-val">${escapeHtml(subjectTitle)}</td>
+          <td class="meta-label">Class / Semester:</td>
+          <td class="meta-val">${escapeHtml(semester)}</td>
+        </tr>
+        <tr>
+          <td class="meta-label">Batch & Division:</td>
+          <td class="meta-val">${escapeHtml(batch)}</td>
+          <td class="meta-label">Academic Year:</td>
+          <td class="meta-val">${escapeHtml(academicYear)}</td>
+        </tr>
+        <tr>
+          <td class="meta-label">Date of Conduction:</td>
+          <td class="meta-val mono">${escapeHtml(conductionDate)}</td>
+          <td class="meta-label">Date of Submission:</td>
+          <td class="meta-val mono">${escapeHtml(submissionDate)}</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <!-- Experiment Title Banner -->
+    <div class="exp-banner avoid-break">
+      <div class="exp-num">${escapeHtml(expNum)}</div>
+      <h2 class="exp-heading">${escapeHtml(expTitle)}</h2>
+    </div>
+
+    <!-- Sections -->
+    ${aimHtml}
+    ${theoryHtml}
+    ${algorithmHtml}
+    ${codeHtml}
+    ${outputHtml}
+    ${handwrittenHtml}
+    ${rubricHtml}
+
+    <!-- Footer -->
+    <div class="page-footer">
+      <span>CodeVault University Academic System • Official Lab Submission Record</span>
+      <span>Verified Academic Record</span>
+    </div>
+  </div>
+</body>
+</html>`
+  }
+
+  // 1-Click Print & PDF Export Execution (Iframe Based: 0 Pop-up block risk, mobile friendly)
+  const handlePrint = () => {
+    setIsPrinting(true)
+    const toastId = toast.loading('Formatting official university print sheet...')
+
+    try {
+      const fullHtml = generateOfficialLabRecordHtml()
+
+      // Create or reuse hidden iframe
+      let iframe = document.getElementById('cv-official-print-iframe') as HTMLIFrameElement
+      if (!iframe) {
+        iframe = document.createElement('iframe')
+        iframe.id = 'cv-official-print-iframe'
+        iframe.style.position = 'fixed'
+        iframe.style.right = '0'
+        iframe.style.bottom = '0'
+        iframe.style.width = '0'
+        iframe.style.height = '0'
+        iframe.style.border = '0'
+        iframe.style.visibility = 'hidden'
+        document.body.appendChild(iframe)
+      }
+
+      const doc = iframe.contentWindow?.document
+      if (!doc) {
+        // Fallback popup if iframe document not accessible
+        const w = window.open('', '_blank')
+        if (w) {
+          w.document.open()
+          w.document.write(fullHtml)
+          w.document.close()
+          setTimeout(() => {
+            w.focus()
+            w.print()
+          }, 350)
+        }
+        setIsPrinting(false)
+        toast.dismiss(toastId)
+        return
+      }
+
+      doc.open()
+      doc.write(fullHtml)
+      doc.close()
+
+      const triggerPrint = () => {
+        setIsPrinting(false)
+        toast.dismiss(toastId)
+        try {
+          iframe.contentWindow?.focus()
+          iframe.contentWindow?.print()
+        } catch {
+          window.print()
+        }
+      }
+
+      // Allow all fonts and images (including base64 photos) to render
+      setTimeout(triggerPrint, 500)
+    } catch (err: any) {
+      setIsPrinting(false)
+      toast.error('Failed to generate print sheet: ' + err.message, { id: toastId })
+    }
+  }
+
+  if (!isOpen) return null
+
   return (
     <AnimatePresence>
-      <div className="fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-4 bg-black/75 backdrop-blur-md">
+      <div className="fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-4 bg-black/80 backdrop-blur-md">
         <motion.div
-          initial={{ opacity: 0, scale: 0.95, y: 15 }}
+          initial={{ opacity: 0, scale: 0.96, y: 15 }}
           animate={{ opacity: 1, scale: 1, y: 0 }}
-          exit={{ opacity: 0, scale: 0.95, y: 15 }}
+          exit={{ opacity: 0, scale: 0.96, y: 15 }}
           className="relative w-full max-w-6xl h-[94vh] bg-[var(--bg-card)] border border-[var(--border-subtle)] rounded-3xl shadow-2xl flex flex-col overflow-hidden text-[var(--text-main)]"
         >
           {/* Modal Header Bar */}
           <div className="px-6 py-4 border-b border-[var(--border-subtle)] bg-[var(--bg-header)] flex items-center justify-between shrink-0">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-2xl bg-amber-500/10 border border-amber-500/20 text-amber-500 flex items-center justify-center shrink-0">
+              <div className="w-10 h-10 rounded-2xl bg-amber-500/15 border border-amber-500/30 text-amber-400 flex items-center justify-center shrink-0">
                 <Printer className="w-5 h-5" />
               </div>
               <div>
                 <div className="flex items-center gap-2">
                   <h2 className="text-base sm:text-lg font-bold font-['Manrope'] text-[var(--text-main)]">
-                    Official University Lab Record Generator
+                    University Lab Sheet & Exam Printout Generator
                   </h2>
-                  <span className="px-2 py-0.5 rounded-full text-[10px] font-mono font-semibold bg-emerald-500/10 text-emerald-500 border border-emerald-500/20">
-                    1-Click PDF
+                  <span className="px-2 py-0.5 rounded-full text-[10px] font-mono font-semibold bg-emerald-500/15 text-emerald-400 border border-emerald-500/30">
+                    A4 PDF Ready
                   </span>
                 </div>
                 <p className="text-xs text-[var(--text-muted)]">
-                  Formats code, aim, algorithms, and handwritten notebook photos into an authentic university-grade printout.
+                  Formats code, aim, step-by-step algorithms, handwritten observation photos & teacher marks rubric into a university submission file.
                 </p>
               </div>
             </div>
@@ -490,11 +829,12 @@ export const OfficialLabRecordModal: React.FC<OfficialLabRecordModalProps> = ({
             <div className="flex items-center gap-3">
               <button
                 type="button"
+                disabled={isPrinting}
                 onClick={handlePrint}
-                className="px-4 py-2 rounded-xl bg-white text-black font-semibold text-xs hover:bg-neutral-200 transition-all cursor-pointer shadow-[0_0_15px_rgba(255,255,255,0.2)] flex items-center gap-2"
+                className="px-4 py-2 rounded-xl bg-white text-black font-semibold text-xs hover:bg-neutral-200 transition-all cursor-pointer shadow-[0_0_20px_rgba(255,255,255,0.2)] flex items-center gap-2 disabled:opacity-50"
               >
                 <Printer className="w-3.5 h-3.5" />
-                <span>Print / Save as PDF</span>
+                <span>{isPrinting ? 'Formatting PDF...' : 'Print / Save as PDF'}</span>
               </button>
 
               <button
@@ -620,7 +960,7 @@ export const OfficialLabRecordModal: React.FC<OfficialLabRecordModalProps> = ({
                   </div>
 
                   <div className="col-span-2">
-                    <label className="text-[10px] text-[var(--text-muted)]">Faculty / Teacher In-charge</label>
+                    <label className="text-[10px] text-[var(--text-muted)]">Faculty / Teacher In-Charge</label>
                     <input
                       type="text"
                       value={facultyName}
@@ -762,66 +1102,65 @@ export const OfficialLabRecordModal: React.FC<OfficialLabRecordModalProps> = ({
             </div>
 
             {/* Right Live A4 Sheet Preview (8 cols) */}
-            <div className="lg:col-span-8 p-4 sm:p-6 overflow-y-auto bg-neutral-900/60 flex justify-center">
+            <div className="lg:col-span-8 p-4 sm:p-6 overflow-y-auto bg-neutral-950/80 flex justify-center">
               {/* The Actual A4 Sheet Paper Mockup */}
               <div
-                ref={printPreviewRef}
-                className="w-full max-w-[760px] bg-white text-black p-8 sm:p-12 shadow-2xl rounded-sm border border-neutral-300 font-serif leading-relaxed text-sm select-text transition-all"
+                className="w-full max-w-[760px] bg-white text-black p-8 sm:p-12 shadow-2xl rounded-xs border border-neutral-300 font-sans leading-relaxed text-sm select-text transition-all"
                 style={{ minHeight: '1000px', color: '#000000', backgroundColor: '#FFFFFF' }}
               >
                 {/* 1. Official Double Border Header */}
-                <div className="border-2 border-black p-4 text-center mb-5 bg-white">
+                <div className="border-[2.5px] border-black outline outline-1 outline-black outline-offset-[3px] p-4 text-center mb-5 bg-white">
                   <h1 className="text-xl sm:text-2xl font-bold uppercase tracking-wide font-serif mb-1" style={{ color: '#000000' }}>
                     {collegeName}
                   </h1>
-                  <h2 className="text-sm sm:text-base font-semibold uppercase tracking-wider text-neutral-800 mb-2 font-serif">
+                  <h2 className="text-sm sm:text-base font-semibold uppercase tracking-wider text-neutral-800 mb-2">
                     {departmentName}
                   </h2>
-                  <div className="inline-block bg-black text-white px-5 py-0.5 text-xs font-bold uppercase tracking-widest rounded-xs font-sans">
-                    Laboratory Practical Record
+                  <div className="inline-block bg-black text-white px-5 py-0.5 text-xs font-bold uppercase tracking-widest rounded-xs">
+                    Official Laboratory Practical Record
                   </div>
                 </div>
 
                 {/* 2. Official Student Credentials Matrix */}
-                <table className="w-full border-collapse border border-neutral-800 text-xs mb-5 font-sans">
+                <table className="w-full border-collapse border border-black text-xs mb-5">
                   <tbody>
                     <tr>
-                      <td className="border border-neutral-700 bg-neutral-100 px-3 py-1.5 font-bold w-1/4">Name of Student:</td>
-                      <td className="border border-neutral-700 px-3 py-1.5 w-1/4 font-semibold">{studentName}</td>
-                      <td className="border border-neutral-700 bg-neutral-100 px-3 py-1.5 font-bold w-1/4">Roll No. / PRN:</td>
-                      <td className="border border-neutral-700 px-3 py-1.5 w-1/4 font-mono font-bold">{rollNumber}</td>
+                      <td className="border border-black bg-neutral-100 px-3 py-1.5 font-bold w-1/4">Name of Student:</td>
+                      <td className="border border-black px-3 py-1.5 w-1/4 font-semibold">{studentName}</td>
+                      <td className="border border-black bg-neutral-100 px-3 py-1.5 font-bold w-1/4">Roll No. / PRN:</td>
+                      <td className="border border-black px-3 py-1.5 w-1/4 font-mono font-bold">{rollNumber}</td>
                     </tr>
                     <tr>
-                      <td className="border border-neutral-700 bg-neutral-100 px-3 py-1.5 font-bold">Subject / Course:</td>
-                      <td className="border border-neutral-700 px-3 py-1.5 font-semibold">{subject?.name || 'Practical Laboratory'}</td>
-                      <td className="border border-neutral-700 bg-neutral-100 px-3 py-1.5 font-bold">Class / Sem:</td>
-                      <td className="border border-neutral-700 px-3 py-1.5">{semester}</td>
+                      <td className="border border-black bg-neutral-100 px-3 py-1.5 font-bold">Subject / Course:</td>
+                      <td className="border border-black px-3 py-1.5 font-semibold">{subject?.name || 'Practical Laboratory'}</td>
+                      <td className="border border-black bg-neutral-100 px-3 py-1.5 font-bold">Class / Sem:</td>
+                      <td className="border border-black px-3 py-1.5">{semester}</td>
                     </tr>
                     <tr>
-                      <td className="border border-neutral-700 bg-neutral-100 px-3 py-1.5 font-bold">Batch & Division:</td>
-                      <td className="border border-neutral-700 px-3 py-1.5">{batch}</td>
-                      <td className="border border-neutral-700 bg-neutral-100 px-3 py-1.5 font-bold">Academic Year:</td>
-                      <td className="border border-neutral-700 px-3 py-1.5">{academicYear}</td>
+                      <td className="border border-black bg-neutral-100 px-3 py-1.5 font-bold">Batch & Division:</td>
+                      <td className="border border-black px-3 py-1.5">{batch}</td>
+                      <td className="border border-black bg-neutral-100 px-3 py-1.5 font-bold">Academic Year:</td>
+                      <td className="border border-black px-3 py-1.5">{academicYear}</td>
                     </tr>
                     <tr>
-                      <td className="border border-neutral-700 bg-neutral-100 px-3 py-1.5 font-bold">Date of Conduction:</td>
-                      <td className="border border-neutral-700 px-3 py-1.5 font-mono">{conductionDate}</td>
-                      <td className="border border-neutral-700 bg-neutral-100 px-3 py-1.5 font-bold">Date of Submission:</td>
-                      <td className="border border-neutral-700 px-3 py-1.5 font-mono">{submissionDate}</td>
+                      <td className="border border-black bg-neutral-100 px-3 py-1.5 font-bold">Date of Conduction:</td>
+                      <td className="border border-black px-3 py-1.5 font-mono">{conductionDate}</td>
+                      <td className="border border-black bg-neutral-100 px-3 py-1.5 font-bold">Date of Submission:</td>
+                      <td className="border border-black px-3 py-1.5 font-mono">{submissionDate}</td>
                     </tr>
                   </tbody>
                 </table>
 
                 {/* 3. Experiment Title & Identifier Banner */}
                 <div className="border-l-4 border-black border-y border-r border-neutral-300 p-3 mb-5 bg-neutral-50">
-                  <p className="text-xs font-bold uppercase tracking-wider text-neutral-600 font-sans">
+                  <p className="text-xs font-bold uppercase tracking-wider text-neutral-600">
                     {experiment.experiment_number || 'EXP-01'}
                   </p>
                   <h3 className="text-lg font-bold text-black mt-0.5 font-serif">
                     {experiment.title}
                   </h3>
                   {experiment.topic && (
-                    <p className="text-xs text-neutral-600 font-sans mt-0.5">
+                    <p className="text-xs text-neutral-600 mt-0.5">
                       Topic: {experiment.topic}
                     </p>
                   )}
@@ -829,8 +1168,8 @@ export const OfficialLabRecordModal: React.FC<OfficialLabRecordModalProps> = ({
 
                 {/* 4. Aim & Objectives */}
                 {includeAim && (
-                  <div className="mb-5 avoid-break">
-                    <h4 className="text-xs font-bold uppercase tracking-wide border-b border-black pb-1 mb-2 font-sans flex items-center justify-between">
+                  <div className="mb-5">
+                    <h4 className="text-xs font-bold uppercase tracking-wide border-b border-black pb-1 mb-2 flex items-center justify-between">
                       <span>1. Aim & Objectives</span>
                     </h4>
                     <p className="text-xs sm:text-sm text-neutral-900 leading-relaxed font-serif">
@@ -841,8 +1180,8 @@ export const OfficialLabRecordModal: React.FC<OfficialLabRecordModalProps> = ({
 
                 {/* 5. Prerequisites & Complexity */}
                 {includeTheory && (
-                  <div className="mb-5 avoid-break">
-                    <h4 className="text-xs font-bold uppercase tracking-wide border-b border-black pb-1 mb-2 font-sans">
+                  <div className="mb-5">
+                    <h4 className="text-xs font-bold uppercase tracking-wide border-b border-black pb-1 mb-2">
                       <span>2. Prerequisites & Theoretical Background</span>
                     </h4>
                     <p className="text-xs sm:text-sm text-neutral-900 leading-relaxed font-serif whitespace-pre-line">
@@ -851,7 +1190,7 @@ export const OfficialLabRecordModal: React.FC<OfficialLabRecordModalProps> = ({
                     </p>
 
                     {(experiment.time_complexity || experiment.space_complexity) && (
-                      <div className="mt-2.5 p-2 bg-neutral-100 border border-neutral-300 rounded-sm text-xs font-sans grid grid-cols-2 gap-2">
+                      <div className="mt-2.5 p-2 bg-neutral-100 border border-neutral-300 rounded-xs text-xs grid grid-cols-2 gap-2">
                         <div>
                           <span className="font-bold">Time Complexity: </span>
                           <span className="font-mono">{experiment.time_complexity || 'O(n)'}</span>
@@ -867,8 +1206,8 @@ export const OfficialLabRecordModal: React.FC<OfficialLabRecordModalProps> = ({
 
                 {/* 6. Step-by-Step Algorithm */}
                 {includeAlgorithm && (
-                  <div className="mb-5 avoid-break">
-                    <h4 className="text-xs font-bold uppercase tracking-wide border-b border-black pb-1 mb-2 font-sans">
+                  <div className="mb-5">
+                    <h4 className="text-xs font-bold uppercase tracking-wide border-b border-black pb-1 mb-2">
                       <span>3. Algorithm / Step-by-Step Procedure</span>
                     </h4>
                     <div className="text-xs sm:text-sm text-neutral-900 leading-relaxed font-serif whitespace-pre-line pl-2">
@@ -880,8 +1219,8 @@ export const OfficialLabRecordModal: React.FC<OfficialLabRecordModalProps> = ({
 
                 {/* 7. Formatted Source Code */}
                 {includeCode && (
-                  <div className="mb-5 avoid-break">
-                    <div className="flex items-center justify-between border-b border-black pb-1 mb-2 font-sans">
+                  <div className="mb-5">
+                    <div className="flex items-center justify-between border-b border-black pb-1 mb-2">
                       <h4 className="text-xs font-bold uppercase tracking-wide">
                         4. Source Code Implementation
                       </h4>
@@ -890,30 +1229,33 @@ export const OfficialLabRecordModal: React.FC<OfficialLabRecordModalProps> = ({
                       </span>
                     </div>
 
-                    <pre className="p-3 bg-neutral-50 border border-neutral-800 text-[11px] font-mono leading-relaxed overflow-x-auto whitespace-pre-wrap break-all text-black">
-                      {activeSnippet.code}
-                    </pre>
+                    <div className="border-[1.5px] border-black bg-white">
+                      <pre
+                        className="p-3 text-[11px] font-mono leading-relaxed overflow-x-auto whitespace-pre-wrap break-all text-black"
+                        dangerouslySetInnerHTML={{ __html: formatCodeWithLineNumbers(activeSnippet.code) }}
+                      />
+                    </div>
                   </div>
                 )}
 
                 {/* 8. Sample Input & Execution Output */}
                 {includeOutput && (
-                  <div className="mb-5 avoid-break">
-                    <h4 className="text-xs font-bold uppercase tracking-wide border-b border-black pb-1 mb-2 font-sans">
+                  <div className="mb-5">
+                    <h4 className="text-xs font-bold uppercase tracking-wide border-b border-black pb-1 mb-2">
                       <span>5. Sample Input & Verified Execution Output</span>
                     </h4>
 
                     {experiment.sample_input && (
                       <div className="mb-2">
-                        <p className="text-[11px] font-bold font-sans text-neutral-700">Sample Input:</p>
+                        <p className="text-[11px] font-bold text-neutral-700">Sample Input:</p>
                         <pre className="p-2 bg-neutral-100 border border-neutral-400 text-[11px] font-mono text-black">
                           {experiment.sample_input}
                         </pre>
                       </div>
                     )}
 
-                    <div className="p-3 bg-neutral-50 border-2 border-dashed border-neutral-700 text-[11px] font-mono text-black space-y-1">
-                      <div className="flex items-center justify-between pb-1 mb-1 border-b border-neutral-300 text-[10px] text-neutral-600 font-sans">
+                    <div className="p-3 bg-neutral-50 border-2 border-dashed border-black text-[11px] font-mono text-black space-y-1">
+                      <div className="flex items-center justify-between pb-1 mb-1 border-b border-neutral-300 text-[10px] text-neutral-600">
                         <span>Terminal Output Console</span>
                         <span className="font-bold text-emerald-800">[EXECUTION COMPLETED • EXIT CODE 0]</span>
                       </div>
@@ -928,14 +1270,14 @@ export const OfficialLabRecordModal: React.FC<OfficialLabRecordModalProps> = ({
 
                 {/* 9. Attached Handwritten Observation Sheets / Notebook Photos (The Highlight!) */}
                 {includeHandwrittenScans && handwrittenImages.length > 0 && (
-                  <div className="mb-6 avoid-break">
-                    <h4 className="text-xs font-bold uppercase tracking-wide border-b border-black pb-1 mb-3 font-sans">
+                  <div className="mb-6">
+                    <h4 className="text-xs font-bold uppercase tracking-wide border-b border-black pb-1 mb-3">
                       <span>6. Attached Handwritten Laboratory Record / Observation Sheets</span>
                     </h4>
 
                     <div className="space-y-4">
                       {handwrittenImages.map((img, i) => (
-                        <div key={i} className="text-center p-2 border border-neutral-400 bg-neutral-50 rounded-xs">
+                        <div key={i} className="text-center p-2 border border-black bg-white rounded-xs">
                           <img
                             src={img}
                             alt={`Handwritten Sheet ${i + 1}`}
@@ -952,31 +1294,31 @@ export const OfficialLabRecordModal: React.FC<OfficialLabRecordModalProps> = ({
 
                 {/* 10. University Marking Rubric & Signature Block */}
                 {includeRubric && (
-                  <div className="mt-6 pt-2 avoid-break">
-                    <h4 className="text-xs font-bold uppercase tracking-wide border-b border-black pb-1 mb-2 font-sans">
+                  <div className="mt-6 pt-2">
+                    <h4 className="text-xs font-bold uppercase tracking-wide border-b border-black pb-1 mb-2">
                       <span>7. Continuous Assessment & Evaluation</span>
                     </h4>
 
-                    <table className="w-full border-collapse border border-neutral-800 text-xs text-center font-sans mb-6">
+                    <table className="w-full border-collapse border border-black text-xs text-center mb-6">
                       <thead>
                         <tr className="bg-neutral-100">
-                          <th className="border border-neutral-700 p-2 font-bold">Performance / Conduction (05)</th>
-                          <th className="border border-neutral-700 p-2 font-bold">Documentation & Code (05)</th>
-                          <th className="border border-neutral-700 p-2 font-bold">Viva-Voce & Logic (05)</th>
-                          <th className="border border-neutral-700 p-2 font-bold">Total Marks (15)</th>
+                          <th className="border border-black p-2 font-bold">Performance / Conduction (05)</th>
+                          <th className="border border-black p-2 font-bold">Documentation & Code (05)</th>
+                          <th className="border border-black p-2 font-bold">Viva-Voce & Logic (05)</th>
+                          <th className="border border-black p-2 font-bold">Total Marks (15)</th>
                         </tr>
                       </thead>
                       <tbody>
                         <tr>
-                          <td className="border border-neutral-700 p-4 font-mono font-bold text-sm">/ 05</td>
-                          <td className="border border-neutral-700 p-4 font-mono font-bold text-sm">/ 05</td>
-                          <td className="border border-neutral-700 p-4 font-mono font-bold text-sm">/ 05</td>
-                          <td className="border border-neutral-700 p-4 font-mono font-bold text-sm">/ 15</td>
+                          <td className="border border-black p-4 font-mono font-bold text-sm">/ 05</td>
+                          <td className="border border-black p-4 font-mono font-bold text-sm">/ 05</td>
+                          <td className="border border-black p-4 font-mono font-bold text-sm">/ 05</td>
+                          <td className="border border-black p-4 font-mono font-bold text-sm bg-neutral-50">/ 15</td>
                         </tr>
                       </tbody>
                     </table>
 
-                    <div className="flex items-end justify-between pt-6 font-sans text-xs">
+                    <div className="flex items-end justify-between pt-6 text-xs">
                       <div>
                         <p className="font-bold text-neutral-800">Date of Checking: _______________</p>
                         <p className="text-[11px] text-neutral-600 mt-1">Remarks: _______________________</p>
@@ -992,7 +1334,7 @@ export const OfficialLabRecordModal: React.FC<OfficialLabRecordModalProps> = ({
                 )}
 
                 {/* 11. Page Footer */}
-                <div className="mt-8 pt-2 border-t border-neutral-300 flex items-center justify-between text-[10px] text-neutral-500 font-sans">
+                <div className="mt-8 pt-2 border-t border-neutral-300 flex items-center justify-between text-[10px] text-neutral-500">
                   <span>CodeVault Academic Laboratory System • MIT-WPU</span>
                   <span>Official University Submission Sheet</span>
                 </div>
