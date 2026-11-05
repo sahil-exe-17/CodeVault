@@ -3,7 +3,7 @@ import { Link, useNavigate } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Code2, Plus, LogOut, User as UserIcon, Sparkles, ChevronDown, Cpu, Sun, Moon } from 'lucide-react'
 import { useAuthStore } from '@/store/authStore'
-import { useThemeStore } from '@/store/themeStore'
+import { useThemeStore, toggleThemeWithCircularAnimation } from '@/store/themeStore'
 
 interface AppNavbarProps {
   onAddSubject?: () => void
@@ -89,12 +89,12 @@ export const AppNavbar: React.FC<AppNavbarProps> = ({
             </motion.button>
           )}
 
-          {/* Theme Toggle */}
+          {/* Theme Toggle with Circular Reveal Animation */}
           <button
             type="button"
-            onClick={toggleTheme}
+            onClick={(e) => toggleThemeWithCircularAnimation(e)}
             title={theme === 'dark' ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
-            className="w-8 h-8 flex items-center justify-center rounded-xl border border-[var(--border-subtle)] hover:border-[var(--border-hover)] bg-[var(--bg-metric)] hover:bg-[var(--bg-card-hover)] transition-all cursor-pointer text-[var(--text-muted)] hover:text-[var(--text-main)] shadow-sm"
+            className="w-8 h-8 flex items-center justify-center rounded-xl border border-[var(--border-subtle)] hover:border-[var(--border-hover)] bg-[var(--bg-metric)] hover:bg-[var(--bg-card-hover)] transition-all cursor-pointer text-[var(--text-muted)] hover:text-[var(--text-main)] shadow-sm active:scale-95"
           >
             {theme === 'dark'
               ? <Sun className="w-3.5 h-3.5" />

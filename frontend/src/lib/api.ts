@@ -1,12 +1,17 @@
 import axios from 'axios'
 
 // Smart base URL detection:
-// 1. If VITE_API_BASE_URL or VITE_API_URL is explicitly set, use it.
-// 2. Otherwise use relative '' in browser so Vite dev proxy handles it smoothly.
+// 1. If running locally on localhost/127.0.0.1, use VITE_API_BASE_URL (http://localhost:8000).
+// 2. If running remotely or on https://, only use custom URL if it's secure (https://).
+// 3. Otherwise use relative '' so web reverse-proxy handles it without Mixed Content errors.
 const getBaseURL = () => {
   if (typeof window !== 'undefined') {
+    const isLocalhost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
     const custom = import.meta.env.VITE_API_BASE_URL || import.meta.env.VITE_API_URL
-    if (custom) return custom
+    if (custom) {
+      if (isLocalhost) return custom
+      if (custom.startsWith('https://')) return custom
+    }
   }
   return ''
 }
@@ -80,22 +85,16 @@ export const experimentsApi = {
   markRevised: (id: string) => api.post(`/api/experiments/${id}/mark-revised`),
   getRelated: (id: string) => api.get(`/api/experiments/${id}/related`),
   importFile: (formData: FormData) =>
-    api.post('/api/experiments/import-file', formData, {
-      headers: { 'Content-Type': 'multipart/form-data' },
-    }),
+    api.post('/api/experiments/import-file', formData),
   uploadNotebookPdf: (id: string, formData: FormData) =>
-    api.post(`/api/experiments/${id}/notebook-pdf`, formData, {
-      headers: { 'Content-Type': 'multipart/form-data' },
-    }),
+    api.post(`/api/experiments/${id}/notebook-pdf`, formData),
   removeNotebookPdf: (id: string) => api.delete(`/api/experiments/${id}/notebook-pdf`),
   extractCodeFromPhoto: (formData: FormData) =>
     api.post('/api/experiments/extract-code-photo', formData, {
-      headers: { 'Content-Type': 'multipart/form-data' },
       timeout: 90000,
     }),
   extractAndUpdateFromPhoto: (id: string, formData: FormData) =>
     api.post(`/api/experiments/${id}/extract-from-photo`, formData, {
-      headers: { 'Content-Type': 'multipart/form-data' },
       timeout: 90000,
     }),
 }

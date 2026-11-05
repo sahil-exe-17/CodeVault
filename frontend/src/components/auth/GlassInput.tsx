@@ -1,4 +1,5 @@
 import React, { useState } from 'react'
+import { Eye, EyeOff } from 'lucide-react'
 
 interface GlassInputProps extends React.InputHTMLAttributes<HTMLInputElement> {
   label?: string
@@ -6,8 +7,12 @@ interface GlassInputProps extends React.InputHTMLAttributes<HTMLInputElement> {
 }
 
 export const GlassInput = React.forwardRef<HTMLInputElement, GlassInputProps>(
-  ({ label, icon, className = '', onChange, onKeyDown, onFocus, onBlur, ...props }, ref) => {
+  ({ label, icon, type = 'text', className = '', onChange, onKeyDown, onFocus, onBlur, ...props }, ref) => {
     const [isFocused, setIsFocused] = useState(false)
+    const [showPassword, setShowPassword] = useState(false)
+
+    const isPassword = type === 'password'
+    const computedType = isPassword ? (showPassword ? 'text' : 'password') : type
 
     return (
       <div className="w-full flex flex-col gap-1.5">
@@ -39,6 +44,7 @@ export const GlassInput = React.forwardRef<HTMLInputElement, GlassInputProps>(
 
             <input
               ref={ref}
+              type={computedType}
               onFocus={(e) => {
                 setIsFocused(true)
                 if (onFocus) onFocus(e)
@@ -51,9 +57,26 @@ export const GlassInput = React.forwardRef<HTMLInputElement, GlassInputProps>(
               onChange={onChange}
               className={`w-full bg-transparent text-[var(--text-main)] placeholder-[var(--text-dim)] text-sm py-2.5 px-3.5 focus:outline-none focus:ring-0 ${
                 icon ? 'pl-2' : ''
-              }`}
+              } ${isPassword ? 'pr-2' : ''}`}
               {...props}
             />
+
+            {/* Show / Hide Password Toggle */}
+            {isPassword && (
+              <button
+                type="button"
+                onClick={() => setShowPassword((prev) => !prev)}
+                className="pr-3.5 pl-2 py-2 text-[var(--text-dim)] hover:text-[var(--text-main)] transition-colors cursor-pointer focus:outline-none shrink-0"
+                title={showPassword ? 'Hide password' : 'Show password'}
+                tabIndex={-1}
+              >
+                {showPassword ? (
+                  <EyeOff className="w-4 h-4" />
+                ) : (
+                  <Eye className="w-4 h-4" />
+                )}
+              </button>
+            )}
 
             {/* Clean bottom line on focus */}
             <div

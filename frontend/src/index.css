@@ -281,3 +281,73 @@
 ::-webkit-scrollbar-thumb:hover {
   background: var(--border-subtle);
 }
+
+/* ══════════════════════════════════════════════════════════
+   VIEW TRANSITION — Circular Theme Wipe Animation
+   ══════════════════════════════════════════════════════════ */
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation: none;
+  mix-blend-mode: normal;
+}
+
+::view-transition-old(root) {
+  z-index: 1;
+}
+
+::view-transition-new(root) {
+  z-index: 9999;
+}
+
+/* Fallback circular ripple for browsers without native View Transitions */
+.cv-theme-circle-ripple {
+  position: fixed;
+  pointer-events: none;
+  border-radius: 50%;
+  transform: translate(-50%, -50%) scale(0);
+  animation: cv-circle-expand 0.55s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  z-index: 999999;
+}
+
+@keyframes cv-circle-expand {
+  0% {
+    transform: translate(-50%, -50%) scale(0);
+    opacity: 0.85;
+  }
+  100% {
+    transform: translate(-50%, -50%) scale(4);
+    opacity: 0;
+  }
+}
+
+/* ══════════════════════════════════════════════════════════
+   MOBILE PERFORMANCE OPTIMIZATIONS (Butter-smooth 60fps)
+   ══════════════════════════════════════════════════════════ */
+@media (max-width: 768px) {
+  /* Tame heavy backdrop-filter to prevent mobile GPU frame drops */
+  .backdrop-blur-3xl,
+  .backdrop-blur-2xl,
+  .backdrop-blur-xl {
+    backdrop-filter: blur(8px) !important;
+    -webkit-backdrop-filter: blur(8px) !important;
+  }
+
+  /* GPU Layer Promotion for mobile cards and lists */
+  main,
+  .grid,
+  .cv-pill-options-list {
+    transform: translateZ(0);
+    -webkit-transform: translateZ(0);
+    -webkit-overflow-scrolling: touch;
+  }
+
+  /* Eliminate touch tap delay on mobile buttons */
+  button,
+  a,
+  input,
+  select,
+  textarea,
+  label {
+    touch-action: manipulation;
+  }
+}

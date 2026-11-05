@@ -268,8 +268,8 @@ export const SubjectDetail: React.FC = () => {
 
   return (
     <div className="relative min-h-screen bg-[var(--bg-canvas)] text-[var(--text-main)] select-none flex flex-col overflow-hidden transition-colors duration-200">
-      <div className="absolute top-0 right-1/4 w-[500px] h-[300px] bg-gradient-to-br from-purple-500/10 via-pink-500/10 to-transparent blur-[120px] pointer-events-none" />
-      <div className="absolute top-1/3 left-10 w-[450px] h-[300px] bg-gradient-to-tr from-sky-500/10 to-transparent blur-[120px] pointer-events-none" />
+      <div className="hidden md:block absolute top-0 right-1/4 w-[500px] h-[300px] bg-gradient-to-br from-purple-500/10 via-pink-500/10 to-transparent blur-[120px] pointer-events-none" />
+      <div className="hidden md:block absolute top-1/3 left-10 w-[450px] h-[300px] bg-gradient-to-tr from-sky-500/10 to-transparent blur-[120px] pointer-events-none" />
 
       <AppNavbar showAddSubject={false} />
 

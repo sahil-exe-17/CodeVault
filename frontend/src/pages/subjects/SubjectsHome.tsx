@@ -138,9 +138,9 @@ export const SubjectsHome: React.FC = () => {
 
   return (
     <div className="relative min-h-screen bg-[var(--bg-canvas)] text-[var(--text-main)] select-none flex flex-col overflow-hidden transition-colors duration-200">
-      {/* Dynamic Ambient Aurora Glow in Background */}
-      <div className="absolute top-0 left-1/4 w-[600px] h-[350px] bg-gradient-to-br from-pink-500/10 via-purple-600/10 to-transparent blur-[120px] pointer-events-none" />
-      <div className="absolute top-1/3 right-10 w-[500px] h-[350px] bg-gradient-to-bl from-sky-500/10 via-emerald-500/10 to-transparent blur-[120px] pointer-events-none" />
+      {/* Dynamic Ambient Aurora Glow in Background (Optimized: hidden on mobile to guarantee 60fps buttery scrolling) */}
+      <div className="hidden md:block absolute top-0 left-1/4 w-[600px] h-[350px] bg-gradient-to-br from-pink-500/10 via-purple-600/10 to-transparent blur-[120px] pointer-events-none" />
+      <div className="hidden md:block absolute top-1/3 right-10 w-[500px] h-[350px] bg-gradient-to-bl from-sky-500/10 via-emerald-500/10 to-transparent blur-[120px] pointer-events-none" />
 
       {/* 1 Top Button: Crazy Animated Add Subject Bar */}
       <AppNavbar
