@@ -2,6 +2,7 @@ import React, { useState, useRef, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import {
   Printer,
+  Download,
   X,
   FileText,
   Upload,
@@ -19,6 +20,7 @@ import {
   Eye,
   Award,
   BookOpen,
+  RotateCcw,
 } from 'lucide-react'
 import { useAuthStore } from '@/store/authStore'
 import type { Experiment, CodeSnippetItem } from '@/types'
@@ -32,6 +34,8 @@ interface OfficialLabRecordModalProps {
   activeCodeSnippet?: CodeSnippetItem
   allCodeSnippets?: CodeSnippetItem[]
 }
+
+const DEFAULT_CREST_SVG = `data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" fill="none"><circle cx="50" cy="50" r="46" stroke="%23111827" stroke-width="2.5" fill="%23f9fafb"/><circle cx="50" cy="50" r="40" stroke="%23111827" stroke-width="1.2" stroke-dasharray="2 2"/><path d="M50 20 L75 32 L75 56 C75 68 50 80 50 80 C50 80 25 68 25 56 L25 32 Z" fill="%23ffffff" stroke="%23111827" stroke-width="2"/><path d="M36 44 Q50 38 50 48 Q50 38 64 44 L64 62 Q50 56 50 64 Q50 56 36 62 Z" fill="%23f3f4f6" stroke="%23111827" stroke-width="1.5"/><line x1="50" y1="48" x2="50" y2="64" stroke="%23111827" stroke-width="1.5"/><circle cx="50" cy="30" r="3.5" fill="%23111827"/><path d="M47 34 L53 34 L51 38 L49 38 Z" fill="%23111827"/></svg>`
 
 const escapeHtml = (unsafe: string): string => {
   return (unsafe || '')
@@ -78,6 +82,18 @@ export const OfficialLabRecordModal: React.FC<OfficialLabRecordModalProps> = ({
   )
   const [facultyName, setFacultyName] = useState('Prof. Lab In-Charge')
 
+  // University Logo Customization
+  const [universityLogo, setUniversityLogo] = useState<string>(() => {
+    return localStorage.getItem('cv_saved_university_logo') || DEFAULT_CREST_SVG
+  })
+  const [showLogo, setShowLogo] = useState(true)
+  const logoInputRef = useRef<HTMLInputElement | null>(null)
+
+  // Evaluation & Assessment (Universal — No rigid rubrics)
+  const [maxMarks, setMaxMarks] = useState('25')
+  const [marksAwarded, setMarksAwarded] = useState('')
+  const [teacherRemarks, setTeacherRemarks] = useState('')
+
   // Section Toggles
   const [includeAim, setIncludeAim] = useState(true)
   const [includeTheory, setIncludeTheory] = useState(true)
@@ -85,15 +101,17 @@ export const OfficialLabRecordModal: React.FC<OfficialLabRecordModalProps> = ({
   const [includeCode, setIncludeCode] = useState(true)
   const [includeOutput, setIncludeOutput] = useState(true)
   const [includeHandwrittenScans, setIncludeHandwrittenScans] = useState(true)
-  const [includeRubric, setIncludeRubric] = useState(true)
+  const [includeEvaluation, setIncludeEvaluation] = useState(true)
 
   // Handwritten Notebook Photos / Scanned Observation Sheets
   const [handwrittenImages, setHandwrittenImages] = useState<string[]>([])
   const [isAttachingPhoto, setIsAttachingPhoto] = useState(false)
+  const [isDownloadingPdf, setIsDownloadingPdf] = useState(false)
   const [isPrinting, setIsPrinting] = useState(false)
   const fileInputRef = useRef<HTMLInputElement | null>(null)
+  const previewContainerRef = useRef<HTMLDivElement | null>(null)
 
-  // Load any previously attached photos from localStorage for this experiment
+  // Load attached photos for this experiment
   useEffect(() => {
     if (!experiment.id) return
     try {
@@ -108,7 +126,6 @@ export const OfficialLabRecordModal: React.FC<OfficialLabRecordModalProps> = ({
     } catch {}
   }, [experiment.id])
 
-  // Save attached photos
   const persistPhotos = (images: string[]) => {
     if (!experiment.id) return
     try {
@@ -117,6 +134,37 @@ export const OfficialLabRecordModal: React.FC<OfficialLabRecordModalProps> = ({
     } catch (e) {
       console.warn('Failed to persist lab record photos:', e)
     }
+  }
+
+  // Handle Logo Upload from device
+  const handleLogoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+
+    if (!file.type.startsWith('image/')) {
+      toast.error('Please upload an image file (PNG, JPG, SVG)')
+      return
+    }
+
+    const reader = new FileReader()
+    reader.onload = () => {
+      const base64 = reader.result as string
+      setUniversityLogo(base64)
+      try {
+        localStorage.setItem('cv_saved_university_logo', base64)
+      } catch {}
+      toast.success('University logo updated!')
+    }
+    reader.readAsDataURL(file)
+    e.target.value = ''
+  }
+
+  const handleResetLogo = () => {
+    setUniversityLogo(DEFAULT_CREST_SVG)
+    try {
+      localStorage.removeItem('cv_saved_university_logo')
+    } catch {}
+    toast.success('Reset to standard academic crest.')
   }
 
   // Handle uploading photos of handwritten pages / notebook scans
@@ -170,7 +218,7 @@ export const OfficialLabRecordModal: React.FC<OfficialLabRecordModalProps> = ({
     code: experiment.source_code || '',
   }
 
-  // Formatted source code with clean line numbers
+  // Formatted source code with line numbers
   const formatCodeWithLineNumbers = (code: string) => {
     const lines = (code || '').split('\n')
     return lines
@@ -182,7 +230,7 @@ export const OfficialLabRecordModal: React.FC<OfficialLabRecordModalProps> = ({
   }
 
   /**
-   * Generates the self-contained, 100% styled official university print sheet
+   * Generates the self-contained HTML for the print engine
    */
   const generateOfficialLabRecordHtml = (): string => {
     const subjectTitle = subject?.name || 'Practical Laboratory'
@@ -310,40 +358,46 @@ export const OfficialLabRecordModal: React.FC<OfficialLabRecordModalProps> = ({
       </div>`
         : ''
 
-    const rubricHtml = includeRubric
+    // Universal Teacher / Examiner Assessment Block (No rigid rubrics)
+    const evaluationHtml = includeEvaluation
       ? `
       <div class="section-box avoid-break" style="margin-top: 24px;">
         <div class="section-title">
-          <span>7. CONTINUOUS ASSESSMENT & EVALUATION RUBRIC</span>
+          <span>TEACHER / EXAMINER EVALUATION & SIGNATURE</span>
         </div>
-        <table class="rubric-table">
-          <thead>
-            <tr>
-              <th>Performance & Conduction (05)</th>
-              <th>Code Quality & Syntax (05)</th>
-              <th>Viva-Voce & Concept (05)</th>
-              <th>Total Marks (15)</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td class="marks-cell">/ 05</td>
-              <td class="marks-cell">/ 05</td>
-              <td class="marks-cell">/ 05</td>
-              <td class="marks-cell total-marks">/ 15</td>
-            </tr>
-          </tbody>
-        </table>
 
-        <div class="signature-row">
-          <div class="sig-col">
-            <div><strong>Date of Checking:</strong> __________________</div>
-            <div style="margin-top: 6px;"><strong>Remarks:</strong> __________________________</div>
-          </div>
-          <div class="sig-col" style="text-align: right;">
-            <div class="sig-line"></div>
-            <div style="font-weight: bold; text-transform: uppercase; font-size: 10pt;">${escapeHtml(facultyName)}</div>
-            <div style="font-size: 9pt; color: #555;">Faculty In-Charge / Examiner Signature</div>
+        <div class="eval-box">
+          <div class="eval-row">
+            <div class="eval-left">
+              <div class="eval-line-item">
+                <span class="eval-label">Marks Awarded:</span>
+                <span class="eval-line-val mono">
+                  ${marksAwarded ? `<strong>${escapeHtml(marksAwarded)}</strong>` : '_______'} / ${escapeHtml(maxMarks)}
+                </span>
+              </div>
+
+              <div class="eval-line-item" style="margin-top: 10px;">
+                <span class="eval-label">Date of Assessment:</span>
+                <span class="eval-line-val mono">${escapeHtml(submissionDate)}</span>
+              </div>
+
+              <div class="eval-line-item" style="margin-top: 10px;">
+                <span class="eval-label">Examiner Remarks:</span>
+                <span class="eval-line-val" style="flex: 1;">${teacherRemarks ? escapeHtml(teacherRemarks) : '_________________________________________________'}</span>
+              </div>
+            </div>
+
+            <div class="eval-right">
+              <div class="stamp-placeholder">
+                DEPARTMENT STAMP / SEAL
+              </div>
+
+              <div class="sig-wrapper">
+                <div class="sig-line-bar"></div>
+                <div class="sig-title-name">${escapeHtml(facultyName)}</div>
+                <div class="sig-subtitle">Faculty In-Charge / Examiner Signature</div>
+              </div>
+            </div>
           </div>
         </div>
       </div>`
@@ -357,7 +411,7 @@ export const OfficialLabRecordModal: React.FC<OfficialLabRecordModalProps> = ({
   <style>
     @page {
       size: A4 portrait;
-      margin: 12mm 14mm 12mm 14mm;
+      margin: 10mm 12mm 10mm 12mm;
     }
     * {
       box-sizing: border-box;
@@ -395,18 +449,38 @@ export const OfficialLabRecordModal: React.FC<OfficialLabRecordModalProps> = ({
       break-before: page !important;
     }
 
-    /* Double Border Institutional Header */
+    /* Header with Optional Logo */
     .univ-header-box {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 16px;
       border: 2.5px solid #000000;
-      outline: 1px solid #000000;
+      outline: 1.5px solid #000000;
       outline-offset: 3px;
-      padding: 14px 18px;
-      text-align: center;
+      padding: 12px 18px;
       margin-bottom: 16px;
       background: #ffffff;
     }
+    .univ-logo-wrap {
+      width: 70px;
+      height: 70px;
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .univ-logo-img {
+      max-width: 100%;
+      max-height: 100%;
+      object-fit: contain;
+    }
+    .univ-title-wrap {
+      flex: 1;
+      text-align: center;
+    }
     .univ-title {
-      font-size: 16pt;
+      font-size: 15pt;
       font-weight: 800;
       text-transform: uppercase;
       letter-spacing: 0.5px;
@@ -415,19 +489,19 @@ export const OfficialLabRecordModal: React.FC<OfficialLabRecordModalProps> = ({
       color: #000000;
     }
     .dept-title {
-      font-size: 11pt;
+      font-size: 10.5pt;
       font-weight: 600;
       text-transform: uppercase;
       letter-spacing: 0.5px;
-      margin: 0 0 8px 0;
+      margin: 0 0 6px 0;
       color: #222222;
     }
     .record-pill {
       display: inline-block;
       background: #000000;
       color: #ffffff;
-      padding: 3px 18px;
-      font-size: 9.5pt;
+      padding: 2.5px 16px;
+      font-size: 9pt;
       font-weight: 700;
       text-transform: uppercase;
       letter-spacing: 1.5px;
@@ -606,52 +680,68 @@ export const OfficialLabRecordModal: React.FC<OfficialLabRecordModalProps> = ({
       font-family: "Crimson Pro", Georgia, serif;
     }
 
-    /* Rubric Table */
-    .rubric-table {
-      width: 100%;
-      border-collapse: collapse;
-      margin-top: 6px;
-      margin-bottom: 16px;
-      font-size: 9pt;
-      text-align: center;
-    }
-    .rubric-table th, .rubric-table td {
+    /* Universal Evaluation Box */
+    .eval-box {
       border: 1.5px solid #000000;
-      padding: 8px 10px;
+      padding: 12px 16px;
+      background: #ffffff;
     }
-    .rubric-table th {
-      background: #f3f4f6;
-      font-weight: 700;
-      text-transform: uppercase;
-      font-size: 8.5pt;
-    }
-    .marks-cell {
-      font-family: "JetBrains Mono", monospace;
-      font-size: 11pt;
-      font-weight: 700;
-      padding: 12px !important;
-    }
-    .total-marks {
-      background: #f9fafb;
-    }
-
-    /* Signature Area */
-    .signature-row {
+    .eval-row {
       display: flex;
       justify-content: space-between;
       align-items: flex-end;
-      margin-top: 30px;
-      padding-top: 10px;
+      gap: 20px;
     }
-    .sig-col {
+    .eval-left {
       flex: 1;
+    }
+    .eval-line-item {
+      display: flex;
+      align-items: baseline;
+      gap: 8px;
       font-size: 9.5pt;
     }
-    .sig-line {
-      width: 220px;
+    .eval-label {
+      font-weight: 700;
+      color: #111827;
+      min-width: 125px;
+    }
+    .eval-line-val {
+      color: #000000;
+    }
+    .eval-right {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+      gap: 12px;
+    }
+    .stamp-placeholder {
+      border: 1.5px dashed #4b5563;
+      padding: 6px 14px;
+      font-size: 8pt;
+      font-weight: 700;
+      letter-spacing: 0.5px;
+      color: #4b5563;
+      text-align: center;
+      background: #f9fafb;
+    }
+    .sig-wrapper {
+      text-align: right;
+    }
+    .sig-line-bar {
+      width: 200px;
       border-bottom: 2px solid #000000;
+      margin-bottom: 4px;
       margin-left: auto;
-      margin-bottom: 6px;
+    }
+    .sig-title-name {
+      font-weight: 800;
+      font-size: 9.5pt;
+      text-transform: uppercase;
+    }
+    .sig-subtitle {
+      font-size: 8pt;
+      color: #4b5563;
     }
 
     /* Footer */
@@ -668,11 +758,21 @@ export const OfficialLabRecordModal: React.FC<OfficialLabRecordModalProps> = ({
 </head>
 <body>
   <div class="page-container">
-    <!-- Header -->
+    <!-- Header with University Logo -->
     <div class="univ-header-box">
-      <h1 class="univ-title">${escapeHtml(collegeName)}</h1>
-      <h2 class="dept-title">${escapeHtml(departmentName)}</h2>
-      <div class="record-pill">Official Laboratory Practical Record</div>
+      ${
+        showLogo && universityLogo
+          ? `
+        <div class="univ-logo-wrap">
+          <img src="${universityLogo}" alt="University Logo" class="univ-logo-img" />
+        </div>`
+          : ''
+      }
+      <div class="univ-title-wrap">
+        <h1 class="univ-title">${escapeHtml(collegeName)}</h1>
+        <h2 class="dept-title">${escapeHtml(departmentName)}</h2>
+        <div class="record-pill">Official Laboratory Practical Record</div>
+      </div>
     </div>
 
     <!-- Student Credentials Table -->
@@ -718,7 +818,7 @@ export const OfficialLabRecordModal: React.FC<OfficialLabRecordModalProps> = ({
     ${codeHtml}
     ${outputHtml}
     ${handwrittenHtml}
-    ${rubricHtml}
+    ${evaluationHtml}
 
     <!-- Footer -->
     <div class="page-footer">
@@ -730,15 +830,56 @@ export const OfficialLabRecordModal: React.FC<OfficialLabRecordModalProps> = ({
 </html>`
   }
 
-  // 1-Click Print & PDF Export Execution (Iframe Based: 0 Pop-up block risk, mobile friendly)
+  // Direct 1-Click Client-Side PDF Download (.pdf file via html2pdf.js)
+  const handleDownloadPdf = async () => {
+    setIsDownloadingPdf(true)
+    const toastId = toast.loading('Generating high-resolution official PDF file...')
+
+    try {
+      const element = document.getElementById('official-a4-preview-content')
+      if (!element) {
+        throw new Error('Preview element not found')
+      }
+
+      const html2pdfModule = await import('html2pdf.js')
+      const html2pdf = (html2pdfModule as any).default || html2pdfModule
+
+      const filename = `${(experiment.experiment_number || 'EXP').replace(/\s+/g, '_')}_${(experiment.title || 'Record').replace(/[^a-zA-Z0-9]/g, '_')}_Lab_Record.pdf`
+
+      const opt = {
+        margin: [8, 10, 8, 10], // top, left, bottom, right in mm
+        filename: filename,
+        image: { type: 'jpeg', quality: 0.98 },
+        html2canvas: {
+          scale: 2,
+          useCORS: true,
+          letterRendering: true,
+          logging: false,
+          backgroundColor: '#ffffff',
+          windowWidth: 800,
+        },
+        jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
+        pagebreak: { mode: ['avoid-all', 'css', 'legacy'] },
+      }
+
+      await html2pdf().set(opt).from(element).save()
+      toast.success('Official Lab Record PDF downloaded!', { id: toastId })
+    } catch (err: any) {
+      console.error('PDF generation error:', err)
+      toast.error('Failed to generate PDF: ' + (err.message || 'Error'), { id: toastId })
+    } finally {
+      setIsDownloadingPdf(false)
+    }
+  }
+
+  // Print Sheet (Hidden Iframe: Zero Pop-up Blocker Risk)
   const handlePrint = () => {
     setIsPrinting(true)
-    const toastId = toast.loading('Formatting official university print sheet...')
+    const toastId = toast.loading('Preparing official printout...')
 
     try {
       const fullHtml = generateOfficialLabRecordHtml()
 
-      // Create or reuse hidden iframe
       let iframe = document.getElementById('cv-official-print-iframe') as HTMLIFrameElement
       if (!iframe) {
         iframe = document.createElement('iframe')
@@ -755,7 +896,6 @@ export const OfficialLabRecordModal: React.FC<OfficialLabRecordModalProps> = ({
 
       const doc = iframe.contentWindow?.document
       if (!doc) {
-        // Fallback popup if iframe document not accessible
         const w = window.open('', '_blank')
         if (w) {
           w.document.open()
@@ -786,11 +926,10 @@ export const OfficialLabRecordModal: React.FC<OfficialLabRecordModalProps> = ({
         }
       }
 
-      // Allow all fonts and images (including base64 photos) to render
       setTimeout(triggerPrint, 500)
     } catch (err: any) {
       setIsPrinting(false)
-      toast.error('Failed to generate print sheet: ' + err.message, { id: toastId })
+      toast.error('Failed to print: ' + err.message, { id: toastId })
     }
   }
 
@@ -821,20 +960,34 @@ export const OfficialLabRecordModal: React.FC<OfficialLabRecordModalProps> = ({
                   </span>
                 </div>
                 <p className="text-xs text-[var(--text-muted)]">
-                  Formats code, aim, step-by-step algorithms, handwritten observation photos & teacher marks rubric into a university submission file.
+                  Formats code, aim, algorithms, handwritten notebook scans & teacher signatures into an official university submission file.
                 </p>
               </div>
             </div>
 
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-2.5">
+              {/* Direct 1-Click PDF Download */}
+              <button
+                type="button"
+                disabled={isDownloadingPdf}
+                onClick={handleDownloadPdf}
+                className="px-3.5 py-2 rounded-xl bg-white text-black font-semibold text-xs hover:bg-neutral-200 transition-all cursor-pointer shadow-[0_0_20px_rgba(255,255,255,0.2)] flex items-center gap-2 disabled:opacity-50"
+                title="Download direct .pdf file to your device"
+              >
+                <Download className="w-3.5 h-3.5 text-black" />
+                <span>{isDownloadingPdf ? 'Generating PDF...' : 'Download PDF'}</span>
+              </button>
+
+              {/* Print Sheet */}
               <button
                 type="button"
                 disabled={isPrinting}
                 onClick={handlePrint}
-                className="px-4 py-2 rounded-xl bg-white text-black font-semibold text-xs hover:bg-neutral-200 transition-all cursor-pointer shadow-[0_0_20px_rgba(255,255,255,0.2)] flex items-center gap-2 disabled:opacity-50"
+                className="px-3.5 py-2 rounded-xl bg-[var(--bg-metric)] hover:bg-[var(--bg-card-hover)] border border-[var(--border-subtle)] text-[var(--text-main)] font-semibold text-xs transition-all cursor-pointer flex items-center gap-2 disabled:opacity-50"
+                title="Print or Save via Browser Print Dialog"
               >
-                <Printer className="w-3.5 h-3.5" />
-                <span>{isPrinting ? 'Formatting PDF...' : 'Print / Save as PDF'}</span>
+                <Printer className="w-3.5 h-3.5 text-amber-400" />
+                <span>Print Sheet</span>
               </button>
 
               <button
@@ -851,8 +1004,65 @@ export const OfficialLabRecordModal: React.FC<OfficialLabRecordModalProps> = ({
           <div className="flex-1 grid grid-cols-1 lg:grid-cols-12 min-h-0 overflow-hidden">
             {/* Left Controls & Customization Sidebar (4 cols) */}
             <div className="lg:col-span-4 border-r border-[var(--border-subtle)] p-5 overflow-y-auto space-y-6 text-xs bg-[var(--bg-metric)]/20">
-              {/* College & University Info */}
+              {/* University Logo Customization (Requested Feature!) */}
               <div className="space-y-3">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-1.5 font-bold uppercase tracking-wider text-[11px] text-[var(--text-dim)]">
+                    <Award className="w-3.5 h-3.5 text-amber-400" />
+                    <span>University / College Logo</span>
+                  </div>
+
+                  <label className="flex items-center gap-1.5 cursor-pointer text-[11px] text-[var(--text-muted)]">
+                    <input
+                      type="checkbox"
+                      checked={showLogo}
+                      onChange={(e) => setShowLogo(e.target.checked)}
+                      className="rounded accent-white"
+                    />
+                    <span>Show Logo</span>
+                  </label>
+                </div>
+
+                {showLogo && (
+                  <div className="p-3 rounded-2xl bg-[var(--bg-card)] border border-[var(--border-subtle)] space-y-2.5">
+                    <div className="flex items-center gap-3">
+                      <div className="w-14 h-14 rounded-xl border border-[var(--border-subtle)] bg-white p-1.5 flex items-center justify-center shrink-0 shadow-sm overflow-hidden">
+                        <img src={universityLogo} alt="Logo Preview" className="w-full h-full object-contain" />
+                      </div>
+
+                      <div className="space-y-1.5 flex-1">
+                        <input
+                          ref={logoInputRef}
+                          type="file"
+                          accept="image/*"
+                          onChange={handleLogoUpload}
+                          className="hidden"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => logoInputRef.current?.click()}
+                          className="w-full py-1.5 px-2.5 rounded-lg bg-[var(--bg-metric)] hover:bg-[var(--bg-card-hover)] border border-[var(--border-subtle)] text-[11px] font-semibold flex items-center justify-center gap-1.5 transition-all cursor-pointer text-[var(--text-main)]"
+                        >
+                          <Upload className="w-3 h-3" />
+                          <span>Upload Custom Logo</span>
+                        </button>
+
+                        <button
+                          type="button"
+                          onClick={handleResetLogo}
+                          className="w-full py-1 px-2 rounded-lg text-[10px] text-[var(--text-dim)] hover:text-[var(--text-main)] flex items-center justify-center gap-1 transition-colors cursor-pointer"
+                        >
+                          <RotateCcw className="w-2.5 h-2.5" />
+                          <span>Reset to Academic Crest</span>
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {/* College & University Info */}
+              <div className="space-y-3 pt-2 border-t border-[var(--border-subtle)]">
                 <div className="flex items-center gap-1.5 font-bold uppercase tracking-wider text-[11px] text-[var(--text-dim)]">
                   <Building2 className="w-3.5 h-3.5 text-amber-400" />
                   <span>College & Department</span>
@@ -931,11 +1141,11 @@ export const OfficialLabRecordModal: React.FC<OfficialLabRecordModalProps> = ({
                 </div>
               </div>
 
-              {/* Dates & Faculty */}
+              {/* Dates & Faculty Evaluation Settings (Universal — No Rigid Rubrics) */}
               <div className="space-y-3 pt-2 border-t border-[var(--border-subtle)]">
                 <div className="flex items-center gap-1.5 font-bold uppercase tracking-wider text-[11px] text-[var(--text-dim)]">
                   <Calendar className="w-3.5 h-3.5 text-emerald-400" />
-                  <span>Dates & Evaluation</span>
+                  <span>Evaluation & Faculty Block</span>
                 </div>
 
                 <div className="grid grid-cols-2 gap-2">
@@ -959,12 +1169,45 @@ export const OfficialLabRecordModal: React.FC<OfficialLabRecordModalProps> = ({
                     />
                   </div>
 
+                  <div>
+                    <label className="text-[10px] text-[var(--text-muted)]">Max Marks</label>
+                    <input
+                      type="text"
+                      placeholder="e.g. 25 / 50"
+                      value={maxMarks}
+                      onChange={(e) => setMaxMarks(e.target.value)}
+                      className="w-full mt-1 bg-[var(--bg-input)] border border-[var(--border-subtle)] rounded-lg px-2.5 py-1.5 text-xs text-[var(--text-main)] focus:outline-none font-mono"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="text-[10px] text-[var(--text-muted)]">Marks Awarded (Optional)</label>
+                    <input
+                      type="text"
+                      placeholder="Leave blank for teacher"
+                      value={marksAwarded}
+                      onChange={(e) => setMarksAwarded(e.target.value)}
+                      className="w-full mt-1 bg-[var(--bg-input)] border border-[var(--border-subtle)] rounded-lg px-2.5 py-1.5 text-xs text-[var(--text-main)] focus:outline-none font-mono"
+                    />
+                  </div>
+
                   <div className="col-span-2">
-                    <label className="text-[10px] text-[var(--text-muted)]">Faculty / Teacher In-Charge</label>
+                    <label className="text-[10px] text-[var(--text-muted)]">Faculty In-Charge / Examiner</label>
                     <input
                       type="text"
                       value={facultyName}
                       onChange={(e) => setFacultyName(e.target.value)}
+                      className="w-full mt-1 bg-[var(--bg-input)] border border-[var(--border-subtle)] rounded-lg px-2.5 py-1.5 text-xs text-[var(--text-main)] focus:outline-none"
+                    />
+                  </div>
+
+                  <div className="col-span-2">
+                    <label className="text-[10px] text-[var(--text-muted)]">Teacher Remarks (Optional)</label>
+                    <input
+                      type="text"
+                      placeholder="e.g. Executed successfully. Viva questions answered."
+                      value={teacherRemarks}
+                      onChange={(e) => setTeacherRemarks(e.target.value)}
                       className="w-full mt-1 bg-[var(--bg-input)] border border-[var(--border-subtle)] rounded-lg px-2.5 py-1.5 text-xs text-[var(--text-main)] focus:outline-none"
                     />
                   </div>
@@ -1037,6 +1280,16 @@ export const OfficialLabRecordModal: React.FC<OfficialLabRecordModalProps> = ({
                     />
                     <span>Handwritten Pages</span>
                   </label>
+
+                  <label className="flex items-center gap-2 cursor-pointer text-xs col-span-2">
+                    <input
+                      type="checkbox"
+                      checked={includeEvaluation}
+                      onChange={(e) => setIncludeEvaluation(e.target.checked)}
+                      className="rounded accent-white"
+                    />
+                    <span>Examiner Assessment Block</span>
+                  </label>
                 </div>
               </div>
 
@@ -1103,21 +1356,31 @@ export const OfficialLabRecordModal: React.FC<OfficialLabRecordModalProps> = ({
 
             {/* Right Live A4 Sheet Preview (8 cols) */}
             <div className="lg:col-span-8 p-4 sm:p-6 overflow-y-auto bg-neutral-950/80 flex justify-center">
-              {/* The Actual A4 Sheet Paper Mockup */}
+              {/* The Actual A4 Sheet Paper Mockup Target for html2pdf and print */}
               <div
+                id="official-a4-preview-content"
+                ref={previewContainerRef}
                 className="w-full max-w-[760px] bg-white text-black p-8 sm:p-12 shadow-2xl rounded-xs border border-neutral-300 font-sans leading-relaxed text-sm select-text transition-all"
                 style={{ minHeight: '1000px', color: '#000000', backgroundColor: '#FFFFFF' }}
               >
-                {/* 1. Official Double Border Header */}
-                <div className="border-[2.5px] border-black outline outline-1 outline-black outline-offset-[3px] p-4 text-center mb-5 bg-white">
-                  <h1 className="text-xl sm:text-2xl font-bold uppercase tracking-wide font-serif mb-1" style={{ color: '#000000' }}>
-                    {collegeName}
-                  </h1>
-                  <h2 className="text-sm sm:text-base font-semibold uppercase tracking-wider text-neutral-800 mb-2">
-                    {departmentName}
-                  </h2>
-                  <div className="inline-block bg-black text-white px-5 py-0.5 text-xs font-bold uppercase tracking-widest rounded-xs">
-                    Official Laboratory Practical Record
+                {/* 1. Official Header with Optional University Logo */}
+                <div className="border-[2.5px] border-black outline outline-1 outline-black outline-offset-[3px] p-4 text-center mb-5 bg-white flex items-center justify-center gap-4">
+                  {showLogo && universityLogo && (
+                    <div className="w-16 h-16 shrink-0 flex items-center justify-center">
+                      <img src={universityLogo} alt="University Logo" className="max-w-full max-h-full object-contain" />
+                    </div>
+                  )}
+
+                  <div className="flex-1 text-center">
+                    <h1 className="text-xl sm:text-2xl font-bold uppercase tracking-wide font-serif mb-1" style={{ color: '#000000' }}>
+                      {collegeName}
+                    </h1>
+                    <h2 className="text-sm sm:text-base font-semibold uppercase tracking-wider text-neutral-800 mb-2">
+                      {departmentName}
+                    </h2>
+                    <div className="inline-block bg-black text-white px-5 py-0.5 text-xs font-bold uppercase tracking-widest rounded-xs">
+                      Official Laboratory Practical Record
+                    </div>
                   </div>
                 </div>
 
@@ -1292,42 +1555,47 @@ export const OfficialLabRecordModal: React.FC<OfficialLabRecordModalProps> = ({
                   </div>
                 )}
 
-                {/* 10. University Marking Rubric & Signature Block */}
-                {includeRubric && (
+                {/* 10. Universal Faculty / Examiner Assessment Block (No rigid rubrics!) */}
+                {includeEvaluation && (
                   <div className="mt-6 pt-2">
                     <h4 className="text-xs font-bold uppercase tracking-wide border-b border-black pb-1 mb-2">
-                      <span>7. Continuous Assessment & Evaluation</span>
+                      <span>7. Teacher / Examiner Evaluation & Signature</span>
                     </h4>
 
-                    <table className="w-full border-collapse border border-black text-xs text-center mb-6">
-                      <thead>
-                        <tr className="bg-neutral-100">
-                          <th className="border border-black p-2 font-bold">Performance / Conduction (05)</th>
-                          <th className="border border-black p-2 font-bold">Documentation & Code (05)</th>
-                          <th className="border border-black p-2 font-bold">Viva-Voce & Logic (05)</th>
-                          <th className="border border-black p-2 font-bold">Total Marks (15)</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        <tr>
-                          <td className="border border-black p-4 font-mono font-bold text-sm">/ 05</td>
-                          <td className="border border-black p-4 font-mono font-bold text-sm">/ 05</td>
-                          <td className="border border-black p-4 font-mono font-bold text-sm">/ 05</td>
-                          <td className="border border-black p-4 font-mono font-bold text-sm bg-neutral-50">/ 15</td>
-                        </tr>
-                      </tbody>
-                    </table>
+                    <div className="border-[1.5px] border-black p-4 bg-white">
+                      <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-6">
+                        <div className="space-y-2.5 flex-1 text-xs">
+                          <div className="flex items-baseline gap-2">
+                            <span className="font-bold text-neutral-900 min-w-[120px]">Marks Awarded:</span>
+                            <span className="font-mono text-sm font-bold">
+                              {marksAwarded ? marksAwarded : '_______'} / {maxMarks}
+                            </span>
+                          </div>
 
-                    <div className="flex items-end justify-between pt-6 text-xs">
-                      <div>
-                        <p className="font-bold text-neutral-800">Date of Checking: _______________</p>
-                        <p className="text-[11px] text-neutral-600 mt-1">Remarks: _______________________</p>
-                      </div>
+                          <div className="flex items-baseline gap-2">
+                            <span className="font-bold text-neutral-900 min-w-[120px]">Date of Assessment:</span>
+                            <span className="font-mono">{submissionDate}</span>
+                          </div>
 
-                      <div className="text-center">
-                        <div className="w-44 border-b-2 border-black mb-1.5"></div>
-                        <p className="font-bold uppercase text-[11px]">{facultyName}</p>
-                        <p className="text-[10px] text-neutral-600">Faculty In-charge / Examiner</p>
+                          <div className="flex items-baseline gap-2">
+                            <span className="font-bold text-neutral-900 min-w-[120px]">Examiner Remarks:</span>
+                            <span className="text-neutral-700 italic flex-1">
+                              {teacherRemarks ? teacherRemarks : '_________________________________________________'}
+                            </span>
+                          </div>
+                        </div>
+
+                        <div className="flex flex-col items-end gap-3 shrink-0">
+                          <div className="border-[1.5px] border-dashed border-neutral-500 px-3 py-1.5 text-[9px] font-bold text-neutral-600 uppercase tracking-wider text-center bg-neutral-50">
+                            Department Stamp / Seal
+                          </div>
+
+                          <div className="text-right">
+                            <div className="w-48 border-b-2 border-black mb-1"></div>
+                            <p className="font-bold uppercase text-[11px]">{facultyName}</p>
+                            <p className="text-[10px] text-neutral-600">Faculty In-charge / Examiner Signature</p>
+                          </div>
+                        </div>
                       </div>
                     </div>
                   </div>
@@ -1335,7 +1603,7 @@ export const OfficialLabRecordModal: React.FC<OfficialLabRecordModalProps> = ({
 
                 {/* 11. Page Footer */}
                 <div className="mt-8 pt-2 border-t border-neutral-300 flex items-center justify-between text-[10px] text-neutral-500">
-                  <span>CodeVault Academic Laboratory System • MIT-WPU</span>
+                  <span>CodeVault Academic Laboratory System • {collegeName}</span>
                   <span>Official University Submission Sheet</span>
                 </div>
               </div>
