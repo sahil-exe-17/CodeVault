@@ -7,48 +7,48 @@
 html.dark,
 [data-theme="dark"] {
   /* Semantic Layout Tokens */
-  --bg-canvas:     #050508;
-  --bg-card:       rgba(18, 18, 23, 0.90);
+  --bg-canvas: #050508;
+  --bg-card: rgba(18, 18, 23, 0.90);
   --bg-card-hover: #16161d;
-  --bg-header:     rgba(7, 7, 10, 0.85);
-  --bg-metric:     rgba(255, 255, 255, 0.04);
-  --bg-input:      #121214;
+  --bg-header: rgba(7, 7, 10, 0.85);
+  --bg-metric: rgba(255, 255, 255, 0.04);
+  --bg-input: #121214;
 
   /* Semantic Typography Tokens — 100% Crisp White */
-  --text-main:     #FFFFFF;
-  --text-muted:    rgba(255, 255, 255, 0.65);
-  --text-dim:      rgba(255, 255, 255, 0.40);
+  --text-main: #FFFFFF;
+  --text-muted: rgba(255, 255, 255, 0.65);
+  --text-dim: rgba(255, 255, 255, 0.40);
 
   /* Semantic Border Tokens */
   --border-subtle: rgba(255, 255, 255, 0.09);
-  --border-hover:  rgba(255, 255, 255, 0.28);
+  --border-hover: rgba(255, 255, 255, 0.28);
 
   /* Button Tokens */
-  --btn-cta-bg:    #FFFFFF;
-  --btn-cta-text:  #000000;
+  --btn-cta-bg: #FFFFFF;
+  --btn-cta-text: #000000;
 
   /* Pill Select Tokens */
-  --sel-bg:              #121214;
-  --sel-bg-hover:        #18181b;
-  --sel-text:            #F5F5F5;
-  --sel-text-muted:      #888888;
-  --sel-border:          rgba(255, 255, 255, 0.12);
-  --sel-border-hover:    rgba(255, 255, 255, 0.25);
-  --sel-focus:           rgba(255, 255, 255, 0.6);
-  --sel-drop-bg:         #151518;
-  --sel-drop-shadow:     0 25px 50px -12px rgba(0, 0, 0, 0.85), 0 0 0 1px rgba(255, 255, 255, 0.08);
-  --sel-drop-border:     rgba(255, 255, 255, 0.10);
-  --sel-search-bg:       #0d0d0f;
-  --sel-search-border:   rgba(255, 255, 255, 0.14);
-  --sel-item-bg:         rgba(255, 255, 255, 0.025);
-  --sel-item-border:     rgba(255, 255, 255, 0.08);
-  --sel-item-hover-bg:   rgba(255, 255, 255, 0.06);
-  --sel-item-active-bg:  rgba(255, 255, 255, 0.12);
+  --sel-bg: #121214;
+  --sel-bg-hover: #18181b;
+  --sel-text: #F5F5F5;
+  --sel-text-muted: #888888;
+  --sel-border: rgba(255, 255, 255, 0.12);
+  --sel-border-hover: rgba(255, 255, 255, 0.25);
+  --sel-focus: rgba(255, 255, 255, 0.6);
+  --sel-drop-bg: #151518;
+  --sel-drop-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.85), 0 0 0 1px rgba(255, 255, 255, 0.08);
+  --sel-drop-border: rgba(255, 255, 255, 0.10);
+  --sel-search-bg: #0d0d0f;
+  --sel-search-border: rgba(255, 255, 255, 0.14);
+  --sel-item-bg: rgba(255, 255, 255, 0.025);
+  --sel-item-border: rgba(255, 255, 255, 0.08);
+  --sel-item-hover-bg: rgba(255, 255, 255, 0.06);
+  --sel-item-active-bg: rgba(255, 255, 255, 0.12);
   --sel-item-active-border: rgba(255, 255, 255, 0.28);
-  --sel-bubble-bg:       rgba(255, 255, 255, 0.06);
-  --sel-check-color:     #FFFFFF;
-  --sel-icon-color:      #999999;
-  --sel-empty-color:     #666666;
+  --sel-bubble-bg: rgba(255, 255, 255, 0.06);
+  --sel-check-color: #FFFFFF;
+  --sel-icon-color: #999999;
+  --sel-empty-color: #666666;
 }
 
 /* ══════════════════════════════════════════════════════════
@@ -57,48 +57,48 @@ html.dark,
 html.light,
 [data-theme="light"] {
   /* Semantic Layout Tokens (Clean modern Apple / Linear aesthetic) */
-  --bg-canvas:     #F8F9FA;
-  --bg-card:       #FFFFFF;
+  --bg-canvas: #F8F9FA;
+  --bg-card: #FFFFFF;
   --bg-card-hover: #F8FAFC;
-  --bg-header:     rgba(255, 255, 255, 0.92);
-  --bg-metric:     #F1F5F9;
-  --bg-input:      #FFFFFF;
+  --bg-header: rgba(255, 255, 255, 0.92);
+  --bg-metric: #F1F5F9;
+  --bg-input: #FFFFFF;
 
   /* Semantic Typography Tokens */
-  --text-main:     #0F172A;
-  --text-muted:    #475569;
-  --text-dim:      #64748B;
+  --text-main: #0F172A;
+  --text-muted: #475569;
+  --text-dim: #64748B;
 
   /* Semantic Border Tokens */
   --border-subtle: #E2E8F0;
-  --border-hover:  #CBD5E1;
+  --border-hover: #CBD5E1;
 
   /* Button Tokens */
-  --btn-cta-bg:    #0F172A;
-  --btn-cta-text:  #FFFFFF;
+  --btn-cta-bg: #0F172A;
+  --btn-cta-text: #FFFFFF;
 
   /* Pill Select Tokens */
-  --sel-bg:              #FFFFFF;
-  --sel-bg-hover:        #F9FAFB;
-  --sel-text:            #1E293B;
-  --sel-text-muted:      #64748B;
-  --sel-border:          #E2E8F0;
-  --sel-border-hover:    #CBD5E1;
-  --sel-focus:           #94A3B8;
-  --sel-drop-bg:         #FFFFFF;
-  --sel-drop-shadow:     0 20px 45px -10px rgba(0, 0, 0, 0.12), 0 0 0 1px rgba(0, 0, 0, 0.05);
-  --sel-drop-border:     #E2E8F0;
-  --sel-search-bg:       #FFFFFF;
-  --sel-search-border:   #86EFAC;
-  --sel-item-bg:         #FFFFFF;
-  --sel-item-border:     #E2E8F0;
-  --sel-item-hover-bg:   #F8FAFC;
-  --sel-item-active-bg:  #F1F5F9;
+  --sel-bg: #FFFFFF;
+  --sel-bg-hover: #F9FAFB;
+  --sel-text: #1E293B;
+  --sel-text-muted: #64748B;
+  --sel-border: #E2E8F0;
+  --sel-border-hover: #CBD5E1;
+  --sel-focus: #94A3B8;
+  --sel-drop-bg: #FFFFFF;
+  --sel-drop-shadow: 0 20px 45px -10px rgba(0, 0, 0, 0.12), 0 0 0 1px rgba(0, 0, 0, 0.05);
+  --sel-drop-border: #E2E8F0;
+  --sel-search-bg: #FFFFFF;
+  --sel-search-border: #86EFAC;
+  --sel-item-bg: #FFFFFF;
+  --sel-item-border: #E2E8F0;
+  --sel-item-hover-bg: #F8FAFC;
+  --sel-item-active-bg: #F1F5F9;
   --sel-item-active-border: #94A3B8;
-  --sel-bubble-bg:       #F1F5F9;
-  --sel-check-color:     #0F172A;
-  --sel-icon-color:      #64748B;
-  --sel-empty-color:     #94A3B8;
+  --sel-bubble-bg: #F1F5F9;
+  --sel-check-color: #0F172A;
+  --sel-icon-color: #64748B;
+  --sel-empty-color: #94A3B8;
 }
 
 @layer base {
@@ -119,12 +119,19 @@ html.light,
     transition: background-color 0.2s ease, color 0.2s ease;
   }
 
-  h1, h2, h3, h4, h5, h6 {
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
     font-family: 'Manrope', -apple-system, BlinkMacSystemFont, sans-serif;
     letter-spacing: -0.02em;
   }
 
-  code, pre, .font-mono {
+  code,
+  pre,
+  .font-mono {
     font-family: 'JetBrains Mono', monospace;
   }
 }
@@ -228,6 +235,7 @@ html.light .modal-card,
     opacity: 0;
     transform: translateY(-8px) scale(0.96);
   }
+
   to {
     opacity: 1;
     transform: translateY(0) scale(1);
@@ -316,17 +324,33 @@ html.light .modal-card,
 
 /* Animations */
 @keyframes laser-pan {
-  0% { transform: translateX(-50%); }
-  100% { transform: translateX(0%); }
+  0% {
+    transform: translateX(-50%);
+  }
+
+  100% {
+    transform: translateX(0%);
+  }
 }
 
 @keyframes shimmer {
-  100% { transform: translateX(100%); }
+  100% {
+    transform: translateX(100%);
+  }
 }
 
 @keyframes pulse-subtle {
-  0%, 100% { opacity: 0.6; transform: scale(1); }
-  50% { opacity: 1; transform: scale(1.02); }
+
+  0%,
+  100% {
+    opacity: 0.6;
+    transform: scale(1);
+  }
+
+  50% {
+    opacity: 1;
+    transform: scale(1.02);
+  }
 }
 
 /* Scrollbar */
@@ -334,13 +358,16 @@ html.light .modal-card,
   width: 5px;
   height: 5px;
 }
+
 ::-webkit-scrollbar-track {
   background: var(--bg-canvas);
 }
+
 ::-webkit-scrollbar-thumb {
   background: var(--border-hover);
   border-radius: 2px;
 }
+
 ::-webkit-scrollbar-thumb:hover {
   background: var(--border-subtle);
 }
@@ -377,6 +404,7 @@ html.light .modal-card,
     transform: translate(-50%, -50%) scale(0);
     opacity: 0.85;
   }
+
   100% {
     transform: translate(-50%, -50%) scale(4);
     opacity: 0;
@@ -387,6 +415,7 @@ html.light .modal-card,
    MOBILE PERFORMANCE OPTIMIZATIONS (Butter-smooth 60fps)
    ══════════════════════════════════════════════════════════ */
 @media (max-width: 768px) {
+
   /* Tame heavy backdrop-filter to prevent mobile GPU frame drops */
   .backdrop-blur-3xl,
   .backdrop-blur-2xl,

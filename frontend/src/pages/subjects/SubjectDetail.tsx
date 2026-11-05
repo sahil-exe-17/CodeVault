@@ -13,6 +13,7 @@ import {
   ExternalLink,
   Layers,
   Code2,
+  Printer,
 } from 'lucide-react'
 import { Button } from '@/components/ui/Button'
 import { Modal } from '@/components/ui/Modal'
@@ -21,6 +22,7 @@ import { Badge } from '@/components/ui/Badge'
 import { Select, SelectOption } from '@/components/ui/Select'
 import { AppNavbar } from '@/components/layout/AppNavbar'
 import { ScanPhotoModal } from '@/components/experiments/ScanPhotoModal'
+import { OfficialLabRecordModal } from '@/components/experiments/OfficialLabRecordModal'
 import { subjectsApi, experimentsApi, aiApi } from '@/lib/api'
 import { useAuthStore } from '@/store/authStore'
 import type { Subject, Experiment } from '@/types'
@@ -42,6 +44,7 @@ export const SubjectDetail: React.FC = () => {
   const [aiModalTitle, setAiModalTitle] = useState('')
   const [aiContent, setAiContent] = useState<any>(null)
   const [isAiLoading, setIsAiLoading] = useState(false)
+  const [selectedExpForRecord, setSelectedExpForRecord] = useState<Experiment | null>(null)
 
   // New Experiment Form
   const [expTitle, setExpTitle] = useState('')
@@ -473,6 +476,18 @@ export const SubjectDetail: React.FC = () => {
 
                       <button
                         type="button"
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          setSelectedExpForRecord(exp)
+                        }}
+                        className="w-7 h-7 rounded-lg text-amber-500 hover:text-amber-400 hover:bg-amber-500/10 flex items-center justify-center transition-all cursor-pointer opacity-90 sm:opacity-0 sm:group-hover:opacity-100"
+                        title="Export Official University Lab Record (PDF)"
+                      >
+                        <Printer className="w-3.5 h-3.5" />
+                      </button>
+
+                      <button
+                        type="button"
                         onClick={(e) => handleDeleteExperiment(e, exp.id, exp.title)}
                         className="w-7 h-7 rounded-lg text-[var(--text-dim)] hover:text-rose-500 hover:bg-rose-500/10 flex items-center justify-center transition-all cursor-pointer opacity-80 sm:opacity-0 sm:group-hover:opacity-100"
                         title="Delete Experiment"
@@ -659,6 +674,18 @@ export const SubjectDetail: React.FC = () => {
           </div>
         </div>
       </Modal>
+
+      {/* Official University Lab Record Modal */}
+      {selectedExpForRecord && (
+        <OfficialLabRecordModal
+          isOpen={!!selectedExpForRecord}
+          onClose={() => setSelectedExpForRecord(null)}
+          experiment={selectedExpForRecord}
+          subject={subject}
+          activeCodeSnippet={selectedExpForRecord.code_files?.[0]}
+          allCodeSnippets={selectedExpForRecord.code_files}
+        />
+      )}
     </div>
   )
 }

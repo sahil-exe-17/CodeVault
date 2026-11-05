@@ -19,6 +19,8 @@ import {
   FileCode,
   CheckCircle2,
   Loader2,
+  Printer,
+  FileText,
 } from 'lucide-react'
 import { Button } from '@/components/ui/Button'
 import { Modal } from '@/components/ui/Modal'
@@ -27,6 +29,7 @@ import { Select, SelectOption } from '@/components/ui/Select'
 import { AppNavbar } from '@/components/layout/AppNavbar'
 import { ScanPhotoModal } from '@/components/experiments/ScanPhotoModal'
 import { AIRecommendationsModal, type CodeRecommendationData } from '@/components/experiments/AIRecommendationsModal'
+import { OfficialLabRecordModal } from '@/components/experiments/OfficialLabRecordModal'
 import { experimentsApi, aiApi } from '@/lib/api'
 import { useThemeStore } from '@/store/themeStore'
 import type { Experiment, CodeSnippetItem } from '@/types'
@@ -87,6 +90,9 @@ export const ExperimentWorkspace: React.FC = () => {
   const [aiModalTitle, setAiModalTitle] = useState('')
   const [isAiLoading, setIsAiLoading] = useState(false)
   const [aiOutput, setAiOutput] = useState<any>(null)
+
+  // University Lab Record / Exam Printout Modal
+  const [isLabRecordOpen, setIsLabRecordOpen] = useState(false)
 
   useEffect(() => {
     if (!id || id === 'new') {
@@ -538,6 +544,17 @@ export const ExperimentWorkspace: React.FC = () => {
             <Button
               variant="secondary"
               size="sm"
+              onClick={() => setIsLabRecordOpen(true)}
+              className="h-8 text-xs font-semibold px-3 bg-gradient-to-r from-amber-500/20 via-orange-500/20 to-amber-500/10 hover:from-amber-500/30 hover:to-orange-500/30 border border-amber-500/40 text-amber-300 hover:text-white flex items-center gap-1.5 shadow-sm transition-all cursor-pointer"
+              title="Export Official University Lab Record (1-Click PDF with signature blocks and handwritten scans)"
+            >
+              <Printer className="w-3.5 h-3.5 text-amber-400" />
+              <span>Export Official Lab Record</span>
+            </Button>
+
+            <Button
+              variant="secondary"
+              size="sm"
               onClick={() => setIsScanOpen(true)}
               className="h-8 text-xs font-medium px-3 bg-[var(--bg-metric)] hover:bg-[var(--bg-card-hover)] border-[var(--border-subtle)] flex items-center gap-1.5"
               title="Read code from photo of notebook, textbook or screen"
@@ -663,6 +680,16 @@ export const ExperimentWorkspace: React.FC = () => {
                 <Download className="w-3.5 h-3.5" />
               </button>
 
+              <button
+                type="button"
+                onClick={() => setIsLabRecordOpen(true)}
+                className="px-2 py-1 text-xs font-medium text-amber-300 hover:text-white bg-amber-500/10 hover:bg-amber-500/20 border border-amber-500/30 rounded-lg transition-colors cursor-pointer flex items-center gap-1.5"
+                title="Export Official University Lab Record (PDF)"
+              >
+                <Printer className="w-3 h-3 text-amber-400" />
+                <span>Export Record</span>
+              </button>
+
               {codeFiles.length > 1 && (
                 <button
                   type="button"
@@ -772,6 +799,15 @@ export const ExperimentWorkspace: React.FC = () => {
                     <Download className="w-3 h-3" />
                     <span>Download</span>
                   </a>
+                  <button
+                    type="button"
+                    onClick={() => setIsLabRecordOpen(true)}
+                    className="inline-flex items-center gap-1 px-2.5 py-1 bg-amber-500/15 hover:bg-amber-500/25 text-amber-300 hover:text-white border border-amber-500/30 rounded text-xs transition-colors cursor-pointer"
+                    title="Export Official University Lab Record with this notebook attached"
+                  >
+                    <Printer className="w-3 h-3" />
+                    <span>Export Lab Record</span>
+                  </button>
                   <a
                     href={`${(import.meta.env.VITE_API_URL || 'http://localhost:8000').replace(/\/$/, '')}${experiment.notebook_pdf_url}`}
                     target="_blank"
@@ -1011,6 +1047,16 @@ export const ExperimentWorkspace: React.FC = () => {
           }
           toast.success('Applied all AI recommendations!')
         }}
+      />
+
+      {/* University Lab Record / Exam Printout Generator (1-Click PDF) */}
+      <OfficialLabRecordModal
+        isOpen={isLabRecordOpen}
+        onClose={() => setIsLabRecordOpen(false)}
+        experiment={experiment}
+        subject={experiment.subject || (experiment.subjects ? { name: experiment.subjects.name, id: experiment.subject_id, user_id: experiment.user_id, created_at: '', updated_at: '' } : null)}
+        activeCodeSnippet={activeSnippet}
+        allCodeSnippets={codeFiles}
       />
     </div>
   )
