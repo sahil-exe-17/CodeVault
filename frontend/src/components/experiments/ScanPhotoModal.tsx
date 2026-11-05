@@ -4,7 +4,7 @@ import { Modal } from '@/components/ui/Modal'
 import { Button } from '@/components/ui/Button'
 import { Badge } from '@/components/ui/Badge'
 import { Select, SelectOption } from '@/components/ui/Select'
-import { Camera, Upload, RefreshCw, Sparkles, FileCode, ArrowRight, Lightbulb, Check } from 'lucide-react'
+import { Camera, Upload, RefreshCw, Sparkles, FileCode, ArrowRight, Lightbulb, Image as ImageIcon } from 'lucide-react'
 import { experimentsApi } from '@/lib/api'
 import toast from 'react-hot-toast'
 
@@ -17,68 +17,76 @@ interface ScanPhotoModalProps {
 }
 
 /**
- * High-performance client-side image compression.
- * Scales down high-res phone camera snapshots (e.g. 4000x3000, 10MB+)
- * to max 1800px width/height and ~350KB JPEG without losing OCR text crispness.
+ * High-performance, memory-efficient client-side image compression.
+ * Uses URL.createObjectURL and Canvas to avoid blowing memory on mobile devices.
+ * HEIC/HEIF files pass through directly so backend's pillow-heif can decode them.
  */
 const compressImageIfNeeded = async (file: File): Promise<File> => {
+  // If file is HEIC / HEIF, don't try canvas compression because mobile web canvas can't decode it
+  const isHeic = /heic|heif/i.test(file.type) || /\.(heic|heif)$/i.test(file.name)
+  if (isHeic) {
+    return file
+  }
+
+  // If already under 700KB, use directly
+  if (file.size <= 700 * 1024) {
+    return file
+  }
+
   return new Promise((resolve) => {
-    // If already under 600KB, use directly
-    if (file.size <= 600 * 1024) {
-      resolve(file)
-      return
-    }
+    const objectUrl = URL.createObjectURL(file)
+    const img = new Image()
 
-    const reader = new FileReader()
-    reader.onload = (e) => {
-      const img = new Image()
-      img.onload = () => {
-        const MAX_DIM = 1800
-        let { width, height } = img
+    img.onload = () => {
+      URL.revokeObjectURL(objectUrl)
+      const MAX_DIM = 2000
+      let { width, height } = img
 
-        if (width > MAX_DIM || height > MAX_DIM) {
-          if (width > height) {
-            height = Math.round((height * MAX_DIM) / width)
-            width = MAX_DIM
-          } else {
-            width = Math.round((width * MAX_DIM) / height)
-            height = MAX_DIM
-          }
+      if (width > MAX_DIM || height > MAX_DIM) {
+        if (width > height) {
+          height = Math.round((height * MAX_DIM) / width)
+          width = MAX_DIM
+        } else {
+          width = Math.round((width * MAX_DIM) / height)
+          height = MAX_DIM
         }
-
-        const canvas = document.createElement('canvas')
-        canvas.width = width
-        canvas.height = height
-        const ctx = canvas.getContext('2d')
-
-        if (!ctx) {
-          resolve(file)
-          return
-        }
-
-        ctx.drawImage(img, 0, 0, width, height)
-        canvas.toBlob(
-          (blob) => {
-            if (!blob) {
-              resolve(file)
-              return
-            }
-            const cleanName = file.name.replace(/\.[^/.]+$/, '') + '.jpg'
-            const compressedFile = new File([blob], cleanName, {
-              type: 'image/jpeg',
-              lastModified: Date.now(),
-            })
-            resolve(compressedFile)
-          },
-          'image/jpeg',
-          0.85
-        )
       }
-      img.onerror = () => resolve(file)
-      img.src = e.target?.result as string
+
+      const canvas = document.createElement('canvas')
+      canvas.width = width
+      canvas.height = height
+      const ctx = canvas.getContext('2d')
+
+      if (!ctx) {
+        resolve(file)
+        return
+      }
+
+      ctx.drawImage(img, 0, 0, width, height)
+      canvas.toBlob(
+        (blob) => {
+          if (!blob) {
+            resolve(file)
+            return
+          }
+          const cleanName = file.name.replace(/\.[^/.]+$/, '') + '.jpg'
+          const compressedFile = new File([blob], cleanName, {
+            type: 'image/jpeg',
+            lastModified: Date.now(),
+          })
+          resolve(compressedFile)
+        },
+        'image/jpeg',
+        0.86
+      )
     }
-    reader.onerror = () => resolve(file)
-    reader.readAsDataURL(file)
+
+    img.onerror = () => {
+      URL.revokeObjectURL(objectUrl)
+      resolve(file)
+    }
+
+    img.src = objectUrl
   })
 }
 
@@ -90,6 +98,7 @@ export const ScanPhotoModal: React.FC<ScanPhotoModalProps> = ({
   onExtracted,
 }) => {
   const navigate = useNavigate()
+  const cameraInputRef = useRef<HTMLInputElement>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
 
   const [selectedFile, setSelectedFile] = useState<File | null>(null)
@@ -102,6 +111,15 @@ export const ScanPhotoModal: React.FC<ScanPhotoModalProps> = ({
   const [editedTitle, setEditedTitle] = useState('')
   const [editedLanguage, setEditedLanguage] = useState('c')
   const [isSaving, setIsSaving] = useState(false)
+
+  // Clean up object URLs on unmount or reset
+  useEffect(() => {
+    return () => {
+      if (previewUrl && previewUrl.startsWith('blob:')) {
+        URL.revokeObjectURL(previewUrl)
+      }
+    }
+  }, [previewUrl])
 
   // Timer while scanning so the user always sees real-time progress
   useEffect(() => {
@@ -121,8 +139,13 @@ export const ScanPhotoModal: React.FC<ScanPhotoModalProps> = ({
     const file = e.target.files?.[0]
     if (!file) return
 
-    if (!file.type.startsWith('image/')) {
-      toast.error('Please select an image file (PNG, JPG, JPEG, WEBP)')
+    // Mobile file check (tolerate iPhone HEIC, empty mime types, Android WebP)
+    const isImage =
+      (file.type && file.type.startsWith('image/')) ||
+      /\.(jpe?g|png|webp|gif|heic|heif|bmp|tiff)$/i.test(file.name)
+
+    if (!isImage) {
+      toast.error('Please select an image file (PNG, JPG, HEIC, WEBP)')
       return
     }
 
@@ -133,15 +156,15 @@ export const ScanPhotoModal: React.FC<ScanPhotoModalProps> = ({
 
     setExtractedData(null)
 
-    // Fast preview
-    const reader = new FileReader()
-    reader.onload = () => {
-      setPreviewUrl(reader.result as string)
+    // Memory-safe fast preview
+    if (previewUrl && previewUrl.startsWith('blob:')) {
+      URL.revokeObjectURL(previewUrl)
     }
-    reader.readAsDataURL(file)
+    const objectUrl = URL.createObjectURL(file)
+    setPreviewUrl(objectUrl)
 
     // Auto-compress large phone photos in background
-    if (file.size > 800 * 1024) {
+    if (file.size > 700 * 1024) {
       const compressed = await compressImageIfNeeded(file)
       setSelectedFile(compressed)
     } else {
@@ -151,7 +174,7 @@ export const ScanPhotoModal: React.FC<ScanPhotoModalProps> = ({
 
   const handleScanPhoto = async () => {
     if (!selectedFile) {
-      toast.error('Please select or drop a photo of code first')
+      toast.error('Please take or select a photo of code first')
       return
     }
 
@@ -164,7 +187,7 @@ export const ScanPhotoModal: React.FC<ScanPhotoModalProps> = ({
     try {
       // Ensure image is compressed before sending
       let fileToSend = selectedFile
-      if (selectedFile.size > 600 * 1024) {
+      if (selectedFile.size > 700 * 1024) {
         fileToSend = await compressImageIfNeeded(selectedFile)
         setSelectedFile(fileToSend)
       }
@@ -247,14 +270,16 @@ export const ScanPhotoModal: React.FC<ScanPhotoModalProps> = ({
   }
 
   const handleReset = () => {
+    if (previewUrl && previewUrl.startsWith('blob:')) {
+      URL.revokeObjectURL(previewUrl)
+    }
     setSelectedFile(null)
     setPreviewUrl(null)
     setExtractedData(null)
     setEditedCode('')
     setEditedTitle('')
-    if (fileInputRef.current) {
-      fileInputRef.current.value = ''
-    }
+    if (fileInputRef.current) fileInputRef.current.value = ''
+    if (cameraInputRef.current) cameraInputRef.current.value = ''
   }
 
   return (
@@ -262,45 +287,70 @@ export const ScanPhotoModal: React.FC<ScanPhotoModalProps> = ({
       isOpen={isOpen}
       onClose={onClose}
       title="Scan Code from Photo (AI Vision)"
-      description="Upload a photo of your handwritten lab notebook, textbook, or computer monitor. Gemini Vision transcribes the code and recommends the program name."
+      description="Capture or upload a photo of your handwritten lab notebook, whiteboard, textbook, or monitor screen. Gemini Vision automatically transcribes the code and recommends program details."
       maxWidth="2xl"
     >
       <div className="space-y-4">
-        {/* Step 1: Upload / Drop Zone */}
+        {/* Step 1: Upload / Camera Options */}
         {!selectedFile ? (
-          <div
-            onClick={() => fileInputRef.current?.click()}
-            className="border-2 border-dashed border-[rgba(255,255,255,0.15)] hover:border-white/40 bg-[var(--bg-card)]/40 rounded-xl p-8 flex flex-col items-center justify-center text-center gap-3 transition-colors cursor-pointer"
-          >
-            <div className="w-12 h-12 rounded-xl bg-[var(--bg-metric)] border border-[var(--border-subtle)] flex items-center justify-center text-white shadow-md">
-              <Camera className="w-6 h-6" />
+          <div className="space-y-3">
+            {/* Direct Dual Action Buttons on Mobile & Desktop */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              {/* Take Photo with Camera (Rear Camera on phone) */}
+              <label className="flex items-center justify-center gap-2.5 p-4 rounded-2xl bg-[var(--btn-cta-bg)] text-[var(--btn-cta-text)] font-semibold text-xs sm:text-sm cursor-pointer hover:opacity-90 active:scale-[0.98] transition-all shadow-md">
+                <Camera className="w-5 h-5 shrink-0" />
+                <span>Take Photo (Camera)</span>
+                <input
+                  ref={cameraInputRef}
+                  type="file"
+                  accept="image/*"
+                  capture="environment"
+                  className="sr-only"
+                  onChange={handleFileSelect}
+                />
+              </label>
+
+              {/* Upload from Gallery / Files */}
+              <label className="flex items-center justify-center gap-2.5 p-4 rounded-2xl bg-[var(--bg-metric)] text-[var(--text-main)] border border-[var(--border-subtle)] hover:border-[var(--border-hover)] font-semibold text-xs sm:text-sm cursor-pointer active:scale-[0.98] transition-all shadow-sm">
+                <ImageIcon className="w-5 h-5 shrink-0 text-[var(--text-muted)]" />
+                <span>Choose from Photos</span>
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept="image/*"
+                  className="sr-only"
+                  onChange={handleFileSelect}
+                />
+              </label>
             </div>
-            <div className="space-y-1">
-              <h4 className="text-sm font-semibold text-white font-['Manrope']">
-                Take or Select Photo of Code
-              </h4>
-              <p className="text-xs text-[var(--text-muted)] max-w-sm leading-relaxed">
-                Supports handwritten lab notebook pages, whiteboard algorithms, lab manual prints, or monitor screens.
-              </p>
-            </div>
-            <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-lg text-xs font-medium bg-white text-black hover:bg-[#E5E5E5] transition-colors mt-2">
-              <Upload className="w-3.5 h-3.5" />
-              <span>Choose Image (PNG, JPG, WEBP)</span>
-            </div>
-            <input
-              ref={fileInputRef}
-              type="file"
-              accept="image/*"
-              className="hidden"
-              onChange={handleFileSelect}
-            />
+
+            {/* Dropzone Container */}
+            <label className="border-2 border-dashed border-[var(--border-subtle)] hover:border-[var(--border-hover)] bg-[var(--bg-metric)]/50 rounded-2xl p-6 sm:p-8 flex flex-col items-center justify-center text-center gap-2.5 transition-colors cursor-pointer block">
+              <div className="w-11 h-11 rounded-xl bg-[var(--bg-card)] border border-[var(--border-subtle)] flex items-center justify-center text-[var(--text-main)] shadow-sm mx-auto">
+                <Upload className="w-5 h-5" />
+              </div>
+              <div className="space-y-1">
+                <h4 className="text-xs sm:text-sm font-semibold text-[var(--text-main)] font-['Manrope']">
+                  Or drag & drop / tap to browse
+                </h4>
+                <p className="text-[11px] sm:text-xs text-[var(--text-muted)] max-w-sm leading-relaxed mx-auto">
+                  Supports handwritten notebooks, phone camera snapshots, HEIC, PNG, JPG, and WEBP up to 25MB.
+                </p>
+              </div>
+              <input
+                type="file"
+                accept="image/*"
+                className="sr-only"
+                onChange={handleFileSelect}
+              />
+            </label>
           </div>
         ) : (
           <div className="space-y-4">
             {/* Photo Preview & Controls */}
-            <div className="flex flex-col sm:flex-row items-center gap-4 p-3.5 bg-[var(--bg-card)] rounded-xl border border-[var(--border-subtle)]">
+            <div className="flex flex-col sm:flex-row items-center gap-3.5 p-3.5 bg-[var(--bg-card)] rounded-2xl border border-[var(--border-subtle)]">
               {previewUrl && (
-                <div className="w-20 h-20 rounded-lg overflow-hidden border border-[var(--border-subtle)] bg-black shrink-0 relative group">
+                <div className="w-24 h-24 sm:w-20 sm:h-20 rounded-xl overflow-hidden border border-[var(--border-subtle)] bg-black shrink-0 relative shadow-sm">
                   <img
                     src={previewUrl}
                     alt="Code snapshot"
@@ -308,9 +358,9 @@ export const ScanPhotoModal: React.FC<ScanPhotoModalProps> = ({
                   />
                 </div>
               )}
-              <div className="flex-1 min-w-0 space-y-1">
-                <div className="flex items-center gap-2">
-                  <span className="text-xs font-semibold text-white truncate max-w-[200px]">
+              <div className="flex-1 min-w-0 space-y-1 text-center sm:text-left">
+                <div className="flex items-center justify-center sm:justify-start gap-2">
+                  <span className="text-xs font-semibold text-[var(--text-main)] truncate max-w-[180px]">
                     {selectedFile.name}
                   </span>
                   <Badge variant="mono" size="sm">
@@ -322,19 +372,20 @@ export const ScanPhotoModal: React.FC<ScanPhotoModalProps> = ({
                     ? `${scanStatus || 'AI reading code...'} (${scanSeconds}s)`
                     : extractedData
                     ? 'AI code transcription complete. Review the code and recommended name below.'
-                    : 'Photo optimized. Ready to transcribe.'}
+                    : 'Photo optimized for AI Vision. Ready to transcribe.'}
                 </p>
               </div>
 
-              <div className="flex items-center gap-2 shrink-0">
+              <div className="flex items-center gap-2 shrink-0 w-full sm:w-auto justify-end">
                 <Button
                   variant="ghost"
                   size="sm"
                   onClick={handleReset}
                   disabled={isScanning}
+                  className="flex-1 sm:flex-initial"
                 >
                   <RefreshCw className="w-3.5 h-3.5 mr-1" />
-                  Change
+                  Retake
                 </Button>
                 {!extractedData && (
                   <Button
@@ -343,6 +394,7 @@ export const ScanPhotoModal: React.FC<ScanPhotoModalProps> = ({
                     onClick={handleScanPhoto}
                     isLoading={isScanning}
                     disabled={isScanning}
+                    className="flex-1 sm:flex-initial"
                   >
                     <Sparkles className="w-3.5 h-3.5 mr-1.5" />
                     <span>{isScanning ? `Reading (${scanSeconds}s)...` : 'Read Code with AI'}</span>
@@ -355,10 +407,10 @@ export const ScanPhotoModal: React.FC<ScanPhotoModalProps> = ({
             {extractedData && (
               <div className="space-y-3 pt-1">
                 {/* AI Recommended Title & Language */}
-                <div className="p-3 bg-[#111116] rounded-xl border border-[var(--border-subtle)] space-y-2">
+                <div className="p-3 bg-[var(--bg-card)] rounded-xl border border-[var(--border-subtle)] space-y-2">
                   <div className="flex items-center justify-between">
-                    <span className="text-[11px] font-semibold text-white/80 flex items-center gap-1.5">
-                      <Sparkles className="w-3 h-3 text-white" />
+                    <span className="text-[11px] font-semibold text-[var(--text-main)] flex items-center gap-1.5">
+                      <Sparkles className="w-3 h-3" />
                       AI Recommended Program Name:
                     </span>
                     <Badge variant="mono" size="sm" className="uppercase">
@@ -368,13 +420,13 @@ export const ScanPhotoModal: React.FC<ScanPhotoModalProps> = ({
 
                   <div className="flex flex-col sm:flex-row items-center gap-2">
                     <div className="flex items-center gap-2 flex-1 w-full">
-                      <FileCode className="w-4 h-4 text-white/60 shrink-0" />
+                      <FileCode className="w-4 h-4 text-[var(--text-muted)] shrink-0" />
                       <input
                         type="text"
                         value={editedTitle}
                         onChange={(e) => setEditedTitle(e.target.value)}
                         placeholder="Experiment Title"
-                        className="bg-[#0c0c0e] text-white font-bold text-xs sm:text-sm px-3 py-1.5 rounded-lg border border-[var(--border-subtle)] focus:border-white focus:outline-none w-full"
+                        className="bg-[var(--bg-metric)] text-[var(--text-main)] font-bold text-xs sm:text-sm px-3 py-2 rounded-lg border border-[var(--border-subtle)] focus:border-white focus:outline-none w-full"
                       />
                     </div>
                     <Select
@@ -404,7 +456,7 @@ export const ScanPhotoModal: React.FC<ScanPhotoModalProps> = ({
                     </span>
                   </div>
                   <textarea
-                    rows={9}
+                    rows={8}
                     value={editedCode}
                     onChange={(e) => setEditedCode(e.target.value)}
                     className="w-full bg-[var(--bg-card)] text-[var(--text-main)] font-mono text-xs rounded-xl border border-[var(--border-subtle)] p-3 focus:border-white focus:outline-none leading-relaxed resize-none shadow-inner"
@@ -414,11 +466,11 @@ export const ScanPhotoModal: React.FC<ScanPhotoModalProps> = ({
                 {/* Aim & Algorithmic Notes */}
                 {extractedData.aim && (
                   <div className="p-3 bg-[var(--bg-card)] rounded-lg border border-[var(--border-subtle)] text-xs text-[var(--text-muted)] space-y-1">
-                    <span className="text-white font-medium text-[11px] flex items-center gap-1">
-                      <Lightbulb className="w-3 h-3 text-white" />
+                    <span className="text-[var(--text-main)] font-medium text-[11px] flex items-center gap-1">
+                      <Lightbulb className="w-3 h-3" />
                       Inferred Academic Aim:
                     </span>
-                    <p className="text-[11px] leading-relaxed text-[#CCCCCC]">{extractedData.aim}</p>
+                    <p className="text-[11px] leading-relaxed text-[var(--text-muted)]">{extractedData.aim}</p>
                   </div>
                 )}
               </div>
@@ -437,6 +489,7 @@ export const ScanPhotoModal: React.FC<ScanPhotoModalProps> = ({
               size="sm"
               onClick={handleApplyOrSave}
               isLoading={isSaving}
+              className="w-full sm:w-auto"
             >
               <span>{experimentId ? 'Apply Code to Editor' : 'Create Experiment from Photo'}</span>
               <ArrowRight className="w-3.5 h-3.5 ml-1.5" />

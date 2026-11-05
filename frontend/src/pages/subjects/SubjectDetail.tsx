@@ -316,8 +316,9 @@ export const SubjectDetail: React.FC = () => {
             <button
               type="button"
               onClick={() => setIsScanOpen(true)}
-              className="h-9 px-3.5 rounded-xl bg-[var(--bg-card)] hover:bg-[var(--bg-card-hover)] border border-[var(--border-subtle)] hover:border-[var(--border-hover)] text-[var(--text-main)] text-xs font-medium flex items-center backdrop-blur-md transition-all cursor-pointer shadow-sm active:scale-[0.98]"
+              className="h-9 px-3.5 rounded-xl bg-[var(--bg-card)] hover:bg-[var(--bg-card-hover)] border border-[var(--border-subtle)] hover:border-[var(--border-hover)] text-[var(--text-main)] text-xs font-medium flex items-center gap-1.5 backdrop-blur-md transition-all cursor-pointer shadow-sm active:scale-[0.98]"
             >
+              <Camera className="w-3.5 h-3.5 text-[var(--text-muted)]" />
               <span>Scan Code Photo</span>
             </button>
 
@@ -466,7 +467,7 @@ export const SubjectDetail: React.FC = () => {
             />
 
             <div className="flex flex-col gap-1.5">
-              <label className="text-xs font-medium text-[var(--text-muted)]">
+              <label className="text-xs font-medium text-[#A1A1A1]">
                 Initial Language
               </label>
               <Select
@@ -493,7 +494,7 @@ export const SubjectDetail: React.FC = () => {
           />
 
           <div className="flex flex-col gap-1.5">
-            <label className="text-xs font-medium text-[var(--text-muted)]">
+            <label className="text-xs font-medium text-[#A1A1A1]">
               Experiment Aim (Optional)
             </label>
             <input
@@ -501,11 +502,11 @@ export const SubjectDetail: React.FC = () => {
               placeholder="e.g. To compute the shortest path from a single source to all vertices"
               value={expAim}
               onChange={(e) => setExpAim(e.target.value)}
-              className="bg-[var(--bg-metric)] text-[var(--text-main)] placeholder-[#666666] text-xs rounded-lg border border-[var(--border-subtle)] px-3 py-2.5 focus:border-white focus:outline-none"
+              className="bg-[#171717] text-[#F5F5F5] placeholder-[#666666] text-xs rounded-lg border border-[rgba(255,255,255,0.09)] px-3 py-2.5 focus:border-white focus:outline-none"
             />
           </div>
 
-          <div className="flex items-center justify-end gap-2 pt-3 border-t border-[var(--border-subtle)]">
+          <div className="flex items-center justify-end gap-2 pt-3 border-t border-[rgba(255,255,255,0.08)]">
             <Button
               variant="ghost"
               size="sm"
@@ -547,21 +548,21 @@ export const SubjectDetail: React.FC = () => {
           {isAiLoading ? (
             <div className="p-8 text-center space-y-3">
               <div className="w-5 h-5 border-2 border-white/20 border-t-white rounded-full animate-spin mx-auto" />
-              <p className="text-xs text-[var(--text-muted)]">Generating analysis from subject practicals...</p>
+              <p className="text-xs text-[#888888]">Generating analysis from subject practicals...</p>
             </div>
           ) : aiContent?.type === 'viva' ? (
             <div className="space-y-3">
               {aiContent.items?.map((item: any, idx: number) => (
                 <div
                   key={idx}
-                  className="p-3.5 bg-[var(--bg-card)] border border-[var(--border-subtle)] rounded-xl space-y-1.5 text-xs"
+                  className="p-3.5 bg-[#141414] border border-[rgba(255,255,255,0.08)] rounded-xl space-y-1.5 text-xs"
                 >
-                  <div className="flex items-center justify-between text-[var(--text-muted)] text-[11px]">
+                  <div className="flex items-center justify-between text-[#888888] text-[11px]">
                     <span className="font-semibold text-white">Question {idx + 1}</span>
                     <span className="font-mono">{item.topic || 'General'}</span>
                   </div>
                   <p className="text-white font-medium">{item.question}</p>
-                  <div className="p-2.5 bg-[#0D0D0D] rounded-lg border border-[var(--border-subtle)] text-[var(--text-muted)]">
+                  <div className="p-2.5 bg-[#0D0D0D] rounded-lg border border-[rgba(255,255,255,0.06)] text-[#A1A1A1]">
                     <span className="text-[11px] text-white font-semibold block mb-0.5">Model Answer:</span>
                     <p className="text-[11px] leading-relaxed">{item.expected_answer}</p>
                   </div>
@@ -570,15 +571,15 @@ export const SubjectDetail: React.FC = () => {
             </div>
           ) : aiContent?.type === 'notes' ? (
             <div className="space-y-4 text-xs">
-              <div className="p-3 bg-[var(--bg-card)] rounded-xl border border-[var(--border-subtle)] space-y-1">
+              <div className="p-3 bg-[#141414] rounded-xl border border-[rgba(255,255,255,0.08)] space-y-1">
                 <span className="font-semibold text-white">Summary</span>
-                <p className="text-[var(--text-muted)] leading-relaxed">{aiContent.data?.summary}</p>
+                <p className="text-[#A1A1A1] leading-relaxed">{aiContent.data?.summary}</p>
               </div>
 
               {aiContent.data?.key_concepts && (
-                <div className="p-3 bg-[var(--bg-card)] rounded-xl border border-[var(--border-subtle)] space-y-2">
+                <div className="p-3 bg-[#141414] rounded-xl border border-[rgba(255,255,255,0.08)] space-y-2">
                   <span className="font-semibold text-white">Key Concepts</span>
-                  <ul className="space-y-1 text-[var(--text-muted)] list-disc list-inside">
+                  <ul className="space-y-1 text-[#A1A1A1] list-disc list-inside">
                     {aiContent.data.key_concepts.map((c: string, i: number) => (
                       <li key={i}>{c}</li>
                     ))}
@@ -587,9 +588,9 @@ export const SubjectDetail: React.FC = () => {
               )}
 
               {aiContent.data?.exam_tips && (
-                <div className="p-3 bg-[var(--bg-card)] rounded-xl border border-[var(--border-subtle)] space-y-2">
+                <div className="p-3 bg-[#141414] rounded-xl border border-[rgba(255,255,255,0.08)] space-y-2">
                   <span className="font-semibold text-white">Practical Exam Tips</span>
-                  <ul className="space-y-1 text-[var(--text-muted)] list-disc list-inside">
+                  <ul className="space-y-1 text-[#A1A1A1] list-disc list-inside">
                     {aiContent.data.exam_tips.map((t: string, i: number) => (
                       <li key={i}>{t}</li>
                     ))}
@@ -599,7 +600,7 @@ export const SubjectDetail: React.FC = () => {
             </div>
           ) : null}
 
-          <div className="flex justify-end pt-3 border-t border-[var(--border-subtle)]">
+          <div className="flex justify-end pt-3 border-t border-[rgba(255,255,255,0.08)]">
             <Button variant="ghost" size="sm" onClick={() => setIsAiModalOpen(false)}>
               Close
             </Button>

@@ -99,7 +99,7 @@ async def _call_gemini_vision(
     payload["generationConfig"] = generation_config
 
     last_error = None
-    async with httpx.AsyncClient(timeout=30.0) as client:
+    async with httpx.AsyncClient(timeout=60.0) as client:
         for model in CANDIDATE_MODELS:
             url = f"https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent"
             try:
@@ -411,11 +411,66 @@ async def generate_debug_challenge(code: str, language: str) -> dict:
         }
 
 
+def normalize_image_for_ai(image_bytes: bytes, original_mime: str = "image/jpeg") -> tuple[bytes, str]:
+    """
+    Ensure ANY phone image (iPhone HEIC/HEIF, Android WebP/JPEG, high-res camera shots) is:
+    1. Correctly rotated according to its EXIF orientation tag (fixing sideways phone photos)
+    2. Converted to standard RGB JPEG supported natively by Gemini Vision
+    3. Scaled down to max 2048px (preserving crystal clarity for OCR while keeping payload under ~400KB)
+    """
+    try:
+        try:
+            import pillow_heif
+            pillow_heif.register_heif_opener()
+        except Exception:
+            pass
+
+        from PIL import Image, ImageOps
+        import io
+
+        image = Image.open(io.BytesIO(image_bytes))
+
+        # Handle EXIF orientation (crucial for phone camera shots)
+        try:
+            image = ImageOps.exif_transpose(image)
+        except Exception:
+            pass
+
+        # Convert mode to RGB
+        if image.mode not in ("RGB", "L"):
+            image = image.convert("RGB")
+        elif image.mode == "L":
+            image = image.convert("RGB")
+
+        # Resize if dimensions exceed 2048px
+        max_dim = 2048
+        w, h = image.size
+        if w > max_dim or h > max_dim:
+            if w > h:
+                new_w = max_dim
+                new_h = int((h * max_dim) / w)
+            else:
+                new_h = max_dim
+                new_w = int((w * max_dim) / h)
+            image = image.resize((new_w, new_h), Image.Resampling.LANCZOS)
+
+        out_buf = io.BytesIO()
+        image.save(out_buf, format="JPEG", quality=88, optimize=True)
+        return out_buf.getvalue(), "image/jpeg"
+    except Exception as e:
+        logger.warning("normalize_image_for_ai encountered error, using raw bytes: %s", e)
+        safe_mime = original_mime if original_mime in ("image/jpeg", "image/png", "image/webp") else "image/jpeg"
+        return image_bytes, safe_mime
+
+
 async def extract_code_from_photo(image_bytes: bytes, mime_type: str = "image/jpeg") -> dict:
     """
     Read handwritten or printed code from a photo using Gemini Multimodal Vision.
     Extracts clean source code, programming language, title, aim, algorithm, and I/O.
     """
+    # Normalize phone photo (auto-rotate EXIF, handle HEIC/HEIF, resize safely)
+    normalized_bytes, safe_mime = normalize_image_for_ai(image_bytes, mime_type)
+
     system_instruction = (
         "You are an expert OCR and Computer Science code transcription specialist. "
         "Your task is to transcribe source code and practical assignment details from photos "
@@ -440,8 +495,8 @@ async def extract_code_from_photo(image_bytes: bytes, mime_type: str = "image/jp
     try:
         raw = await _call_gemini_vision(
             prompt,
-            image_bytes,
-            mime_type=mime_type,
+            normalized_bytes,
+            mime_type=safe_mime,
             system_instruction=system_instruction,
             response_mime_type="application/json"
         )

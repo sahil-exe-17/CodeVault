@@ -51,10 +51,8 @@
   }
 
   /* ══════════════════════════════════════════════════════════
-     LIGHT THEME TOKENS — applied via [data-theme="light"] or .light
+     LIGHT THEME TOKENS — applied via [data-theme="light"]
      ══════════════════════════════════════════════════════════ */
-  html[data-theme="light"],
-  html.light,
   [data-theme="light"] {
     /* Semantic Layout Tokens (Clean modern Apple / Linear aesthetic) */
     --bg-canvas:     #F8F9FA;
@@ -129,139 +127,24 @@
 }
 
 /* ══════════════════════════════════════════════════════════
-   LIGHT THEME OVERRIDES (Full Surface Overrides)
+   LIGHT THEME OVERRIDES
    ══════════════════════════════════════════════════════════ */
-html[data-theme="light"],
-html.light {
-  color-scheme: light;
-}
-
-html[data-theme="light"] body,
-html.light body {
+[data-theme="light"] body {
   background-color: #F8F9FA !important;
   color: #0F172A !important;
 }
 
 /* Modals */
-html[data-theme="light"] [role="dialog"],
-html[data-theme="light"] .modal-card,
-html.light [role="dialog"],
-html.light .modal-card {
+[data-theme="light"] [role="dialog"],
+[data-theme="light"] .modal-card {
   background-color: #FFFFFF !important;
   border-color: #E2E8F0 !important;
   color: #0F172A !important;
 }
 
-html[data-theme="light"] .fixed.inset-0[class*="bg-black"],
-html.light .fixed.inset-0[class*="bg-black"] {
+[data-theme="light"] .fixed.inset-0[class*="bg-black"] {
   background-color: rgba(15, 23, 42, 0.45) !important;
   backdrop-filter: blur(8px) !important;
-}
-
-/* Tailwind Hardcoded Dark Surface Remapping in Light Mode */
-html[data-theme="light"] .bg-\[\#050508\],
-html.light .bg-\[\#050508\] {
-  background-color: var(--bg-canvas) !important;
-}
-
-html[data-theme="light"] .bg-\[\#121217\],
-html.light .bg-\[\#121217\],
-html[data-theme="light"] .bg-\[\#111111\],
-html.light .bg-\[\#111111\],
-html[data-theme="light"] .bg-\[\#141414\],
-html.light .bg-\[\#141414\] {
-  background-color: var(--bg-card) !important;
-}
-
-html[data-theme="light"] .bg-\[\#16161d\],
-html.light .bg-\[\#16161d\] {
-  background-color: var(--bg-card-hover) !important;
-}
-
-html[data-theme="light"] .bg-\[\#0A0A0A\],
-html.light .bg-\[\#0A0A0A\],
-html[data-theme="light"] .bg-\[\#1a1a1a\],
-html.light .bg-\[\#1a1a1a\] {
-  background-color: var(--bg-metric) !important;
-}
-
-html[data-theme="light"] .bg-\[\#07070a\],
-html.light .bg-\[\#07070a\] {
-  background-color: var(--bg-header) !important;
-}
-
-html[data-theme="light"] .border-\[\#222222\],
-html.light .border-\[\#222222\],
-html[data-theme="light"] .border-\[\#2a2a2a\],
-html.light .border-\[\#2a2a2a\],
-html[data-theme="light"] .border-\[\#333333\],
-html.light .border-\[\#333333\] {
-  border-color: var(--border-subtle) !important;
-}
-
-/* Typography & Contrast Safety Rules for Light Mode */
-html[data-theme="light"] h1,
-html[data-theme="light"] h2,
-html[data-theme="light"] h3,
-html[data-theme="light"] h4,
-html.light h1,
-html.light h2,
-html.light h3,
-html.light h4 {
-  color: #0F172A;
-}
-
-html[data-theme="light"] .text-white:not(button):not(button *):not([class*="bg-black"]):not([class*="bg-emerald-"]):not([class*="bg-rose-"]):not([class*="bg-indigo-"]):not([class*="bg-blue-"]):not([class*="bg-purple-"]):not([class*="bg-[var(--btn-cta-bg)]"]),
-html.light .text-white:not(button):not(button *):not([class*="bg-black"]):not([class*="bg-emerald-"]):not([class*="bg-rose-"]):not([class*="bg-indigo-"]):not([class*="bg-blue-"]):not([class*="bg-purple-"]):not([class*="bg-[var(--btn-cta-bg)]"]) {
-  color: #0F172A !important;
-}
-
-html[data-theme="light"] .text-white\/30,
-html[data-theme="light"] .text-white\/40,
-html[data-theme="light"] .text-white\/45,
-html[data-theme="light"] .text-white\/50,
-html.light .text-white\/30,
-html.light .text-white\/40,
-html.light .text-white\/45,
-html.light .text-white\/50 {
-  color: #64748B !important;
-}
-
-html[data-theme="light"] .text-white\/60,
-html[data-theme="light"] .text-white\/70,
-html[data-theme="light"] .text-white\/80,
-html.light .text-white\/60,
-html.light .text-white\/70,
-html.light .text-white\/80 {
-  color: #334155 !important;
-}
-
-html[data-theme="light"] .border-white\/\[0\.08\],
-html[data-theme="light"] .border-white\/\[0\.06\],
-html[data-theme="light"] .border-white\/\[0\.09\],
-html[data-theme="light"] .border-white\/10,
-html[data-theme="light"] .border-white\/15,
-html[data-theme="light"] .border-white\/20,
-html[data-theme="light"] .border-white\/5,
-html.light .border-white\/\[0\.08\],
-html.light .border-white\/\[0\.06\],
-html.light .border-white\/\[0\.09\],
-html.light .border-white\/10,
-html.light .border-white\/15,
-html.light .border-white\/20,
-html.light .border-white\/5 {
-  border-color: #E2E8F0 !important;
-}
-
-html[data-theme="light"] ::-webkit-scrollbar-track,
-html.light ::-webkit-scrollbar-track {
-  background: #F1F5F9;
-}
-
-html[data-theme="light"] ::-webkit-scrollbar-thumb,
-html.light ::-webkit-scrollbar-thumb {
-  background: #CBD5E1;
-  border-radius: 9999px;
 }
 
 /* Pill Dropdown Component */

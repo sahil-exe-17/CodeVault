@@ -499,10 +499,11 @@ export const ExperimentWorkspace: React.FC = () => {
               variant="secondary"
               size="sm"
               onClick={() => setIsScanOpen(true)}
-              className="h-8 text-xs font-medium px-3 bg-[var(--bg-metric)] hover:bg-[var(--bg-card-hover)] border-[var(--border-subtle)]"
-              title="Read code from photo of notebook or screen"
+              className="h-8 text-xs font-medium px-3 bg-[var(--bg-metric)] hover:bg-[var(--bg-card-hover)] border-[var(--border-subtle)] flex items-center gap-1.5"
+              title="Read code from photo of notebook, textbook or screen"
             >
-              Read Code from Image
+              <Camera className="w-3.5 h-3.5" />
+              <span>Read Code from Image</span>
             </Button>
 
             <Button
