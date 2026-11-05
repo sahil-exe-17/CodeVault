@@ -206,7 +206,7 @@ export const AuthPage: React.FC = () => {
           {mode === 'signup' && (
             <div className="grid grid-cols-2 gap-2.5">
               <GlassInput
-                placeholder="John"
+                placeholder="First name"
                 value={firstName}
                 onChange={(e) => setFirstName(e.target.value)}
                 required={mode === 'signup'}
