@@ -112,10 +112,6 @@ export const AuthPage: React.FC = () => {
     setIsGoogleModalOpen(true)
   }
 
-  const handleAppleSignIn = () => {
-    handleGoogleClick()
-  }
-
   return (
     <div
       className="relative min-h-screen w-full bg-[#050507] text-[#F5F5F5] flex items-center justify-center p-4 overflow-hidden select-none"
@@ -270,13 +266,16 @@ export const AuthPage: React.FC = () => {
           <div className="flex-1 h-[1px] bg-white/[0.08]" />
         </div>
 
-        {/* Social Authentication: Google & Apple */}
-        <div className="grid grid-cols-2 gap-2.5 mb-6">
+        {/* Social Authentication: Google (Coming Soon) */}
+        <div className="mb-6">
           <button
             type="button"
-            onClick={handleGoogleClick}
-            disabled={loading}
-            className="h-10 px-3 rounded-xl bg-[#1a1a20]/80 hover:bg-[#23232c] text-white/90 border border-white/[0.08] hover:border-white/20 text-xs font-medium flex items-center justify-center gap-2.5 transition-all cursor-pointer shadow-sm active:scale-[0.98]"
+            onClick={() => {
+              toast('Google Sign-In is coming soon! Please sign in with your email & password.', {
+                icon: '⏳',
+              })
+            }}
+            className="w-full h-11 px-4 rounded-xl bg-[#1a1a20]/80 hover:bg-[#23232c] text-white/90 border border-white/[0.08] hover:border-white/15 text-xs font-medium flex items-center justify-center gap-2.5 transition-all cursor-pointer shadow-sm active:scale-[0.99] group"
           >
             <svg className="w-4 h-4 shrink-0" viewBox="0 0 24 24">
               <path
@@ -296,19 +295,10 @@ export const AuthPage: React.FC = () => {
                 d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"
               />
             </svg>
-            <span className="font-medium">Google</span>
-          </button>
-
-          <button
-            type="button"
-            onClick={handleAppleSignIn}
-            disabled={loading}
-            className="h-10 px-3 rounded-xl bg-[#1a1a20]/80 hover:bg-[#23232c] text-white/90 border border-white/[0.08] hover:border-white/20 text-xs font-medium flex items-center justify-center gap-2.5 transition-all cursor-pointer shadow-sm active:scale-[0.98]"
-          >
-            <svg className="w-3.5 h-3.5 fill-current shrink-0 text-white" viewBox="0 0 170 170">
-              <path d="M150.37 130.25c-2.45 5.66-5.35 10.87-8.71 15.66-4.58 6.53-8.33 11.05-11.22 13.56-4.48 4.12-9.28 6.23-14.42 6.35-3.69 0-8.14-1.05-13.32-3.18-5.19-2.12-9.97-3.17-14.34-3.17-4.58 0-9.49 1.05-14.74 3.17-5.26 2.13-9.5 3.24-12.74 3.35-4.35.13-9.16-1.9-14.42-6.08-3.7-3.04-7.7-7.85-12.01-14.42-5.74-8.81-10.22-18.89-13.43-30.25-3.21-11.36-4.82-22.18-4.82-32.48 0-14.78 3.8-27.24 11.41-37.38 7.61-10.13 17.26-15.34 28.96-15.63 4.9.11 10.26 1.41 16.08 3.9 5.82 2.49 9.77 3.81 11.85 3.97 1.83-.16 5.88-1.54 12.16-4.14 6.27-2.6 11.66-3.83 16.17-3.69 12.63.63 22.84 5.34 30.64 14.13-11.08 6.74-16.51 16.04-16.3 27.9.21 9.47 3.83 17.38 10.86 23.73 7.03 6.35 15.37 10.02 25.02 11.02-2.3 7.21-5.18 14.35-8.63 21.42zM119.22 33.15c0-7.39 2.68-14.38 8.04-20.97 5.36-6.59 12.01-10.73 19.95-12.43.1 1.06.16 2.12.16 3.18 0 7.39-2.73 14.47-8.19 21.23-5.46 6.76-12.22 10.87-20.29 12.32-.22-1.16-.33-2.27-.33-3.33z" />
-            </svg>
-            <span className="font-medium">Apple</span>
+            <span className="font-medium text-white/90">Sign in with Google</span>
+            <span className="ml-1.5 px-2 py-0.5 text-[10px] font-mono tracking-wide rounded-full bg-white/10 text-white/60 border border-white/10">
+              Coming Soon
+            </span>
           </button>
         </div>
 
