@@ -233,3 +233,4 @@ export const AIRecommendationsModal: React.FC<AIRecommendationsModalProps> = ({
     </Modal>
   )
 }
+

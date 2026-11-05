@@ -1,9 +1,8 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useRef } from 'react'
 import { useParams, useNavigate, Link } from 'react-router-dom'
 import Editor from '@monaco-editor/react'
 import {
   ArrowLeft,
-  Save,
   Plus,
   Trash2,
   Copy,
@@ -18,6 +17,8 @@ import {
   HelpCircle,
   Bug,
   FileCode,
+  CheckCircle2,
+  Loader2,
 } from 'lucide-react'
 import { Button } from '@/components/ui/Button'
 import { Modal } from '@/components/ui/Modal'
@@ -60,6 +61,11 @@ export const ExperimentWorkspace: React.FC = () => {
   const [isLoading, setIsLoading] = useState(true)
   const [isSaving, setIsSaving] = useState(false)
   const [fontSize, setFontSize] = useState(14)
+
+  // Auto-save state
+  const [autoSaveStatus, setAutoSaveStatus] = useState<'idle' | 'pending' | 'saving' | 'saved'>('idle')
+  const autoSaveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const isInitialLoad = useRef(true)
 
   // Practical Notebook PDF State
   const [isUploadingPdf, setIsUploadingPdf] = useState(false)
@@ -110,8 +116,40 @@ export const ExperimentWorkspace: React.FC = () => {
       })
       .finally(() => {
         setIsLoading(false)
+        isInitialLoad.current = false
       })
   }, [id])
+
+  // ── Auto-save: fires 1.5 s after last change ──────────────────────────────
+  useEffect(() => {
+    if (isLoading || isInitialLoad.current) return
+    if (!id || id === 'new') return
+
+    setAutoSaveStatus('pending')
+    if (autoSaveTimerRef.current) clearTimeout(autoSaveTimerRef.current)
+
+    autoSaveTimerRef.current = setTimeout(async () => {
+      setAutoSaveStatus('saving')
+      try {
+        const primary = codeFiles[0] || { code: '', language: 'c' }
+        await experimentsApi.update(id, {
+          ...experiment,
+          code_files: codeFiles,
+          source_code: primary.code,
+          language: primary.language,
+        })
+        setAutoSaveStatus('saved')
+        setTimeout(() => setAutoSaveStatus('idle'), 2000)
+      } catch {
+        setAutoSaveStatus('idle')
+      }
+    }, 1500)
+
+    return () => {
+      if (autoSaveTimerRef.current) clearTimeout(autoSaveTimerRef.current)
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [experiment, codeFiles])
 
   const activeSnippet = codeFiles.find((c) => c.id === activeCodeId) || codeFiles[0]
 
@@ -422,17 +460,26 @@ export const ExperimentWorkspace: React.FC = () => {
             </div>
           </div>
 
-          {/* Action Buttons: Save & AI features */}
+          {/* Auto-save status + AI features */}
           <div className="flex flex-wrap items-center gap-2">
-            <Button
-              variant="primary"
-              size="sm"
-              onClick={handleSave}
-              isLoading={isSaving}
-              className="h-8 text-xs font-semibold px-4"
-            >
-              Save
-            </Button>
+            {/* Auto-save indicator */}
+            <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#111111] border border-white/[0.08] text-xs font-mono select-none min-w-[90px] justify-center">
+              {autoSaveStatus === 'saving' && (
+                <>
+                  <Loader2 className="w-3 h-3 text-[#888888] animate-spin" />
+                  <span className="text-[#888888]">Saving…</span>
+                </>
+              )}
+              {autoSaveStatus === 'saved' && (
+                <>
+                  <CheckCircle2 className="w-3 h-3 text-white" />
+                  <span className="text-white">Saved ✓</span>
+                </>
+              )}
+              {(autoSaveStatus === 'idle' || autoSaveStatus === 'pending') && (
+                <span className="text-[#555555]">Auto-save on</span>
+              )}
+            </div>
 
             <Button
               variant="secondary"
