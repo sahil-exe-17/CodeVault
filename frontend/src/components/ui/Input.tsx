@@ -29,9 +29,8 @@ export const Input = React.forwardRef<HTMLInputElement, InputProps>(
           <input
             ref={ref}
             type={computedType}
-            className={`w-full bg-[var(--bg-input)] text-[var(--text-main)] placeholder-[var(--text-dim)] text-sm rounded-lg border border-[var(--border-subtle)] focus:border-[var(--border-hover)] focus:outline-none focus:ring-0 transition-colors py-2 ${
-              icon ? 'pl-9' : 'pl-3'
-            } ${isPassword ? 'pr-9' : 'pr-3'} ${error ? 'border-red-500' : ''} ${className}`}
+            className={`w-full bg-[var(--bg-input)] text-[var(--text-main)] placeholder-[var(--text-dim)] text-sm rounded-lg border border-[var(--border-subtle)] focus:border-[var(--border-hover)] focus:outline-none focus:ring-0 transition-colors py-2 ${icon ? 'pl-9' : 'pl-3'
+              } ${isPassword ? 'pr-9' : 'pr-3'} ${error ? 'border-red-500' : ''} ${className}`}
             {...props}
           />
           {isPassword && (

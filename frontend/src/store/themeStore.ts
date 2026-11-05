@@ -26,7 +26,7 @@ export const applyTheme = (theme: Theme) => {
   } else {
     root.classList.remove('light')
     root.classList.add('dark')
-    root.removeAttribute('data-theme')
+    root.setAttribute('data-theme', 'dark')
   }
 }
 

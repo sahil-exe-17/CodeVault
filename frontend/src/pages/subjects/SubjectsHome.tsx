@@ -25,21 +25,97 @@ export const SubjectsHome: React.FC = () => {
 
   const userStorageKey = `cv_subjects_${user?.id || user?.email || 'guest'}`
 
+  /**
+   * Comprehensive subject retrieval across all user sessions and offline cache
+   */
+  const getLocalSubjects = (): Subject[] => {
+    const map = new Map<string, Subject>()
+    const keys = [
+      userStorageKey,
+      `cv_subjects_${user?.id}`,
+      `cv_subjects_${user?.email}`,
+      'cv_subjects_guest',
+      'cv_subjects_all',
+    ]
+
+    for (const k of keys) {
+      try {
+        const raw = localStorage.getItem(k)
+        if (raw) {
+          const list = JSON.parse(raw)
+          if (Array.isArray(list)) {
+            list.forEach((s) => {
+              if (s && s.id && !map.has(s.id)) {
+                map.set(s.id, s)
+              }
+            })
+          }
+        }
+      } catch {}
+    }
+
+    try {
+      for (let i = 0; i < localStorage.length; i++) {
+        const k = localStorage.key(i)
+        if (k && k.startsWith('cv_subjects_')) {
+          const raw = localStorage.getItem(k)
+          if (raw) {
+            const list = JSON.parse(raw)
+            if (Array.isArray(list)) {
+              list.forEach((s) => {
+                if (s && s.id && !map.has(s.id)) {
+                  map.set(s.id, s)
+                }
+              })
+            }
+          }
+        }
+      }
+    } catch {}
+
+    return Array.from(map.values())
+  }
+
+  const persistSubjects = (list: Subject[]) => {
+    try {
+      const serialized = JSON.stringify(list)
+      localStorage.setItem(userStorageKey, serialized)
+      localStorage.setItem('cv_subjects_all', serialized)
+      localStorage.setItem('cv_subjects_guest', serialized)
+    } catch (e) {
+      console.warn('Failed to persist subjects in localStorage:', e)
+    }
+  }
+
   const loadSubjects = async () => {
     setIsLoading(true)
+    // 1. Immediately hydrate from local storage so user sees their subjects with 0 delay
+    const local = getLocalSubjects()
+    if (local.length > 0) {
+      setSubjects(local)
+    }
+
+    // 2. Fetch from backend API if active and merge
     try {
       const res: any = await subjectsApi.list()
-      const list = Array.isArray(res) ? res : res?.data || []
-      setSubjects(list)
-      localStorage.setItem(userStorageKey, JSON.stringify(list))
-    } catch {
-      // Load user's own saved subjects from localStorage (defaults to empty array - NO DEMO SUBJECTS)
-      try {
-        const cached = localStorage.getItem(userStorageKey)
-        setSubjects(cached ? JSON.parse(cached) : [])
-      } catch {
-        setSubjects([])
+      if (Array.isArray(res) && res.length > 0 && typeof res[0] === 'object' && res[0] !== null && 'id' in res[0]) {
+        const map = new Map<string, Subject>()
+        res.forEach((s: Subject) => {
+          if (s && s.id) map.set(s.id, s)
+        })
+        local.forEach((s) => {
+          if (s && s.id && !map.has(s.id)) map.set(s.id, s)
+        })
+        const merged = Array.from(map.values())
+        setSubjects(merged)
+        persistSubjects(merged)
+      } else if (local.length > 0) {
+        setSubjects(local)
       }
+    } catch {
+      // Backend unavailable or static deployment — keep local subjects
+      const freshLocal = getLocalSubjects()
+      setSubjects(freshLocal)
     } finally {
       setIsLoading(false)
     }
@@ -57,63 +133,50 @@ export const SubjectsHome: React.FC = () => {
     }
 
     setIsCreating(true)
+    const newId = 'sub-' + Date.now()
+    const newSubject: Subject = {
+      id: newId,
+      user_id: user?.id || 'guest',
+      name: newSubjectName.trim(),
+      semester: newSubjectSemester.trim() || 'Semester 4',
+      description: newSubjectDesc.trim() || '',
+      experiment_count: 0,
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+    }
+
+    // Instant local state update so it shows up on the home page IMMEDIATELY
+    setSubjects((prev) => {
+      const next = [newSubject, ...prev.filter((s) => s.id !== newId)]
+      persistSubjects(next)
+      return next
+    })
+
     try {
       const res: any = await subjectsApi.create({
-        name: newSubjectName.trim(),
-        semester: newSubjectSemester.trim() || undefined,
-        description: newSubjectDesc.trim() || undefined,
+        name: newSubject.name,
+        semester: newSubject.semester,
+        description: newSubject.description,
       })
-      const created: Subject = res?.data || res || {
-        id: 'sub-' + Date.now(),
-        user_id: user?.id || 'guest',
-        name: newSubjectName.trim(),
-        semester: newSubjectSemester.trim() || 'Semester 4',
-        description: newSubjectDesc.trim() || '',
-        experiment_count: 0,
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString(),
+      if (res?.id || res?.data?.id) {
+        const serverId = res?.id || res?.data?.id
+        newSubject.id = serverId
+        setSubjects((prev) => {
+          const next = [newSubject, ...prev.filter((s) => s.id !== newId && s.id !== serverId)]
+          persistSubjects(next)
+          return next
+        })
       }
-      toast.success('Subject created successfully.')
-      setNewSubjectName('')
-      setNewSubjectSemester('')
-      setNewSubjectDesc('')
-      setIsModalOpen(false)
-
-      setSubjects((prev) => {
-        const next = [created, ...prev.filter((s) => s.id !== created.id)]
-        localStorage.setItem(userStorageKey, JSON.stringify(next))
-        return next
-      })
-
-      if (created?.id) {
-        navigate(`/subjects/${created.id}`)
-      }
-    } catch {
-      // Local fallback for offline / serverless
-      const localSub: Subject = {
-        id: 'sub-' + Date.now(),
-        user_id: user?.id || 'guest',
-        name: newSubjectName.trim(),
-        semester: newSubjectSemester.trim() || 'Semester 4',
-        description: newSubjectDesc.trim() || '',
-        experiment_count: 0,
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString(),
-      }
-      setSubjects((prev) => {
-        const next = [localSub, ...prev]
-        localStorage.setItem(userStorageKey, JSON.stringify(next))
-        return next
-      })
-      toast.success('Subject created.')
-      setNewSubjectName('')
-      setNewSubjectSemester('')
-      setNewSubjectDesc('')
-      setIsModalOpen(false)
-      navigate(`/subjects/${localSub.id}`)
-    } finally {
-      setIsCreating(false)
+    } catch (apiErr) {
+      console.warn('API create subject failed (using reliable local subject):', apiErr)
     }
+
+    toast.success('Subject created successfully.')
+    setNewSubjectName('')
+    setNewSubjectSemester('')
+    setNewSubjectDesc('')
+    setIsModalOpen(false)
+    setIsCreating(false)
   }
 
   const handleDeleteSubject = async (e: React.MouseEvent, id: string, name: string) => {
@@ -128,7 +191,7 @@ export const SubjectsHome: React.FC = () => {
     toast.success('Subject removed.')
     setSubjects((prev) => {
       const next = prev.filter((s) => s.id !== id)
-      localStorage.setItem(userStorageKey, JSON.stringify(next))
+      persistSubjects(next)
       return next
     })
   }
@@ -234,7 +297,9 @@ export const SubjectsHome: React.FC = () => {
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-            {subjects.map((sub, index) => (
+            {subjects
+              .filter((sub) => sub && typeof sub === 'object' && sub.id && sub.name)
+              .map((sub, index) => (
               <motion.div
                 key={sub.id}
                 initial={{ opacity: 0, y: 15 }}

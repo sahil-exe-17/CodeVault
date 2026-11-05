@@ -54,42 +54,94 @@ export const SubjectDetail: React.FC = () => {
   const userStorageKey = `cv_subjects_${user?.id || user?.email || 'guest'}`
   const expStorageKey = `cv_experiments_${subjectId}`
 
+  const findSubjectLocally = (id: string): Subject | null => {
+    const keys = [
+      userStorageKey,
+      `cv_subjects_${user?.id}`,
+      `cv_subjects_${user?.email}`,
+      'cv_subjects_all',
+      'cv_subjects_guest',
+    ]
+    for (const k of keys) {
+      try {
+        const raw = localStorage.getItem(k)
+        if (raw) {
+          const list = JSON.parse(raw)
+          if (Array.isArray(list)) {
+            const found = list.find((s: any) => s && s.id === id)
+            if (found && found.name) return found
+          }
+        }
+      } catch {}
+    }
+    try {
+      for (let i = 0; i < localStorage.length; i++) {
+        const k = localStorage.key(i)
+        if (k && k.startsWith('cv_subjects_')) {
+          const raw = localStorage.getItem(k)
+          if (raw) {
+            const list = JSON.parse(raw)
+            if (Array.isArray(list)) {
+              const found = list.find((s: any) => s && s.id === id)
+              if (found && found.name) return found
+            }
+          }
+        }
+      }
+    } catch {}
+    return null
+  }
+
   const loadData = async () => {
     if (!subjectId) return
     setIsLoading(true)
+
+    // 1. Immediately hydrate local subject and experiments
+    const localSub = findSubjectLocally(subjectId)
+    if (localSub) {
+      setSubject(localSub)
+    }
+
+    let localExps: Experiment[] = []
+    try {
+      const cached = localStorage.getItem(expStorageKey)
+      if (cached) {
+        const parsed = JSON.parse(cached)
+        if (Array.isArray(parsed)) {
+          localExps = parsed
+          setExperiments(parsed)
+          setExpNumber(`EXP-0${parsed.length + 1}`)
+        }
+      }
+    } catch {}
+
+    // 2. Fetch from backend if available
     try {
       const [subRes, expRes]: any = await Promise.all([
         subjectsApi.get(subjectId),
         experimentsApi.list({ subject_id: subjectId }),
       ])
-      const s = subRes?.data || subRes
-      setSubject(s)
+      if (subRes && typeof subRes === 'object' && (subRes.id || subRes.data?.id)) {
+        const s = subRes.data || subRes
+        setSubject(s)
+      }
       const exps = Array.isArray(expRes) ? expRes : expRes?.data || []
-      setExperiments(exps)
-      setExpNumber(`EXP-0${exps.length + 1}`)
-      localStorage.setItem(expStorageKey, JSON.stringify(exps))
+      if (Array.isArray(exps) && exps.length > 0) {
+        setExperiments(exps)
+        setExpNumber(`EXP-0${exps.length + 1}`)
+        localStorage.setItem(expStorageKey, JSON.stringify(exps))
+      }
     } catch {
-      // Offline / local cache fallback
-      try {
-        const cachedSubs = JSON.parse(localStorage.getItem(userStorageKey) || '[]')
-        const found = cachedSubs.find((x: any) => x.id === subjectId)
-        if (found) {
-          setSubject(found)
-        } else {
-          setSubject({
-            id: subjectId,
-            user_id: user?.id || 'guest',
-            name: 'Subject Overview',
-            semester: user?.semester || 'Semester 4',
-            created_at: new Date().toISOString(),
-            updated_at: new Date().toISOString(),
-          })
-        }
-        const cachedExps = JSON.parse(localStorage.getItem(expStorageKey) || '[]')
-        setExperiments(cachedExps)
-        setExpNumber(`EXP-0${cachedExps.length + 1}`)
-      } catch {
-        setExperiments([])
+      // Offline / fallback
+      if (!subject && !localSub) {
+        setSubject({
+          id: subjectId,
+          user_id: user?.id || 'guest',
+          name: 'Subject Overview',
+          semester: user?.semester || 'Semester 4',
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString(),
+        })
       }
     } finally {
       setIsLoading(false)

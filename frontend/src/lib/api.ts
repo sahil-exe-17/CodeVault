@@ -30,7 +30,13 @@ api.interceptors.request.use((config) => {
 
 // Intercept responses and fallback gracefully
 api.interceptors.response.use(
-  (response) => response.data,
+  (response) => {
+    // If an API endpoint returns an HTML string (e.g. Vercel SPA rewrite fallback on missing /api route), reject so callers catch and use local cache
+    if (typeof response.data === 'string' && (response.data.includes('<!doctype html') || response.data.includes('<html'))) {
+      return Promise.reject(new Error('Endpoint returned HTML instead of JSON'))
+    }
+    return response.data
+  },
   async (error) => {
     // If request failed on relative URL due to proxy or network, try direct http://127.0.0.1:8000 once
     if (error.message === 'Network Error' && error.config && !error.config._retried) {
