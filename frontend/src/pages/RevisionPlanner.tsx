@@ -260,7 +260,7 @@ export const RevisionPlanner: React.FC = () => {
               5 Day Streak
             </span>
           </div>
-          <p className="text-xs text-[#888888] mt-1">
+          <p className="text-xs text-[var(--text-muted)] mt-1">
             Maintain optimal spaced repetition intervals ahead of university practicals
           </p>
         </div>
@@ -289,12 +289,12 @@ export const RevisionPlanner: React.FC = () => {
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
         {/* Left Column (7 cols): Revision Schedule */}
         <div className="lg:col-span-7 space-y-4">
-          <div className="bg-[#141414] border border-[rgba(255,255,255,0.08)] rounded-xl p-5 space-y-4">
+          <div className="bg-[var(--bg-card)] border border-[var(--border-subtle)] rounded-xl p-5 space-y-4">
             <div className="flex items-center justify-between">
               <h3 className="text-sm font-semibold font-['Manrope'] text-white">
                 Upcoming Revision Sessions
               </h3>
-              <span className="text-xs text-[#888888] font-mono">
+              <span className="text-xs text-[var(--text-muted)] font-mono">
                 {sessions.filter((s) => !s.is_complete).length} pending
               </span>
             </div>
@@ -309,8 +309,8 @@ export const RevisionPlanner: React.FC = () => {
                     key={sess.id}
                     className={`p-4 rounded-xl border transition-all flex items-center justify-between gap-3 ${
                       sess.is_complete
-                        ? 'bg-[#111111] border-[rgba(255,255,255,0.04)] opacity-60'
-                        : 'bg-[#171717] border-[rgba(255,255,255,0.09)] hover:border-[rgba(255,255,255,0.18)]'
+                        ? 'bg-[var(--bg-card)] border-[rgba(255,255,255,0.04)] opacity-60'
+                        : 'bg-[var(--bg-metric)] border-[var(--border-subtle)] hover:border-[rgba(255,255,255,0.18)]'
                     }`}
                   >
                     <div className="space-y-1 truncate">
@@ -318,18 +318,18 @@ export const RevisionPlanner: React.FC = () => {
                         <Badge variant="mono" size="sm" className="capitalize">
                           {sess.session_type}
                         </Badge>
-                        <span className="text-[11px] text-[#888888] font-mono">
+                        <span className="text-[11px] text-[var(--text-muted)] font-mono">
                           {sess.scheduled_date}
                         </span>
                       </div>
                       <h4
                         className={`text-xs font-semibold text-white truncate ${
-                          sess.is_complete ? 'line-through text-[#888888]' : ''
+                          sess.is_complete ? 'line-through text-[var(--text-muted)]' : ''
                         }`}
                       >
                         {title}
                       </h4>
-                      <p className="text-[11px] text-[#666666] truncate">{subName}</p>
+                      <p className="text-[11px] text-[var(--text-dim)] truncate">{subName}</p>
                     </div>
 
                     <div className="shrink-0">
@@ -359,14 +359,14 @@ export const RevisionPlanner: React.FC = () => {
         {/* Right Column (5 cols): Upcoming Exams & Spaced Repetition Info */}
         <div className="lg:col-span-5 space-y-4">
           {/* Exam Dates Card */}
-          <div className="bg-[#141414] border border-[rgba(255,255,255,0.08)] rounded-xl p-5 space-y-4">
+          <div className="bg-[var(--bg-card)] border border-[var(--border-subtle)] rounded-xl p-5 space-y-4">
             <div className="flex items-center justify-between">
               <h3 className="text-sm font-semibold font-['Manrope'] text-white">
                 Upcoming Examination Dates
               </h3>
               <button
                 onClick={() => setIsExamModalOpen(true)}
-                className="text-xs text-[#888888] hover:text-white"
+                className="text-xs text-[var(--text-muted)] hover:text-white"
               >
                 + Add
               </button>
@@ -376,13 +376,13 @@ export const RevisionPlanner: React.FC = () => {
               {examSchedules.map((exam) => (
                 <div
                   key={exam.id}
-                  className="p-3.5 bg-[#111111] border border-[rgba(255,255,255,0.08)] rounded-lg flex items-center justify-between gap-3"
+                  className="p-3.5 bg-[var(--bg-card)] border border-[var(--border-subtle)] rounded-lg flex items-center justify-between gap-3"
                 >
                   <div>
                     <h4 className="text-xs font-semibold text-white">
                       {exam.exam_name}
                     </h4>
-                    <span className="text-[11px] text-[#888888]">
+                    <span className="text-[11px] text-[var(--text-muted)]">
                       {exam.subject?.name || 'Practical Exam'}
                     </span>
                   </div>
@@ -393,7 +393,7 @@ export const RevisionPlanner: React.FC = () => {
                     </span>
                     <button
                       onClick={() => handleDeleteExam(exam.id)}
-                      className="text-[#666666] hover:text-white p-1 rounded transition-colors"
+                      className="text-[var(--text-dim)] hover:text-white p-1 rounded transition-colors"
                     >
                       <Trash2 className="w-3 h-3" />
                     </button>
@@ -404,11 +404,11 @@ export const RevisionPlanner: React.FC = () => {
           </div>
 
           {/* Spaced Repetition Callout */}
-          <div className="bg-[#141414] border border-[rgba(255,255,255,0.08)] rounded-xl p-5 space-y-3">
+          <div className="bg-[var(--bg-card)] border border-[var(--border-subtle)] rounded-xl p-5 space-y-3">
             <h4 className="text-xs font-bold text-white font-mono uppercase tracking-wider">
               Spaced Repetition Algorithm
             </h4>
-            <p className="text-xs text-[#A1A1A1] leading-relaxed">
+            <p className="text-xs text-[var(--text-muted)] leading-relaxed">
               CodeVault schedules revision intervals at 1 day, 3 days, 7 days, and 14 days post-creation. This active recall cadence shifts concepts from short-term memory into permanent retention.
             </p>
           </div>
@@ -424,7 +424,7 @@ export const RevisionPlanner: React.FC = () => {
       >
         <form onSubmit={handleAddSession} className="space-y-4">
           <div className="flex flex-col gap-1.5">
-            <label className="text-xs font-medium text-[#A1A1A1]">Experiment</label>
+            <label className="text-xs font-medium text-[var(--text-muted)]">Experiment</label>
             <Select
               title="Select Experiment"
               placeholder="Select experiment…"
@@ -443,7 +443,7 @@ export const RevisionPlanner: React.FC = () => {
           />
 
           <div className="flex flex-col gap-1.5">
-            <label className="text-xs font-medium text-[#A1A1A1]">Session Type</label>
+            <label className="text-xs font-medium text-[var(--text-muted)]">Session Type</label>
             <Select
               title="Select Session Type"
               value={sessionType}
@@ -456,7 +456,7 @@ export const RevisionPlanner: React.FC = () => {
             </Select>
           </div>
 
-          <div className="flex items-center justify-end gap-2 pt-3 border-t border-[rgba(255,255,255,0.08)]">
+          <div className="flex items-center justify-end gap-2 pt-3 border-t border-[var(--border-subtle)]">
             <Button variant="ghost" size="sm" type="button" onClick={() => setIsSessionModalOpen(false)}>
               Cancel
             </Button>
@@ -484,7 +484,7 @@ export const RevisionPlanner: React.FC = () => {
           />
 
           <div className="flex flex-col gap-1.5">
-            <label className="text-xs font-medium text-[#A1A1A1]">Subject</label>
+            <label className="text-xs font-medium text-[var(--text-muted)]">Subject</label>
             <Select
               title="Select Subject"
               placeholder="Select subject…"
@@ -502,7 +502,7 @@ export const RevisionPlanner: React.FC = () => {
             required
           />
 
-          <div className="flex items-center justify-end gap-2 pt-3 border-t border-[rgba(255,255,255,0.08)]">
+          <div className="flex items-center justify-end gap-2 pt-3 border-t border-[var(--border-subtle)]">
             <Button variant="ghost" size="sm" type="button" onClick={() => setIsExamModalOpen(false)}>
               Cancel
             </Button>

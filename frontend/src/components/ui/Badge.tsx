@@ -20,11 +20,11 @@ export const Badge: React.FC<BadgeProps> = ({
 
   const variantClasses = {
     default:
-      'bg-[rgba(255,255,255,0.06)] text-[#A1A1A1] border border-[rgba(255,255,255,0.09)] font-medium rounded',
+      'bg-[rgba(255,255,255,0.06)] text-[var(--text-muted)] border border-[var(--border-subtle)] font-medium rounded',
     outline:
-      'bg-transparent text-[#A1A1A1] border border-[rgba(255,255,255,0.12)] font-medium rounded',
+      'bg-transparent text-[var(--text-muted)] border border-[rgba(255,255,255,0.12)] font-medium rounded',
     mono:
-      'bg-[#141414] text-[#E0E0E0] border border-[rgba(255,255,255,0.1)] font-mono text-[11px] rounded tracking-wide',
+      'bg-[var(--bg-card)] text-[#E0E0E0] border border-[var(--border-subtle)] font-mono text-[11px] rounded tracking-wide',
     solid:
       'bg-white text-black font-semibold rounded',
   }

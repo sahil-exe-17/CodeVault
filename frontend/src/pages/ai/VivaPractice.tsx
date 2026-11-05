@@ -163,26 +163,26 @@ export const VivaPractice: React.FC = () => {
         <h1 className="text-2xl font-bold font-['Manrope'] text-white">
           Viva Practice Simulator
         </h1>
-        <p className="text-xs text-[#888888] mt-1">
+        <p className="text-xs text-[var(--text-muted)] mt-1">
           Simulate one-on-one professor oral examinations with instantaneous AI evaluation
         </p>
       </div>
 
       {!isStarted && !isFinished ? (
         /* Setup Screen */
-        <div className="bg-[#141414] border border-[rgba(255,255,255,0.08)] rounded-xl p-8 space-y-6 shadow-lg">
+        <div className="bg-[var(--bg-card)] border border-[var(--border-subtle)] rounded-xl p-8 space-y-6 shadow-lg">
           <div className="space-y-1">
             <h3 className="text-base font-bold font-['Manrope'] text-white">
               Configure Viva Session
             </h3>
-            <p className="text-xs text-[#888888]">
+            <p className="text-xs text-[var(--text-muted)]">
               Select the practical assignment and examination rigour
             </p>
           </div>
 
           <div className="space-y-4">
             <div className="flex flex-col gap-1.5">
-              <label className="text-xs font-medium text-[#A1A1A1]">Target Experiment *</label>
+              <label className="text-xs font-medium text-[var(--text-muted)]">Target Experiment *</label>
               <Select
                 title="Select Target Experiment"
                 placeholder="Choose experiment…"
@@ -196,7 +196,7 @@ export const VivaPractice: React.FC = () => {
             </div>
 
             <div className="flex flex-col gap-1.5">
-              <label className="text-xs font-medium text-[#A1A1A1]">Examiner Rigour / Difficulty</label>
+              <label className="text-xs font-medium text-[var(--text-muted)]">Examiner Rigour / Difficulty</label>
               <div className="grid grid-cols-3 gap-3">
                 {(['easy', 'medium', 'hard'] as const).map((d) => (
                   <button
@@ -206,7 +206,7 @@ export const VivaPractice: React.FC = () => {
                     className={`py-3 px-4 rounded-xl border text-xs font-medium capitalize transition-all ${
                       difficulty === d
                         ? 'bg-white text-black border-white font-semibold shadow-sm'
-                        : 'bg-[#111111] text-[#888888] border-[rgba(255,255,255,0.08)] hover:text-white'
+                        : 'bg-[var(--bg-card)] text-[var(--text-muted)] border-[var(--border-subtle)] hover:text-white'
                     }`}
                   >
                     {d}
@@ -230,11 +230,11 @@ export const VivaPractice: React.FC = () => {
         </div>
       ) : isStarted && questions.length > 0 ? (
         /* In-Session Screen */
-        <div className="bg-[#141414] border border-[rgba(255,255,255,0.08)] rounded-xl p-8 space-y-6 shadow-xl">
+        <div className="bg-[var(--bg-card)] border border-[var(--border-subtle)] rounded-xl p-8 space-y-6 shadow-xl">
           {/* Header Info */}
-          <div className="flex items-center justify-between pb-4 border-b border-[rgba(255,255,255,0.08)]">
+          <div className="flex items-center justify-between pb-4 border-b border-[var(--border-subtle)]">
             <div className="flex items-center gap-2">
-              <span className="text-xs font-mono text-[#888888]">
+              <span className="text-xs font-mono text-[var(--text-muted)]">
                 QUESTION {currentIndex + 1} OF {questions.length}
               </span>
               <Badge variant="mono" size="sm" className="capitalize">
@@ -242,7 +242,7 @@ export const VivaPractice: React.FC = () => {
               </Badge>
             </div>
 
-            <span className="text-xs text-[#888888] font-mono truncate max-w-xs">
+            <span className="text-xs text-[var(--text-muted)] font-mono truncate max-w-xs">
               {selectedExp?.title}
             </span>
           </div>
@@ -256,7 +256,7 @@ export const VivaPractice: React.FC = () => {
 
           {/* Student Answer Textarea */}
           <div className="space-y-2">
-            <label className="text-xs font-medium text-[#A1A1A1]">
+            <label className="text-xs font-medium text-[var(--text-muted)]">
               Your Oral Response (Explain clearly as you would to an external examiner):
             </label>
             <textarea
@@ -265,7 +265,7 @@ export const VivaPractice: React.FC = () => {
               disabled={evaluation !== null}
               onChange={(e) => setStudentAnswer(e.target.value)}
               placeholder="State definition, algorithmic rationale, and mathematical complexity..."
-              className="w-full bg-[#111111] text-xs text-white rounded-lg border border-[rgba(255,255,255,0.09)] p-3 focus:border-white focus:outline-none leading-relaxed"
+              className="w-full bg-[var(--bg-card)] text-xs text-white rounded-lg border border-[var(--border-subtle)] p-3 focus:border-white focus:outline-none leading-relaxed"
             />
           </div>
 
@@ -284,7 +284,7 @@ export const VivaPractice: React.FC = () => {
             </div>
           ) : (
             /* AI Evaluation Feedback Card */
-            <div className="bg-[#111111] border border-[rgba(255,255,255,0.12)] rounded-xl p-5 space-y-4">
+            <div className="bg-[var(--bg-card)] border border-[rgba(255,255,255,0.12)] rounded-xl p-5 space-y-4">
               <div className="flex items-center justify-between">
                 <span className="text-xs font-bold text-white font-['Manrope']">
                   AI Examiner Evaluation
@@ -294,16 +294,16 @@ export const VivaPractice: React.FC = () => {
                 </span>
               </div>
 
-              <p className="text-xs text-[#D4D4D4] leading-relaxed">
+              <p className="text-xs text-[var(--text-main)] leading-relaxed">
                 {evaluation.feedback}
               </p>
 
               {evaluation.missing_concepts && evaluation.missing_concepts.length > 0 && (
                 <div className="space-y-1">
-                  <span className="text-[11px] font-semibold text-[#888888] uppercase tracking-wider block">
+                  <span className="text-[11px] font-semibold text-[var(--text-muted)] uppercase tracking-wider block">
                     Missing Concepts:
                   </span>
-                  <ul className="list-disc list-inside text-xs text-[#A1A1A1] space-y-0.5">
+                  <ul className="list-disc list-inside text-xs text-[var(--text-muted)] space-y-0.5">
                     {evaluation.missing_concepts.map((c: string, i: number) => (
                       <li key={i}>{c}</li>
                     ))}
@@ -311,9 +311,9 @@ export const VivaPractice: React.FC = () => {
                 </div>
               )}
 
-              <div className="p-3 bg-[#171717] rounded-lg border border-[rgba(255,255,255,0.06)] space-y-1">
+              <div className="p-3 bg-[var(--bg-metric)] rounded-lg border border-[var(--border-subtle)] space-y-1">
                 <span className="text-[11px] font-mono text-white block">★ Model Viva Answer:</span>
-                <p className="text-xs text-[#A1A1A1] leading-relaxed">
+                <p className="text-xs text-[var(--text-muted)] leading-relaxed">
                   {evaluation.better_answer}
                 </p>
               </div>
@@ -328,7 +328,7 @@ export const VivaPractice: React.FC = () => {
         </div>
       ) : (
         /* Results / Report Screen */
-        <div className="bg-[#141414] border border-[rgba(255,255,255,0.08)] rounded-xl p-8 text-center space-y-6">
+        <div className="bg-[var(--bg-card)] border border-[var(--border-subtle)] rounded-xl p-8 text-center space-y-6">
           <div className="w-14 h-14 rounded-2xl bg-white/10 flex items-center justify-center mx-auto">
             <Trophy className="w-7 h-7 text-white" />
           </div>
@@ -337,27 +337,27 @@ export const VivaPractice: React.FC = () => {
             <h3 className="text-xl font-bold font-['Manrope'] text-white">
               Viva Examination Concluded
             </h3>
-            <p className="text-xs text-[#888888]">
+            <p className="text-xs text-[var(--text-muted)]">
               Performance analysis on {selectedExp?.title}
             </p>
           </div>
 
           <div className="grid grid-cols-2 gap-4 max-w-sm mx-auto">
-            <div className="bg-[#111111] p-4 rounded-xl border border-[rgba(255,255,255,0.08)]">
-              <span className="text-[10px] text-[#666666] uppercase block font-mono">Average Score</span>
+            <div className="bg-[var(--bg-card)] p-4 rounded-xl border border-[var(--border-subtle)]">
+              <span className="text-[10px] text-[var(--text-dim)] uppercase block font-mono">Average Score</span>
               <span className="text-2xl font-extrabold text-white font-['Manrope']">
                 {averageScore} / 10
               </span>
             </div>
-            <div className="bg-[#111111] p-4 rounded-xl border border-[rgba(255,255,255,0.08)]">
-              <span className="text-[10px] text-[#666666] uppercase block font-mono">Questions</span>
+            <div className="bg-[var(--bg-card)] p-4 rounded-xl border border-[var(--border-subtle)]">
+              <span className="text-[10px] text-[var(--text-dim)] uppercase block font-mono">Questions</span>
               <span className="text-2xl font-extrabold text-white font-['Manrope']">
                 {questions.length}
               </span>
             </div>
           </div>
 
-          <div className="p-4 bg-[#111111] border border-[rgba(255,255,255,0.08)] rounded-xl max-w-md mx-auto text-left text-xs text-[#A1A1A1] space-y-1">
+          <div className="p-4 bg-[var(--bg-card)] border border-[var(--border-subtle)] rounded-xl max-w-md mx-auto text-left text-xs text-[var(--text-muted)] space-y-1">
             <span className="font-semibold text-white block">Recommendation:</span>
             <p>
               {averageScore >= 8

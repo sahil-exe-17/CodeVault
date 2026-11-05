@@ -153,7 +153,7 @@ export const Subjects: React.FC = () => {
           <h1 className="text-2xl font-bold font-['Manrope'] text-white">
             Subjects & Courses
           </h1>
-          <p className="text-xs text-[#888888] mt-1">
+          <p className="text-xs text-[var(--text-muted)] mt-1">
             Organize assignments and experiments by semester academic curriculum
           </p>
         </div>
@@ -173,24 +173,24 @@ export const Subjects: React.FC = () => {
         {subjects.map((sub) => (
           <div
             key={sub.id}
-            className="bg-[#141414] border border-[rgba(255,255,255,0.08)] hover:border-[rgba(255,255,255,0.18)] rounded-xl p-5 flex flex-col justify-between transition-all group"
+            className="bg-[var(--bg-card)] border border-[var(--border-subtle)] hover:border-[rgba(255,255,255,0.18)] rounded-xl p-5 flex flex-col justify-between transition-all group"
           >
             <div>
               <div className="flex items-center justify-between gap-2 mb-3">
-                <span className="text-[10px] text-[#888888] font-mono uppercase tracking-wider bg-[#1c1c1c] px-2 py-0.5 rounded border border-[rgba(255,255,255,0.08)]">
+                <span className="text-[10px] text-[var(--text-muted)] font-mono uppercase tracking-wider bg-[#1c1c1c] px-2 py-0.5 rounded border border-[var(--border-subtle)]">
                   {sub.semester || 'Course'}
                 </span>
                 <div className="flex items-center gap-1">
                   <button
                     onClick={() => handleOpenModal(sub)}
-                    className="p-1 text-[#666666] hover:text-white rounded transition-colors"
+                    className="p-1 text-[var(--text-dim)] hover:text-white rounded transition-colors"
                     title="Edit subject"
                   >
                     <Edit2 className="w-3.5 h-3.5" />
                   </button>
                   <button
                     onClick={() => setDeleteId(sub.id)}
-                    className="p-1 text-[#666666] hover:text-white rounded transition-colors"
+                    className="p-1 text-[var(--text-dim)] hover:text-white rounded transition-colors"
                     title="Delete subject"
                   >
                     <Trash2 className="w-3.5 h-3.5" />
@@ -202,15 +202,15 @@ export const Subjects: React.FC = () => {
                 {sub.name}
               </h3>
 
-              <p className="text-xs text-[#777777] line-clamp-3 leading-relaxed mb-6">
+              <p className="text-xs text-[var(--text-dim)] line-clamp-3 leading-relaxed mb-6">
                 {sub.description || 'No description provided for this subject.'}
               </p>
             </div>
 
-            <div className="space-y-4 pt-4 border-t border-[rgba(255,255,255,0.06)]">
+            <div className="space-y-4 pt-4 border-t border-[var(--border-subtle)]">
               {/* Revision Progress */}
               <div className="space-y-1.5">
-                <div className="flex items-center justify-between text-xs text-[#888888]">
+                <div className="flex items-center justify-between text-xs text-[var(--text-muted)]">
                   <span>Total Experiments</span>
                   <span className="font-mono text-white">
                     {sub.experiment_count || 4} practicals
@@ -223,7 +223,7 @@ export const Subjects: React.FC = () => {
 
               <button
                 onClick={() => navigate(`/experiments?subject=${sub.id}`)}
-                className="w-full py-2 bg-[#1c1c1c] hover:bg-[#252525] text-xs font-semibold text-white rounded-lg border border-[rgba(255,255,255,0.08)] flex items-center justify-center gap-2 transition-colors"
+                className="w-full py-2 bg-[#1c1c1c] hover:bg-[var(--bg-card-hover)] text-xs font-semibold text-white rounded-lg border border-[var(--border-subtle)] flex items-center justify-center gap-2 transition-colors"
               >
                 <span>View Experiments</span>
                 <ArrowRight className="w-3.5 h-3.5" />
@@ -258,17 +258,17 @@ export const Subjects: React.FC = () => {
           />
 
           <div className="flex flex-col gap-1.5">
-            <label className="text-xs font-medium text-[#A1A1A1]">Description</label>
+            <label className="text-xs font-medium text-[var(--text-muted)]">Description</label>
             <textarea
               rows={3}
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               placeholder="Syllabus topics, lab objectives, and grading scheme..."
-              className="bg-[#111111] text-[#F5F5F5] text-xs rounded-lg border border-[rgba(255,255,255,0.09)] p-3 focus:border-white focus:outline-none leading-relaxed"
+              className="bg-[var(--bg-card)] text-[var(--text-main)] text-xs rounded-lg border border-[var(--border-subtle)] p-3 focus:border-white focus:outline-none leading-relaxed"
             />
           </div>
 
-          <div className="flex items-center justify-end gap-2 pt-3 border-t border-[rgba(255,255,255,0.08)]">
+          <div className="flex items-center justify-end gap-2 pt-3 border-t border-[var(--border-subtle)]">
             <Button variant="ghost" size="sm" type="button" onClick={() => setIsModalOpen(false)}>
               Cancel
             </Button>

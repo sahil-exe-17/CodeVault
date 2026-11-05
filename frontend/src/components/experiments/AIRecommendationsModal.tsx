@@ -53,7 +53,7 @@ export const AIRecommendationsModal: React.FC<AIRecommendationsModalProps> = ({
       {isLoading ? (
         <div className="py-12 flex flex-col items-center justify-center text-center space-y-4">
           <div className="relative">
-            <div className="w-12 h-12 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center animate-pulse">
+            <div className="w-12 h-12 rounded-2xl bg-white/5 border border-[var(--border-subtle)] flex items-center justify-center animate-pulse">
               <Sparkles className="w-6 h-6 text-white" />
             </div>
             <div className="absolute inset-0 rounded-2xl bg-white/10 blur-xl animate-pulse" />
@@ -62,21 +62,21 @@ export const AIRecommendationsModal: React.FC<AIRecommendationsModalProps> = ({
             <p className="text-sm font-semibold text-white font-['Manrope']">
               Analyzing code logic & algorithm...
             </p>
-            <p className="text-xs text-[#888888]">
+            <p className="text-xs text-[var(--text-muted)]">
               Identifying algorithm patterns, determining time/space complexities, and generating recommendations.
             </p>
           </div>
         </div>
       ) : !data ? (
-        <div className="py-8 text-center text-xs text-[#888888]">
+        <div className="py-8 text-center text-xs text-[var(--text-muted)]">
           No recommendations available for this code snippet.
         </div>
       ) : (
         <div className="space-y-4">
           {/* Top Recommendation: Suggested Name / Title */}
-          <div className="p-4 rounded-xl bg-[#111116] border border-white/10 space-y-3 shadow-md">
+          <div className="p-4 rounded-xl bg-[#111116] border border-[var(--border-subtle)] space-y-3 shadow-md">
             <div className="flex items-center justify-between">
-              <span className="text-[11px] font-semibold uppercase tracking-wider text-[#888888] flex items-center gap-1.5">
+              <span className="text-[11px] font-semibold uppercase tracking-wider text-[var(--text-muted)] flex items-center gap-1.5">
                 <Sparkles className="w-3.5 h-3.5 text-white" />
                 Recommended Name for this Code
               </span>
@@ -92,7 +92,7 @@ export const AIRecommendationsModal: React.FC<AIRecommendationsModalProps> = ({
                 </h3>
                 {data.topic && (
                   <p className="text-xs text-[#999999] flex items-center gap-1">
-                    <Tag className="w-3 h-3 text-[#666666]" />
+                    <Tag className="w-3 h-3 text-[var(--text-dim)]" />
                     <span>Topic: {data.topic}</span>
                   </p>
                 )}
@@ -120,17 +120,17 @@ export const AIRecommendationsModal: React.FC<AIRecommendationsModalProps> = ({
           {/* Quick Metadata: Complexity & Aim */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             {/* Time & Space Complexity */}
-            <div className="p-3.5 rounded-xl bg-[#111111] border border-[rgba(255,255,255,0.08)] space-y-2">
-              <span className="text-[11px] font-medium text-[#888888] flex items-center gap-1.5">
+            <div className="p-3.5 rounded-xl bg-[var(--bg-card)] border border-[var(--border-subtle)] space-y-2">
+              <span className="text-[11px] font-medium text-[var(--text-muted)] flex items-center gap-1.5">
                 <Clock className="w-3.5 h-3.5 text-white" />
                 Complexity Profile
               </span>
               <div className="space-y-1 text-xs">
-                <div className="flex items-center justify-between text-[#A1A1A1]">
+                <div className="flex items-center justify-between text-[var(--text-muted)]">
                   <span>Time:</span>
                   <span className="font-mono text-white font-semibold">{data.time_complexity || 'O(n)'}</span>
                 </div>
-                <div className="flex items-center justify-between text-[#A1A1A1]">
+                <div className="flex items-center justify-between text-[var(--text-muted)]">
                   <span>Space:</span>
                   <span className="font-mono text-white font-semibold">{data.space_complexity || 'O(1)'}</span>
                 </div>
@@ -139,7 +139,7 @@ export const AIRecommendationsModal: React.FC<AIRecommendationsModalProps> = ({
                 <button
                   type="button"
                   onClick={() => onApplyComplexity(data.time_complexity || 'O(n)', data.space_complexity || 'O(1)')}
-                  className="text-[11px] text-[#A1A1A1] hover:text-white underline underline-offset-2 transition-colors cursor-pointer pt-1"
+                  className="text-[11px] text-[var(--text-muted)] hover:text-white underline underline-offset-2 transition-colors cursor-pointer pt-1"
                 >
                   Update Experiment Complexity
                 </button>
@@ -147,8 +147,8 @@ export const AIRecommendationsModal: React.FC<AIRecommendationsModalProps> = ({
             </div>
 
             {/* Academic Aim */}
-            <div className="p-3.5 rounded-xl bg-[#111111] border border-[rgba(255,255,255,0.08)] space-y-2">
-              <span className="text-[11px] font-medium text-[#888888] flex items-center gap-1.5">
+            <div className="p-3.5 rounded-xl bg-[var(--bg-card)] border border-[var(--border-subtle)] space-y-2">
+              <span className="text-[11px] font-medium text-[var(--text-muted)] flex items-center gap-1.5">
                 <Target className="w-3.5 h-3.5 text-white" />
                 Laboratory Aim
               </span>
@@ -159,7 +159,7 @@ export const AIRecommendationsModal: React.FC<AIRecommendationsModalProps> = ({
                 <button
                   type="button"
                   onClick={() => onApplyAim(data.aim!)}
-                  className="text-[11px] text-[#A1A1A1] hover:text-white underline underline-offset-2 transition-colors cursor-pointer pt-1"
+                  className="text-[11px] text-[var(--text-muted)] hover:text-white underline underline-offset-2 transition-colors cursor-pointer pt-1"
                 >
                   Apply to Aim Tab
                 </button>
@@ -168,14 +168,14 @@ export const AIRecommendationsModal: React.FC<AIRecommendationsModalProps> = ({
           </div>
 
           {/* Actionable Engineering Recommendations */}
-          <div className="p-4 rounded-xl bg-[#111111] border border-[rgba(255,255,255,0.08)] space-y-2.5">
-            <span className="text-[11px] font-medium text-[#888888] flex items-center gap-1.5">
+          <div className="p-4 rounded-xl bg-[var(--bg-card)] border border-[var(--border-subtle)] space-y-2.5">
+            <span className="text-[11px] font-medium text-[var(--text-muted)] flex items-center gap-1.5">
               <Lightbulb className="w-3.5 h-3.5 text-white" />
               Code Recommendations & Improvements
             </span>
             <ul className="space-y-2">
               {(data.recommendations || []).map((rec, index) => (
-                <li key={index} className="text-xs text-[#D4D4D4] flex items-start gap-2 leading-relaxed">
+                <li key={index} className="text-xs text-[var(--text-main)] flex items-start gap-2 leading-relaxed">
                   <span className="w-4 h-4 rounded-full bg-white/10 flex items-center justify-center text-[10px] text-white shrink-0 mt-0.5 font-mono">
                     {index + 1}
                   </span>
@@ -187,20 +187,20 @@ export const AIRecommendationsModal: React.FC<AIRecommendationsModalProps> = ({
 
           {/* Sample I/O */}
           {(data.sample_input || data.expected_output) && (
-            <div className="p-3.5 rounded-xl bg-[#090909] border border-[rgba(255,255,255,0.06)] space-y-2">
-              <span className="text-[11px] font-mono text-[#888888] uppercase tracking-wider">
+            <div className="p-3.5 rounded-xl bg-[var(--bg-card)] border border-[var(--border-subtle)] space-y-2">
+              <span className="text-[11px] font-mono text-[var(--text-muted)] uppercase tracking-wider">
                 Recommended Test Verification
               </span>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs font-mono">
                 {data.sample_input && (
-                  <div className="p-2 rounded bg-[#141414] border border-white/5 space-y-1">
-                    <span className="text-[10px] text-[#777777] uppercase">Sample Input:</span>
+                  <div className="p-2 rounded bg-[var(--bg-card)] border border-[var(--border-subtle)] space-y-1">
+                    <span className="text-[10px] text-[var(--text-dim)] uppercase">Sample Input:</span>
                     <pre className="text-white whitespace-pre-wrap">{data.sample_input}</pre>
                   </div>
                 )}
                 {data.expected_output && (
-                  <div className="p-2 rounded bg-[#141414] border border-white/5 space-y-1">
-                    <span className="text-[10px] text-[#777777] uppercase">Expected Output:</span>
+                  <div className="p-2 rounded bg-[var(--bg-card)] border border-[var(--border-subtle)] space-y-1">
+                    <span className="text-[10px] text-[var(--text-dim)] uppercase">Expected Output:</span>
                     <pre className="text-white whitespace-pre-wrap">{data.expected_output}</pre>
                   </div>
                 )}
@@ -209,7 +209,7 @@ export const AIRecommendationsModal: React.FC<AIRecommendationsModalProps> = ({
           )}
 
           {/* Footer Actions */}
-          <div className="flex items-center justify-between pt-3 border-t border-[rgba(255,255,255,0.08)]">
+          <div className="flex items-center justify-between pt-3 border-t border-[var(--border-subtle)]">
             <Button variant="ghost" size="sm" onClick={onClose}>
               Dismiss
             </Button>

@@ -12,7 +12,7 @@ export const GlassInput = React.forwardRef<HTMLInputElement, GlassInputProps>(
     return (
       <div className="w-full flex flex-col gap-1.5">
         {label && (
-          <label className="text-[11px] font-medium text-white/50 tracking-wide uppercase">
+          <label className="text-[11px] font-medium text-[var(--text-dim)] tracking-wide uppercase">
             {label}
           </label>
         )}
@@ -20,19 +20,19 @@ export const GlassInput = React.forwardRef<HTMLInputElement, GlassInputProps>(
           {/* Subtle Ambient Focus Ring */}
           <div
             className={`absolute -inset-[1px] rounded-xl transition-opacity duration-300 pointer-events-none ${
-              isFocused ? 'opacity-100 bg-white/10 blur-[1px]' : 'opacity-0'
+              isFocused ? 'opacity-100 bg-emerald-500/10 blur-[1px]' : 'opacity-0'
             }`}
           />
 
           <div
-            className={`relative flex items-center bg-[#17171b]/80 backdrop-blur-md rounded-xl border transition-all duration-200 overflow-hidden ${
+            className={`relative flex items-center bg-[var(--bg-input)] backdrop-blur-md rounded-xl border transition-all duration-200 overflow-hidden ${
               isFocused
-                ? 'border-white/25 bg-[#1c1c22]/90 shadow-[inset_0_1px_1px_rgba(255,255,255,0.1)]'
-                : 'border-white/[0.08] hover:border-white/[0.14]'
+                ? 'border-[var(--border-hover)] shadow-sm'
+                : 'border-[var(--border-subtle)] hover:border-[var(--border-hover)]'
             } ${className}`}
           >
             {icon && (
-              <span className="pl-3.5 pr-1 text-white/40 flex items-center pointer-events-none">
+              <span className="pl-3.5 pr-1 text-[var(--text-dim)] flex items-center pointer-events-none">
                 {icon}
               </span>
             )}
@@ -49,7 +49,7 @@ export const GlassInput = React.forwardRef<HTMLInputElement, GlassInputProps>(
               }}
               onKeyDown={onKeyDown}
               onChange={onChange}
-              className={`w-full bg-transparent text-white placeholder-white/25 text-sm py-2.5 px-3.5 focus:outline-none focus:ring-0 ${
+              className={`w-full bg-transparent text-[var(--text-main)] placeholder-[var(--text-dim)] text-sm py-2.5 px-3.5 focus:outline-none focus:ring-0 ${
                 icon ? 'pl-2' : ''
               }`}
               {...props}

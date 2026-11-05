@@ -125,7 +125,7 @@ export const NewExperimentModal: React.FC<NewExperimentModalProps> = ({
         {/* Title Input + AI Auto-detect toggle */}
         <div className="space-y-1.5">
           <div className="flex items-center justify-between">
-            <label className="text-xs font-medium text-[#A1A1A1]">Experiment Title *</label>
+            <label className="text-xs font-medium text-[var(--text-muted)]">Experiment Title *</label>
             <button
               type="button"
               onClick={() => setShowCodeInput(!showCodeInput)}
@@ -148,7 +148,7 @@ export const NewExperimentModal: React.FC<NewExperimentModalProps> = ({
 
         {/* Expandable Code Input for AI Auto-naming */}
         {showCodeInput && (
-          <div className="p-3 bg-[#111116] rounded-xl border border-white/10 space-y-2">
+          <div className="p-3 bg-[#111116] rounded-xl border border-[var(--border-subtle)] space-y-2">
             <div className="flex items-center justify-between">
               <span className="text-[11px] font-semibold text-white/80 flex items-center gap-1.5">
                 <Code2 className="w-3.5 h-3.5 text-white" />
@@ -160,7 +160,7 @@ export const NewExperimentModal: React.FC<NewExperimentModalProps> = ({
               value={pastedCode}
               onChange={(e) => setPastedCode(e.target.value)}
               placeholder="Paste your source code here (e.g. C, C++, Python, Java)..."
-              className="w-full bg-[#0c0c0e] text-[#F5F5F5] font-mono text-xs rounded-lg border border-white/10 p-2.5 focus:border-white focus:outline-none resize-none leading-relaxed"
+              className="w-full bg-[#0c0c0e] text-[var(--text-main)] font-mono text-xs rounded-lg border border-[var(--border-subtle)] p-2.5 focus:border-white focus:outline-none resize-none leading-relaxed"
             />
             <Button
               type="button"
@@ -178,7 +178,7 @@ export const NewExperimentModal: React.FC<NewExperimentModalProps> = ({
 
         <div className="grid grid-cols-2 gap-3">
           <div className="flex flex-col gap-1.5">
-            <label className="text-xs font-medium text-[#A1A1A1]">
+            <label className="text-xs font-medium text-[var(--text-muted)]">
               Experiment Number
             </label>
             <input
@@ -186,12 +186,12 @@ export const NewExperimentModal: React.FC<NewExperimentModalProps> = ({
               value={experimentNumber}
               onChange={(e) => setExperimentNumber(e.target.value)}
               placeholder="e.g., EXP-01"
-              className="bg-[#111111] text-[#F5F5F5] text-sm rounded-lg border border-[rgba(255,255,255,0.09)] px-3 py-2 focus:border-white focus:outline-none"
+              className="bg-[var(--bg-card)] text-[var(--text-main)] text-sm rounded-lg border border-[var(--border-subtle)] px-3 py-2 focus:border-white focus:outline-none"
             />
           </div>
 
           <div className="flex flex-col gap-1.5">
-            <label className="text-xs font-medium text-[#A1A1A1]">
+            <label className="text-xs font-medium text-[var(--text-muted)]">
               Language
             </label>
             <Select
@@ -212,7 +212,7 @@ export const NewExperimentModal: React.FC<NewExperimentModalProps> = ({
 
         {subjects.length > 0 && (
           <div className="flex flex-col gap-1.5">
-            <label className="text-xs font-medium text-[#A1A1A1]">
+            <label className="text-xs font-medium text-[var(--text-muted)]">
               Subject / Course
             </label>
             <Select
@@ -231,11 +231,11 @@ export const NewExperimentModal: React.FC<NewExperimentModalProps> = ({
           onChange={(e) => setTopic(e.target.value)}
         />
 
-        <p className="text-[11px] text-[#777777] bg-[#111111] p-2.5 rounded-lg border border-[rgba(255,255,255,0.06)] font-mono">
+        <p className="text-[11px] text-[var(--text-dim)] bg-[var(--bg-card)] p-2.5 rounded-lg border border-[var(--border-subtle)] font-mono">
           Tip: You can use "Scan from Photo" or click "Auto-Name from Code" to have Gemini AI detect and name your practical automatically.
         </p>
 
-        <div className="flex items-center justify-between gap-2 pt-3 border-t border-[rgba(255,255,255,0.08)]">
+        <div className="flex items-center justify-between gap-2 pt-3 border-t border-[var(--border-subtle)]">
           <Button
             variant="outline"
             size="sm"

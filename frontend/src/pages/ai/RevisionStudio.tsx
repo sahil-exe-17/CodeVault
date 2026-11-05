@@ -243,14 +243,14 @@ export const RevisionStudio: React.FC = () => {
           <h1 className="text-2xl font-bold font-['Manrope'] text-white">
             Revision Studio
           </h1>
-          <p className="text-xs text-[#888888] mt-1">
+          <p className="text-xs text-[var(--text-muted)] mt-1">
             Active recall, spaced repetition, flashcards, and practical exam simulations
           </p>
         </div>
 
         {/* Experiment Context Selector */}
         <div className="flex items-center gap-2">
-          <span className="text-[11px] text-[#666666] font-mono">TARGET:</span>
+          <span className="text-[11px] text-[var(--text-dim)] font-mono">TARGET:</span>
           <Select
             size="compact"
             title="Choose Target Experiment"
@@ -266,7 +266,7 @@ export const RevisionStudio: React.FC = () => {
       </div>
 
       {/* Revision Modes Navigation Tabs */}
-      <div className="flex items-center gap-1.5 p-1 bg-[#141414] border border-[rgba(255,255,255,0.08)] rounded-xl overflow-x-auto">
+      <div className="flex items-center gap-1.5 p-1 bg-[var(--bg-card)] border border-[var(--border-subtle)] rounded-xl overflow-x-auto">
         {[
           { id: 'flashcards', label: 'Flashcards', icon: Layers },
           { id: 'mcq', label: 'MCQ Practice', icon: FileQuestion },
@@ -284,7 +284,7 @@ export const RevisionStudio: React.FC = () => {
               className={`flex items-center gap-2 px-3.5 py-2 rounded-lg text-xs font-medium whitespace-nowrap transition-all ${
                 isActive
                   ? 'bg-white text-black font-semibold shadow-sm'
-                  : 'text-[#888888] hover:text-white hover:bg-[rgba(255,255,255,0.03)]'
+                  : 'text-[var(--text-muted)] hover:text-white hover:bg-[rgba(255,255,255,0.03)]'
               }`}
             >
               <Icon className="w-3.5 h-3.5" />
@@ -297,7 +297,7 @@ export const RevisionStudio: React.FC = () => {
       {/* TAB 1: FLASHCARDS */}
       {activeTab === 'flashcards' && (
         <div className="flex flex-col items-center justify-center py-6 space-y-6">
-          <div className="flex items-center justify-between w-full max-w-lg text-xs text-[#888888]">
+          <div className="flex items-center justify-between w-full max-w-lg text-xs text-[var(--text-muted)]">
             <span>
               Card {cardIndex + 1} of {flashcards.length}
             </span>
@@ -312,11 +312,11 @@ export const RevisionStudio: React.FC = () => {
             <div
               className={`relative w-full h-full rounded-2xl border border-[rgba(255,255,255,0.12)] p-8 flex flex-col justify-between transition-all duration-300 shadow-xl ${
                 isFlipped
-                  ? 'bg-[#171717] border-white/40'
+                  ? 'bg-[var(--bg-metric)] border-white/40'
                   : 'bg-[#121212] hover:border-[rgba(255,255,255,0.25)]'
               }`}
             >
-              <div className="flex items-center justify-between text-[11px] text-[#888888] font-mono">
+              <div className="flex items-center justify-between text-[11px] text-[var(--text-muted)] font-mono">
                 <span className="uppercase tracking-wider">
                   {isFlipped ? 'Answer' : 'Question'}
                 </span>
@@ -333,7 +333,7 @@ export const RevisionStudio: React.FC = () => {
                 </h3>
               </div>
 
-              <div className="text-center text-[11px] text-[#666666]">
+              <div className="text-center text-[11px] text-[var(--text-dim)]">
                 Click anywhere to {isFlipped ? 'flip back to question' : 'reveal answer'}
               </div>
             </div>
@@ -389,9 +389,9 @@ export const RevisionStudio: React.FC = () => {
       {activeTab === 'mcq' && (
         <div className="max-w-2xl mx-auto py-4">
           {!isMcqFinished ? (
-            <div className="bg-[#141414] border border-[rgba(255,255,255,0.08)] rounded-xl p-6 space-y-6">
+            <div className="bg-[var(--bg-card)] border border-[var(--border-subtle)] rounded-xl p-6 space-y-6">
               {/* Counter & Progress */}
-              <div className="flex items-center justify-between text-xs text-[#888888]">
+              <div className="flex items-center justify-between text-xs text-[var(--text-muted)]">
                 <span>
                   Question {mcqIndex + 1} of {mcqQuestions.length}
                 </span>
@@ -418,16 +418,16 @@ export const RevisionStudio: React.FC = () => {
                     'w-full text-left p-3.5 rounded-xl border text-xs font-medium transition-all flex items-center justify-between '
                   if (!selectedOption) {
                     btnClasses +=
-                      'bg-[#1a1a1a] border-[rgba(255,255,255,0.08)] hover:border-[rgba(255,255,255,0.2)] text-[#D4D4D4]'
+                      'bg-[var(--bg-metric)] border-[var(--border-subtle)] hover:border-[rgba(255,255,255,0.2)] text-[var(--text-main)]'
                   } else if (isCorrect) {
                     // Correct answer highlights white in monochrome style
                     btnClasses += 'bg-white text-black border-white font-semibold'
                   } else if (isSelected && !isCorrect) {
                     // Incorrect selection
                     btnClasses +=
-                      'bg-[#222222] text-[#888888] border-[rgba(255,255,255,0.2)] line-through'
+                      'bg-[#222222] text-[var(--text-muted)] border-[rgba(255,255,255,0.2)] line-through'
                   } else {
-                    btnClasses += 'bg-[#141414] text-[#555555] border-transparent'
+                    btnClasses += 'bg-[var(--bg-card)] text-[var(--text-dim)] border-transparent'
                   }
 
                   return (
@@ -455,8 +455,8 @@ export const RevisionStudio: React.FC = () => {
 
               {/* Explanation & Next */}
               {selectedOption && (
-                <div className="pt-4 border-t border-[rgba(255,255,255,0.08)] space-y-4">
-                  <div className="bg-[#111111] p-4 rounded-lg border border-[rgba(255,255,255,0.08)] text-xs text-[#A1A1A1] leading-relaxed">
+                <div className="pt-4 border-t border-[var(--border-subtle)] space-y-4">
+                  <div className="bg-[var(--bg-card)] p-4 rounded-lg border border-[var(--border-subtle)] text-xs text-[var(--text-muted)] leading-relaxed">
                     <span className="font-semibold text-white block mb-1">
                       Explanation:
                     </span>
@@ -473,7 +473,7 @@ export const RevisionStudio: React.FC = () => {
             </div>
           ) : (
             /* Results Screen */
-            <div className="bg-[#141414] border border-[rgba(255,255,255,0.08)] rounded-xl p-8 text-center space-y-5">
+            <div className="bg-[var(--bg-card)] border border-[var(--border-subtle)] rounded-xl p-8 text-center space-y-5">
               <div className="w-12 h-12 rounded-xl bg-white/10 flex items-center justify-center mx-auto">
                 <Check className="w-6 h-6 text-white" />
               </div>
@@ -483,7 +483,7 @@ export const RevisionStudio: React.FC = () => {
               <div className="text-3xl font-extrabold font-['Manrope'] text-white">
                 {mcqScore} / {mcqQuestions.length}
               </div>
-              <p className="text-xs text-[#888888] max-w-sm mx-auto">
+              <p className="text-xs text-[var(--text-muted)] max-w-sm mx-auto">
                 You scored {Math.round((mcqScore / mcqQuestions.length) * 100)}% on this set of practice practical questions.
               </p>
               <div className="pt-2">
@@ -525,19 +525,19 @@ export const RevisionStudio: React.FC = () => {
           </div>
 
           {quickNotes ? (
-            <div className="bg-[#141414] border border-[rgba(255,255,255,0.08)] rounded-xl p-6 space-y-5 text-xs text-[#D4D4D4] leading-relaxed">
+            <div className="bg-[var(--bg-card)] border border-[var(--border-subtle)] rounded-xl p-6 space-y-5 text-xs text-[var(--text-main)] leading-relaxed">
               <div>
                 <h4 className="text-xs font-bold text-white uppercase tracking-wider font-mono mb-1">
                   1. Executive Summary
                 </h4>
-                <p className="text-[#A1A1A1]">{quickNotes.summary}</p>
+                <p className="text-[var(--text-muted)]">{quickNotes.summary}</p>
               </div>
 
               <div>
                 <h4 className="text-xs font-bold text-white uppercase tracking-wider font-mono mb-2">
                   2. Key Concepts & Invariants
                 </h4>
-                <ul className="list-disc list-inside space-y-1 text-[#A1A1A1]">
+                <ul className="list-disc list-inside space-y-1 text-[var(--text-muted)]">
                   {quickNotes.key_concepts?.map((c: string, idx: number) => (
                     <li key={idx}>{c}</li>
                   ))}
@@ -548,16 +548,16 @@ export const RevisionStudio: React.FC = () => {
                 <h4 className="text-xs font-bold text-white uppercase tracking-wider font-mono mb-2">
                   3. Critical Practical Exam Points
                 </h4>
-                <ul className="list-disc list-inside space-y-1 text-[#A1A1A1]">
+                <ul className="list-disc list-inside space-y-1 text-[var(--text-muted)]">
                   {quickNotes.important_points?.map((p: string, idx: number) => (
                     <li key={idx}>{p}</li>
                   ))}
                 </ul>
               </div>
 
-              <div className="p-4 bg-[#111111] border border-[rgba(255,255,255,0.08)] rounded-lg">
+              <div className="p-4 bg-[var(--bg-card)] border border-[var(--border-subtle)] rounded-lg">
                 <span className="font-semibold text-white block mb-1">★ Examiner Tips:</span>
-                <ul className="list-disc list-inside space-y-1 text-[#888888]">
+                <ul className="list-disc list-inside space-y-1 text-[var(--text-muted)]">
                   {quickNotes.exam_tips?.map((t: string, idx: number) => (
                     <li key={idx}>{t}</li>
                   ))}
@@ -565,10 +565,10 @@ export const RevisionStudio: React.FC = () => {
               </div>
             </div>
           ) : (
-            <div className="text-center py-16 bg-[#141414] border border-[rgba(255,255,255,0.08)] rounded-xl">
-              <Sparkles className="w-8 h-8 text-[#666666] mx-auto mb-2" />
+            <div className="text-center py-16 bg-[var(--bg-card)] border border-[var(--border-subtle)] rounded-xl">
+              <Sparkles className="w-8 h-8 text-[var(--text-dim)] mx-auto mb-2" />
               <h4 className="text-sm font-semibold text-white">No Notes Generated</h4>
-              <p className="text-xs text-[#888888] mt-1 max-w-sm mx-auto mb-4">
+              <p className="text-xs text-[var(--text-muted)] mt-1 max-w-sm mx-auto mb-4">
                 Click 'Generate Notes' to summarize the selected experiment into high-yield exam takeaways.
               </p>
               <Button variant="primary" size="sm" onClick={handleGenerateNotes} isLoading={isGeneratingNotes}>
@@ -582,13 +582,13 @@ export const RevisionStudio: React.FC = () => {
       {/* TAB 4: OUTPUT PREDICTION QUIZ */}
       {activeTab === 'output' && (
         <div className="max-w-2xl mx-auto space-y-5">
-          <div className="bg-[#141414] border border-[rgba(255,255,255,0.08)] rounded-xl p-6 space-y-4">
-            <div className="flex items-center justify-between text-xs text-[#888888]">
+          <div className="bg-[var(--bg-card)] border border-[var(--border-subtle)] rounded-xl p-6 space-y-4">
+            <div className="flex items-center justify-between text-xs text-[var(--text-muted)]">
               <span>Predict the Terminal Output</span>
               <span className="font-mono">Language: C</span>
             </div>
 
-            <pre className="bg-[#090909] border border-[rgba(255,255,255,0.08)] p-4 rounded-lg font-mono text-xs text-white overflow-x-auto">
+            <pre className="bg-[var(--bg-card)] border border-[var(--border-subtle)] p-4 rounded-lg font-mono text-xs text-white overflow-x-auto">
 {`int main() {
     int arr[] = {10, 20, 30, 40};
     int *p = arr;
@@ -599,7 +599,7 @@ export const RevisionStudio: React.FC = () => {
             </pre>
 
             <div className="space-y-2">
-              <label className="text-xs font-medium text-[#A1A1A1]">
+              <label className="text-xs font-medium text-[var(--text-muted)]">
                 What will be printed to stdout?
               </label>
               <input
@@ -607,14 +607,14 @@ export const RevisionStudio: React.FC = () => {
                 placeholder="Type predicted output..."
                 value={outputPrediction}
                 onChange={(e) => setOutputPrediction(e.target.value)}
-                className="w-full bg-[#111111] text-xs text-white rounded-lg border border-[rgba(255,255,255,0.09)] px-3 py-2 font-mono focus:border-white focus:outline-none"
+                className="w-full bg-[var(--bg-card)] text-xs text-white rounded-lg border border-[var(--border-subtle)] px-3 py-2 font-mono focus:border-white focus:outline-none"
               />
             </div>
 
             <div className="flex items-center justify-between pt-2">
               <button
                 onClick={() => setShowOutputAnswer(!showOutputAnswer)}
-                className="text-xs text-[#888888] hover:text-white underline"
+                className="text-xs text-[var(--text-muted)] hover:text-white underline"
               >
                 {showOutputAnswer ? 'Hide Solution' : 'Reveal Solution →'}
               </button>
@@ -635,9 +635,9 @@ export const RevisionStudio: React.FC = () => {
             </div>
 
             {showOutputAnswer && (
-              <div className="p-4 bg-[#111111] border border-[rgba(255,255,255,0.08)] rounded-lg text-xs space-y-1">
+              <div className="p-4 bg-[var(--bg-card)] border border-[var(--border-subtle)] rounded-lg text-xs space-y-1">
                 <span className="font-mono text-white block">Expected: 10 20</span>
-                <p className="text-[#888888]">
+                <p className="text-[var(--text-muted)]">
                   `*(p++)` evaluates to `*p` (10) before incrementing the pointer `p` to point to the next element (20).
                 </p>
               </div>
@@ -649,8 +649,8 @@ export const RevisionStudio: React.FC = () => {
       {/* TAB 5: DEBUG CHALLENGE */}
       {activeTab === 'debug' && (
         <div className="max-w-2xl mx-auto space-y-5">
-          <div className="bg-[#141414] border border-[rgba(255,255,255,0.08)] rounded-xl p-6 space-y-4">
-            <div className="flex items-center justify-between text-xs text-[#888888]">
+          <div className="bg-[var(--bg-card)] border border-[var(--border-subtle)] rounded-xl p-6 space-y-4">
+            <div className="flex items-center justify-between text-xs text-[var(--text-muted)]">
               <span className="flex items-center gap-1.5">
                 <Bug className="w-3.5 h-3.5 text-white" />
                 Find the Bug
@@ -658,7 +658,7 @@ export const RevisionStudio: React.FC = () => {
               <span className="font-mono">Off-by-one Error</span>
             </div>
 
-            <pre className="bg-[#090909] border border-[rgba(255,255,255,0.08)] p-4 rounded-lg font-mono text-xs text-white overflow-x-auto">
+            <pre className="bg-[var(--bg-card)] border border-[var(--border-subtle)] p-4 rounded-lg font-mono text-xs text-white overflow-x-auto">
 {`// Buggy search implementation
 int search(int arr[], int n, int key) {
     for (int i = 0; i <= n; i++) {
@@ -669,7 +669,7 @@ int search(int arr[], int n, int key) {
             </pre>
 
             <div className="space-y-2">
-              <label className="text-xs font-medium text-[#A1A1A1]">
+              <label className="text-xs font-medium text-[var(--text-muted)]">
                 Identify the bug and propose a solution:
               </label>
               <textarea
@@ -677,14 +677,14 @@ int search(int arr[], int n, int key) {
                 placeholder="Describe what line is faulty..."
                 value={debugUserFix}
                 onChange={(e) => setDebugUserFix(e.target.value)}
-                className="w-full bg-[#111111] text-xs text-white rounded-lg border border-[rgba(255,255,255,0.09)] p-3 focus:border-white focus:outline-none"
+                className="w-full bg-[var(--bg-card)] text-xs text-white rounded-lg border border-[var(--border-subtle)] p-3 focus:border-white focus:outline-none"
               />
             </div>
 
             <div className="flex items-center justify-between pt-2">
               <button
                 onClick={() => setShowDebugAnswer(!showDebugAnswer)}
-                className="text-xs text-[#888888] hover:text-white underline"
+                className="text-xs text-[var(--text-muted)] hover:text-white underline"
               >
                 {showDebugAnswer ? 'Hide Fix' : 'Reveal Solution →'}
               </button>
@@ -698,9 +698,9 @@ int search(int arr[], int n, int key) {
             </div>
 
             {showDebugAnswer && (
-              <div className="p-4 bg-[#111111] border border-[rgba(255,255,255,0.08)] rounded-lg text-xs space-y-1">
+              <div className="p-4 bg-[var(--bg-card)] border border-[var(--border-subtle)] rounded-lg text-xs space-y-1">
                 <span className="font-semibold text-white block">Bug Explanation:</span>
-                <p className="text-[#A1A1A1]">
+                <p className="text-[var(--text-muted)]">
                   `for (int i = 0; i &lt;= n; i++)` runs out-of-bounds at `i == n`, accessing unallocated memory (undefined behavior). The loop condition should be `i &lt; n`.
                 </p>
               </div>
@@ -713,15 +713,15 @@ int search(int arr[], int n, int key) {
       {activeTab === 'mock' && (
         <div className="max-w-3xl mx-auto space-y-5">
           {!isExamActive && !isExamSubmitted ? (
-            <div className="bg-[#141414] border border-[rgba(255,255,255,0.08)] rounded-xl p-8 text-center space-y-4">
+            <div className="bg-[var(--bg-card)] border border-[var(--border-subtle)] rounded-xl p-8 text-center space-y-4">
               <GraduationCap className="w-10 h-10 text-white mx-auto" />
               <h3 className="text-lg font-bold font-['Manrope'] text-white">
                 Simulated Practical Examination
               </h3>
-              <p className="text-xs text-[#888888] max-w-md mx-auto leading-relaxed">
+              <p className="text-xs text-[var(--text-muted)] max-w-md mx-auto leading-relaxed">
                 Test your comprehensive knowledge with a timed oral + written practical exam simulation. Includes algorithm walkthrough, time complexity proofs, and edge case handling.
               </p>
-              <div className="inline-flex items-center gap-2 text-xs font-mono text-[#D4D4D4] py-1 px-3 bg-[#111111] rounded-lg border border-[rgba(255,255,255,0.08)]">
+              <div className="inline-flex items-center gap-2 text-xs font-mono text-[var(--text-main)] py-1 px-3 bg-[var(--bg-card)] rounded-lg border border-[var(--border-subtle)]">
                 <Clock className="w-3.5 h-3.5 text-white" />
                 <span>Duration: 30 Minutes</span>
               </div>
@@ -732,16 +732,16 @@ int search(int arr[], int n, int key) {
               </div>
             </div>
           ) : isExamActive ? (
-            <div className="bg-[#141414] border border-[rgba(255,255,255,0.08)] rounded-xl p-6 space-y-6">
+            <div className="bg-[var(--bg-card)] border border-[var(--border-subtle)] rounded-xl p-6 space-y-6">
               {/* Exam Header */}
-              <div className="flex items-center justify-between pb-4 border-b border-[rgba(255,255,255,0.08)]">
+              <div className="flex items-center justify-between pb-4 border-b border-[var(--border-subtle)]">
                 <div>
                   <h3 className="text-sm font-bold font-['Manrope'] text-white">
                     Mid-Semester Practical Examination
                   </h3>
-                  <span className="text-[11px] text-[#888888]">3 Questions • Complete before timer expires</span>
+                  <span className="text-[11px] text-[var(--text-muted)]">3 Questions • Complete before timer expires</span>
                 </div>
-                <div className="flex items-center gap-2 font-mono text-sm font-bold text-white bg-[#111111] px-3 py-1.5 rounded-lg border border-[rgba(255,255,255,0.15)]">
+                <div className="flex items-center gap-2 font-mono text-sm font-bold text-white bg-[var(--bg-card)] px-3 py-1.5 rounded-lg border border-[rgba(255,255,255,0.15)]">
                   <Clock className="w-4 h-4" />
                   <span>{formatTimer(examTimer)}</span>
                 </div>
@@ -773,12 +773,12 @@ int search(int arr[], int n, int key) {
                     onChange={(e) =>
                       setExamAnswers({ ...examAnswers, [item.id]: e.target.value })
                     }
-                    className="w-full bg-[#111111] text-xs text-white rounded-lg border border-[rgba(255,255,255,0.09)] p-3 focus:border-white focus:outline-none"
+                    className="w-full bg-[var(--bg-card)] text-xs text-white rounded-lg border border-[var(--border-subtle)] p-3 focus:border-white focus:outline-none"
                   />
                 </div>
               ))}
 
-              <div className="flex items-center justify-end gap-3 pt-4 border-t border-[rgba(255,255,255,0.08)]">
+              <div className="flex items-center justify-end gap-3 pt-4 border-t border-[var(--border-subtle)]">
                 <Button
                   variant="primary"
                   size="md"
@@ -794,12 +794,12 @@ int search(int arr[], int n, int key) {
             </div>
           ) : (
             /* Exam Submitted Review */
-            <div className="bg-[#141414] border border-[rgba(255,255,255,0.08)] rounded-xl p-8 text-center space-y-4">
+            <div className="bg-[var(--bg-card)] border border-[var(--border-subtle)] rounded-xl p-8 text-center space-y-4">
               <Check className="w-10 h-10 text-white mx-auto" />
               <h3 className="text-xl font-bold font-['Manrope'] text-white">
                 Exam Evaluation Ready
               </h3>
-              <p className="text-xs text-[#888888] max-w-md mx-auto">
+              <p className="text-xs text-[var(--text-muted)] max-w-md mx-auto">
                 Practical answers recorded and analyzed. Theoretical rigor: 92/100. Time complexity analysis: Verified.
               </p>
               <Button

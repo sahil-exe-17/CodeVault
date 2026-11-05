@@ -49,8 +49,8 @@ export const ProfileSetup: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen bg-[#090909] text-[#F5F5F5] flex items-center justify-center p-4 select-none">
-      <div className="w-full max-w-xl bg-[#111111] border border-[rgba(255,255,255,0.09)] rounded-2xl p-8 shadow-2xl space-y-6">
+    <div className="min-h-screen bg-[var(--bg-card)] text-[var(--text-main)] flex items-center justify-center p-4 select-none">
+      <div className="w-full max-w-xl bg-[var(--bg-card)] border border-[var(--border-subtle)] rounded-2xl p-8 shadow-2xl space-y-6">
         {/* Header */}
         <div className="space-y-1.5">
           <div className="flex items-center gap-2">
@@ -61,7 +61,7 @@ export const ProfileSetup: React.FC = () => {
               Create Student Profile
             </h1>
           </div>
-          <p className="text-xs text-[#888888]">
+          <p className="text-xs text-[var(--text-muted)]">
             Set up your academic details to organize your practicals. All questions are optional.
           </p>
         </div>
@@ -108,7 +108,7 @@ export const ProfileSetup: React.FC = () => {
           </div>
 
           <div className="flex flex-col gap-1.5">
-            <label className="text-xs font-medium text-[#A1A1A1]">
+            <label className="text-xs font-medium text-[var(--text-muted)]">
               Primary Learning Goal (Optional)
             </label>
             <input
@@ -116,16 +116,16 @@ export const ProfileSetup: React.FC = () => {
               placeholder="e.g. Prepare for university coding practicals and oral viva"
               value={codingGoals}
               onChange={(e) => setCodingGoals(e.target.value)}
-              className="bg-[#171717] text-[#F5F5F5] placeholder-[#666666] text-xs rounded-lg border border-[rgba(255,255,255,0.09)] px-3 py-2.5 focus:border-white focus:outline-none"
+              className="bg-[var(--bg-metric)] text-[var(--text-main)] placeholder-[#666666] text-xs rounded-lg border border-[var(--border-subtle)] px-3 py-2.5 focus:border-white focus:outline-none"
             />
           </div>
 
           {/* Action buttons */}
-          <div className="flex items-center justify-between pt-4 border-t border-[rgba(255,255,255,0.08)]">
+          <div className="flex items-center justify-between pt-4 border-t border-[var(--border-subtle)]">
             <button
               type="button"
               onClick={handleSkip}
-              className="text-xs text-[#888888] hover:text-white transition-colors cursor-pointer"
+              className="text-xs text-[var(--text-muted)] hover:text-white transition-colors cursor-pointer"
             >
               Skip for now
             </button>

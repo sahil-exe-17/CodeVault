@@ -43,9 +43,9 @@ export const ActivityChart: React.FC<ActivityChartProps> = ({ data }) => {
               if (active && payload && payload.length) {
                 const item = payload[0].payload
                 return (
-                  <div className="bg-[#171717] border border-[rgba(255,255,255,0.15)] px-2.5 py-1.5 rounded text-xs shadow-lg">
+                  <div className="bg-[var(--bg-metric)] border border-[rgba(255,255,255,0.15)] px-2.5 py-1.5 rounded text-xs shadow-lg">
                     <span className="font-semibold text-white">{item.total} events</span>
-                    <span className="text-[#888888] block text-[10px] font-mono">{item.date}</span>
+                    <span className="text-[var(--text-muted)] block text-[10px] font-mono">{item.date}</span>
                   </div>
                 )
               }

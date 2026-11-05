@@ -31,13 +31,13 @@ export const Button: React.FC<ButtonProps> = ({
     primary:
       'bg-white text-black hover:bg-neutral-200 active:bg-neutral-300 font-semibold shadow-sm',
     secondary:
-      'bg-[#171717] text-[#F5F5F5] border border-[rgba(255,255,255,0.09)] hover:border-[rgba(255,255,255,0.18)] hover:bg-[#1c1c1c]',
+      'bg-[var(--bg-metric)] text-[var(--text-main)] border border-[var(--border-subtle)] hover:border-[rgba(255,255,255,0.18)] hover:bg-[#1c1c1c]',
     ghost:
-      'bg-transparent text-[#A1A1A1] hover:text-[#F5F5F5] hover:bg-[rgba(255,255,255,0.05)]',
+      'bg-transparent text-[var(--text-muted)] hover:text-[var(--text-main)] hover:bg-[var(--bg-metric)]',
     outline:
-      'bg-transparent text-[#F5F5F5] border border-[rgba(255,255,255,0.09)] hover:border-[rgba(255,255,255,0.2)] hover:bg-[rgba(255,255,255,0.03)]',
+      'bg-transparent text-[var(--text-main)] border border-[var(--border-subtle)] hover:border-[rgba(255,255,255,0.2)] hover:bg-[rgba(255,255,255,0.03)]',
     danger:
-      'bg-transparent text-[#F5F5F5] border border-[rgba(255,255,255,0.15)] hover:border-white hover:bg-[rgba(255,255,255,0.05)]',
+      'bg-transparent text-[var(--text-main)] border border-[rgba(255,255,255,0.15)] hover:border-white hover:bg-[var(--bg-metric)]',
   }
 
   return (

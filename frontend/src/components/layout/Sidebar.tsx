@@ -63,23 +63,23 @@ export const Sidebar: React.FC<SidebarProps> = ({ isCollapsed, toggleCollapse })
 
   return (
     <aside
-      className={`fixed top-0 left-0 bottom-0 z-40 bg-[#111111] border-r border-[rgba(255,255,255,0.09)] transition-all duration-300 flex flex-col justify-between select-none ${
+      className={`fixed top-0 left-0 bottom-0 z-40 bg-[var(--bg-card)] border-r border-[var(--border-subtle)] transition-all duration-300 flex flex-col justify-between select-none ${
         isCollapsed ? 'w-[68px]' : 'w-[240px]'
       }`}
     >
       {/* Top Header / Logo */}
       <div>
-        <div className="h-14 flex items-center justify-between px-4 border-b border-[rgba(255,255,255,0.09)]">
+        <div className="h-14 flex items-center justify-between px-4 border-b border-[var(--border-subtle)]">
           <div className="flex items-center gap-2.5 overflow-hidden">
             <div className="w-8 h-8 rounded-lg bg-white flex items-center justify-center shrink-0">
               <Code2 className="w-4 h-4 text-black stroke-[2.5]" />
             </div>
             {!isCollapsed && (
               <div className="flex flex-col">
-                <span className="font-['Manrope'] font-bold text-sm text-[#F5F5F5] tracking-tight">
+                <span className="font-['Manrope'] font-bold text-sm text-[var(--text-main)] tracking-tight">
                   CodeVault
                 </span>
-                <span className="text-[10px] text-[#666666] uppercase tracking-wider font-mono">
+                <span className="text-[10px] text-[var(--text-dim)] uppercase tracking-wider font-mono">
                   v1.0 • AI Studio
                 </span>
               </div>
@@ -87,7 +87,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ isCollapsed, toggleCollapse })
           </div>
           <button
             onClick={toggleCollapse}
-            className="text-[#666666] hover:text-[#F5F5F5] p-1 rounded transition-colors"
+            className="text-[var(--text-dim)] hover:text-[var(--text-main)] p-1 rounded transition-colors"
             title={isCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
           >
             {isCollapsed ? <ChevronRight className="w-4 h-4" /> : <ChevronLeft className="w-4 h-4" />}
@@ -99,7 +99,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ isCollapsed, toggleCollapse })
           {navGroups.map((group) => (
             <div key={group.label} className="space-y-1">
               {!isCollapsed && (
-                <div className="px-2.5 pb-1 text-[10px] font-semibold tracking-widest text-[#666666] uppercase">
+                <div className="px-2.5 pb-1 text-[10px] font-semibold tracking-widest text-[var(--text-dim)] uppercase">
                   {group.label}
                 </div>
               )}
@@ -112,8 +112,8 @@ export const Sidebar: React.FC<SidebarProps> = ({ isCollapsed, toggleCollapse })
                     className={({ isActive }) =>
                       `flex items-center gap-3 px-3 py-2 rounded-lg text-xs font-medium transition-all group relative ${
                         isActive
-                          ? 'bg-[rgba(255,255,255,0.08)] text-white font-semibold'
-                          : 'text-[#A1A1A1] hover:text-[#F5F5F5] hover:bg-[rgba(255,255,255,0.035)]'
+                          ? 'bg-[var(--bg-metric)] text-white font-semibold'
+                          : 'text-[var(--text-muted)] hover:text-[var(--text-main)] hover:bg-[rgba(255,255,255,0.035)]'
                       } ${isCollapsed ? 'justify-center px-0' : ''}`
                     }
                     title={isCollapsed ? item.label : undefined}
@@ -125,7 +125,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ isCollapsed, toggleCollapse })
                         )}
                         <Icon
                           className={`w-4 h-4 shrink-0 transition-colors ${
-                            isActive ? 'text-white' : 'text-[#888888] group-hover:text-white'
+                            isActive ? 'text-white' : 'text-[var(--text-muted)] group-hover:text-white'
                           }`}
                         />
                         {!isCollapsed && <span>{item.label}</span>}
@@ -140,36 +140,36 @@ export const Sidebar: React.FC<SidebarProps> = ({ isCollapsed, toggleCollapse })
       </div>
 
       {/* Bottom Profile / Settings */}
-      <div className="p-2 border-t border-[rgba(255,255,255,0.09)] space-y-1">
+      <div className="p-2 border-t border-[var(--border-subtle)] space-y-1">
         <NavLink
           to="/settings"
           className={({ isActive }) =>
-            `flex items-center gap-3 px-3 py-2 rounded-lg text-xs font-medium transition-all text-[#A1A1A1] hover:text-[#F5F5F5] hover:bg-[rgba(255,255,255,0.035)] ${
-              isActive ? 'bg-[rgba(255,255,255,0.08)] text-white' : ''
+            `flex items-center gap-3 px-3 py-2 rounded-lg text-xs font-medium transition-all text-[var(--text-muted)] hover:text-[var(--text-main)] hover:bg-[rgba(255,255,255,0.035)] ${
+              isActive ? 'bg-[var(--bg-metric)] text-white' : ''
             } ${isCollapsed ? 'justify-center px-0' : ''}`
           }
           title={isCollapsed ? 'Settings' : undefined}
         >
-          <Settings className="w-4 h-4 shrink-0 text-[#888888]" />
+          <Settings className="w-4 h-4 shrink-0 text-[var(--text-muted)]" />
           {!isCollapsed && <span>Settings</span>}
         </NavLink>
 
         <div
-          className={`flex items-center justify-between px-3 py-2 rounded-lg text-xs text-[#A1A1A1] ${
+          className={`flex items-center justify-between px-3 py-2 rounded-lg text-xs text-[var(--text-muted)] ${
             isCollapsed ? 'justify-center px-0' : ''
           }`}
         >
           {!isCollapsed && (
             <div className="flex flex-col truncate pr-2">
-              <span className="font-medium text-[#F5F5F5] truncate text-xs">
+              <span className="font-medium text-[var(--text-main)] truncate text-xs">
                 {user?.display_name || user?.email?.split('@')[0] || 'Developer'}
               </span>
-              <span className="text-[10px] text-[#666666] truncate">{user?.email || 'Logged in'}</span>
+              <span className="text-[10px] text-[var(--text-dim)] truncate">{user?.email || 'Logged in'}</span>
             </div>
           )}
           <button
             onClick={handleSignOut}
-            className="text-[#666666] hover:text-white p-1 rounded transition-colors"
+            className="text-[var(--text-dim)] hover:text-white p-1 rounded transition-colors"
             title="Sign out"
           >
             <LogOut className="w-3.5 h-3.5" />

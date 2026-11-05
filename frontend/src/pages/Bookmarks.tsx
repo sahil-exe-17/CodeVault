@@ -73,7 +73,7 @@ export const Bookmarks: React.FC = () => {
         <h1 className="text-2xl font-bold font-['Manrope'] text-white">
           Bookmarks
         </h1>
-        <p className="text-xs text-[#888888] mt-1">
+        <p className="text-xs text-[var(--text-muted)] mt-1">
           {experiments.length} experiments saved for rapid exam revision
         </p>
       </div>

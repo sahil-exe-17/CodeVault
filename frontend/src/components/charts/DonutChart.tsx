@@ -54,9 +54,9 @@ export const DonutChart: React.FC<DonutChartProps> = ({ data }) => {
                 if (active && payload && payload.length) {
                   const item = payload[0].payload
                   return (
-                    <div className="bg-[#171717] border border-[rgba(255,255,255,0.15)] px-2.5 py-1.5 rounded text-xs shadow-lg">
+                    <div className="bg-[var(--bg-metric)] border border-[rgba(255,255,255,0.15)] px-2.5 py-1.5 rounded text-xs shadow-lg">
                       <span className="font-semibold text-white capitalize">{item.language}</span>
-                      <span className="text-[#888888] block text-[10px]">
+                      <span className="text-[var(--text-muted)] block text-[10px]">
                         {item.count} experiments ({Math.round((item.count / total) * 100)}%)
                       </span>
                     </div>
@@ -69,12 +69,12 @@ export const DonutChart: React.FC<DonutChartProps> = ({ data }) => {
         </ResponsiveContainer>
         <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
           <span className="text-xl font-bold font-['Manrope'] text-white">{total}</span>
-          <span className="text-[10px] text-[#888888] uppercase tracking-wider">Total</span>
+          <span className="text-[10px] text-[var(--text-muted)] uppercase tracking-wider">Total</span>
         </div>
       </div>
 
       {/* Legend */}
-      <div className="flex flex-wrap justify-center gap-3 mt-2 text-xs text-[#A1A1A1]">
+      <div className="flex flex-wrap justify-center gap-3 mt-2 text-xs text-[var(--text-muted)]">
         {chartData.map((item, idx) => (
           <div key={item.language} className="flex items-center gap-1.5">
             <span
@@ -82,7 +82,7 @@ export const DonutChart: React.FC<DonutChartProps> = ({ data }) => {
               style={{ backgroundColor: MONOCHROME_SHADES[idx % MONOCHROME_SHADES.length] }}
             />
             <span className="capitalize">{item.language}</span>
-            <span className="text-[#666666] font-mono text-[10px]">({item.count})</span>
+            <span className="text-[var(--text-dim)] font-mono text-[10px]">({item.count})</span>
           </div>
         ))}
       </div>

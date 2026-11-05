@@ -404,18 +404,18 @@ export const ExperimentDetail: React.FC<ExperimentDetailProps> = ({ mode = 'edit
   return (
     <div className="space-y-4 select-none pb-12">
       {/* Top Fixed Action Bar */}
-      <div className="bg-[#111111] border border-[rgba(255,255,255,0.09)] rounded-xl px-5 py-3 flex flex-col md:flex-row md:items-center justify-between gap-3 shadow-md sticky top-16 z-20 backdrop-blur-md">
+      <div className="bg-[var(--bg-card)] border border-[var(--border-subtle)] rounded-xl px-5 py-3 flex flex-col md:flex-row md:items-center justify-between gap-3 shadow-md sticky top-16 z-20 backdrop-blur-md">
         <div className="flex items-center gap-3">
           <button
             onClick={() => navigate('/experiments')}
-            className="p-1.5 text-[#888888] hover:text-white rounded-lg transition-colors border border-[rgba(255,255,255,0.08)]"
+            className="p-1.5 text-[var(--text-muted)] hover:text-white rounded-lg transition-colors border border-[var(--border-subtle)]"
             title="Back to all experiments"
           >
             <ArrowLeft className="w-4 h-4" />
           </button>
           <div className="flex flex-col">
             <div className="flex items-center gap-2">
-              <span className="text-[10px] text-[#666666] font-mono uppercase">
+              <span className="text-[10px] text-[var(--text-dim)] font-mono uppercase">
                 {experiment.experiment_number || 'EXP-01'}
               </span>
               {isDirty && (
@@ -437,7 +437,7 @@ export const ExperimentDetail: React.FC<ExperimentDetailProps> = ({ mode = 'edit
             className={`p-2 rounded-lg border text-xs flex items-center gap-1.5 transition-colors ${
               experiment.is_bookmarked
                 ? 'bg-white text-black border-white font-semibold'
-                : 'bg-[#171717] text-[#888888] border-[rgba(255,255,255,0.09)] hover:text-white'
+                : 'bg-[var(--bg-metric)] text-[var(--text-muted)] border-[var(--border-subtle)] hover:text-white'
             }`}
             title="Toggle bookmark"
           >
@@ -449,7 +449,7 @@ export const ExperimentDetail: React.FC<ExperimentDetailProps> = ({ mode = 'edit
             className={`px-3 py-1.5 rounded-lg border text-xs flex items-center gap-1.5 transition-colors ${
               experiment.is_revised
                 ? 'bg-white text-black border-white font-semibold'
-                : 'bg-[#171717] text-[#888888] border-[rgba(255,255,255,0.09)] hover:text-white'
+                : 'bg-[var(--bg-metric)] text-[var(--text-muted)] border-[var(--border-subtle)] hover:text-white'
             }`}
           >
             <CheckCircle2 className="w-3.5 h-3.5" />
@@ -471,9 +471,9 @@ export const ExperimentDetail: React.FC<ExperimentDetailProps> = ({ mode = 'edit
       {/* Split Workspace Layout */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 items-start">
         {/* LEFT PANEL (7 cols) - Editor & Assignment info */}
-        <div className="lg:col-span-7 bg-[#141414] border border-[rgba(255,255,255,0.09)] rounded-xl overflow-hidden flex flex-col min-h-[680px]">
+        <div className="lg:col-span-7 bg-[var(--bg-card)] border border-[var(--border-subtle)] rounded-xl overflow-hidden flex flex-col min-h-[680px]">
           {/* Sub-Tabs: Code | Info | I/O | Notes */}
-          <div className="flex items-center justify-between border-b border-[rgba(255,255,255,0.08)] bg-[#111111] px-4">
+          <div className="flex items-center justify-between border-b border-[var(--border-subtle)] bg-[var(--bg-card)] px-4">
             <div className="flex items-center">
               {[
                 { id: 'code', label: 'Source Code', icon: FileCode },
@@ -495,8 +495,8 @@ export const ExperimentDetail: React.FC<ExperimentDetailProps> = ({ mode = 'edit
                     onClick={() => setLeftTab(tab.id as any)}
                     className={`flex items-center gap-2 px-3.5 py-3 text-xs font-medium border-b-2 transition-all ${
                       isActive
-                        ? 'border-white text-white bg-[rgba(255,255,255,0.04)] font-semibold'
-                        : 'border-transparent text-[#888888] hover:text-[#D4D4D4]'
+                        ? 'border-white text-white bg-[var(--bg-metric)] font-semibold'
+                        : 'border-transparent text-[var(--text-muted)] hover:text-[var(--text-main)]'
                     }`}
                   >
                     <Icon className="w-3.5 h-3.5" />
@@ -518,7 +518,7 @@ export const ExperimentDetail: React.FC<ExperimentDetailProps> = ({ mode = 'edit
                 <button
                   type="button"
                   onClick={() => setIsScanModalOpen(true)}
-                  className="flex items-center gap-1.5 px-2 py-1 text-xs text-[#D4D4D4] hover:text-white bg-[#171717] hover:bg-[#202020] border border-[rgba(255,255,255,0.08)] rounded-md transition-colors font-medium mr-1"
+                  className="flex items-center gap-1.5 px-2 py-1 text-xs text-[var(--text-main)] hover:text-white bg-[var(--bg-metric)] hover:bg-[var(--bg-card-hover)] border border-[var(--border-subtle)] rounded-md transition-colors font-medium mr-1"
                   title="Scan code from photo of notebook, textbook, or screen"
                 >
                   <Camera className="w-3.5 h-3.5 text-white" />
@@ -526,7 +526,7 @@ export const ExperimentDetail: React.FC<ExperimentDetailProps> = ({ mode = 'edit
                 </button>
 
                 {/* File upload hidden input */}
-                <label className="p-1.5 text-[#888888] hover:text-white rounded cursor-pointer transition-colors" title="Upload Code File">
+                <label className="p-1.5 text-[var(--text-muted)] hover:text-white rounded cursor-pointer transition-colors" title="Upload Code File">
                   <Upload className="w-3.5 h-3.5" />
                   <input
                     type="file"
@@ -537,29 +537,29 @@ export const ExperimentDetail: React.FC<ExperimentDetailProps> = ({ mode = 'edit
                 </label>
                 <button
                   onClick={handleCopyCode}
-                  className="p-1.5 text-[#888888] hover:text-white rounded transition-colors"
+                  className="p-1.5 text-[var(--text-muted)] hover:text-white rounded transition-colors"
                   title="Copy Code"
                 >
                   <Copy className="w-3.5 h-3.5" />
                 </button>
                 <button
                   onClick={handleDownloadCode}
-                  className="p-1.5 text-[#888888] hover:text-white rounded transition-colors"
+                  className="p-1.5 text-[var(--text-muted)] hover:text-white rounded transition-colors"
                   title="Download File"
                 >
                   <Download className="w-3.5 h-3.5" />
                 </button>
-                <div className="h-3 w-[1px] bg-[rgba(255,255,255,0.08)] mx-1" />
+                <div className="h-3 w-[1px] bg-[var(--bg-metric)] mx-1" />
                 <button
                   onClick={() => setFontSize(Math.max(12, fontSize - 1))}
-                  className="px-1.5 py-0.5 text-[10px] text-[#888888] hover:text-white font-mono"
+                  className="px-1.5 py-0.5 text-[10px] text-[var(--text-muted)] hover:text-white font-mono"
                   title="Decrease font size"
                 >
                   A-
                 </button>
                 <button
                   onClick={() => setFontSize(Math.min(20, fontSize + 1))}
-                  className="px-1.5 py-0.5 text-[10px] text-[#888888] hover:text-white font-mono"
+                  className="px-1.5 py-0.5 text-[10px] text-[var(--text-muted)] hover:text-white font-mono"
                   title="Increase font size"
                 >
                   A+
@@ -572,9 +572,9 @@ export const ExperimentDetail: React.FC<ExperimentDetailProps> = ({ mode = 'edit
           {leftTab === 'code' && (
             <div className="flex-1 flex flex-col">
               {/* Language selection banner */}
-              <div className="bg-[#0f0f0f] px-4 py-2 border-b border-[rgba(255,255,255,0.06)] flex items-center justify-between text-xs">
+              <div className="bg-[var(--bg-metric)] px-4 py-2 border-b border-[var(--border-subtle)] flex items-center justify-between text-xs">
                 <div className="flex items-center gap-2">
-                  <span className="text-[#666666] font-mono text-[11px]">LANGUAGE:</span>
+                  <span className="text-[var(--text-dim)] font-mono text-[11px]">LANGUAGE:</span>
                   <Select
                     size="compact"
                     title="Select Language"
@@ -592,7 +592,7 @@ export const ExperimentDetail: React.FC<ExperimentDetailProps> = ({ mode = 'edit
                   </Select>
                 </div>
 
-                <div className="flex items-center gap-2 text-[11px] text-[#666666] font-mono">
+                <div className="flex items-center gap-2 text-[11px] text-[var(--text-dim)] font-mono">
                   <span>Lines: {experiment.source_code ? experiment.source_code.split('\n').length : 0}</span>
                   <span>•</span>
                   <span>Monaco Editor</span>
@@ -638,7 +638,7 @@ export const ExperimentDetail: React.FC<ExperimentDetailProps> = ({ mode = 'edit
 
               <div className="grid grid-cols-2 gap-4">
                 <div className="flex flex-col gap-1.5">
-                  <label className="text-xs font-medium text-[#A1A1A1]">Subject</label>
+                  <label className="text-xs font-medium text-[var(--text-muted)]">Subject</label>
                   <Select
                     title="Select Subject"
                     placeholder="Select subject…"
@@ -657,35 +657,35 @@ export const ExperimentDetail: React.FC<ExperimentDetailProps> = ({ mode = 'edit
               </div>
 
               <div className="flex flex-col gap-1.5">
-                <label className="text-xs font-medium text-[#A1A1A1]">Experiment Aim *</label>
+                <label className="text-xs font-medium text-[var(--text-muted)]">Experiment Aim *</label>
                 <textarea
                   rows={3}
                   value={experiment.aim || ''}
                   onChange={(e) => handleFieldChange('aim', e.target.value)}
                   placeholder="State the core objective of this experiment..."
-                  className="bg-[#111111] text-[#F5F5F5] text-xs rounded-lg border border-[rgba(255,255,255,0.09)] p-3 focus:border-white focus:outline-none leading-relaxed"
+                  className="bg-[var(--bg-card)] text-[var(--text-main)] text-xs rounded-lg border border-[var(--border-subtle)] p-3 focus:border-white focus:outline-none leading-relaxed"
                 />
               </div>
 
               <div className="flex flex-col gap-1.5">
-                <label className="text-xs font-medium text-[#A1A1A1]">Theory & Principles</label>
+                <label className="text-xs font-medium text-[var(--text-muted)]">Theory & Principles</label>
                 <textarea
                   rows={4}
                   value={experiment.theory || ''}
                   onChange={(e) => handleFieldChange('theory', e.target.value)}
                   placeholder="Theoretical background, mathematical proof, or paradigm overview..."
-                  className="bg-[#111111] text-[#F5F5F5] text-xs rounded-lg border border-[rgba(255,255,255,0.09)] p-3 focus:border-white focus:outline-none leading-relaxed"
+                  className="bg-[var(--bg-card)] text-[var(--text-main)] text-xs rounded-lg border border-[var(--border-subtle)] p-3 focus:border-white focus:outline-none leading-relaxed"
                 />
               </div>
 
               <div className="flex flex-col gap-1.5">
-                <label className="text-xs font-medium text-[#A1A1A1]">Algorithm (Step by Step)</label>
+                <label className="text-xs font-medium text-[var(--text-muted)]">Algorithm (Step by Step)</label>
                 <textarea
                   rows={5}
                   value={experiment.algorithm || ''}
                   onChange={(e) => handleFieldChange('algorithm', e.target.value)}
                   placeholder="Step 1: Start\nStep 2: Initialize arrays...\nStep 3: Loop while..."
-                  className="bg-[#111111] text-[#F5F5F5] font-mono text-xs rounded-lg border border-[rgba(255,255,255,0.09)] p-3 focus:border-white focus:outline-none leading-relaxed"
+                  className="bg-[var(--bg-card)] text-[var(--text-main)] font-mono text-xs rounded-lg border border-[var(--border-subtle)] p-3 focus:border-white focus:outline-none leading-relaxed"
                 />
               </div>
             </div>
@@ -695,48 +695,48 @@ export const ExperimentDetail: React.FC<ExperimentDetailProps> = ({ mode = 'edit
           {leftTab === 'io' && (
             <div className="p-6 space-y-5 overflow-y-auto max-h-[620px]">
               <div className="flex flex-col gap-1.5">
-                <label className="text-xs font-medium text-[#A1A1A1]">Sample Input</label>
+                <label className="text-xs font-medium text-[var(--text-muted)]">Sample Input</label>
                 <textarea
                   rows={4}
                   value={experiment.sample_input || ''}
                   onChange={(e) => handleFieldChange('sample_input', e.target.value)}
                   placeholder="5\n12 4 8 2 1"
-                  className="bg-[#111111] text-[#F5F5F5] font-mono text-xs rounded-lg border border-[rgba(255,255,255,0.09)] p-3 focus:border-white focus:outline-none"
+                  className="bg-[var(--bg-card)] text-[var(--text-main)] font-mono text-xs rounded-lg border border-[var(--border-subtle)] p-3 focus:border-white focus:outline-none"
                 />
               </div>
 
               <div className="grid grid-cols-2 gap-4">
                 <div className="flex flex-col gap-1.5">
-                  <label className="text-xs font-medium text-[#A1A1A1]">Expected Output</label>
+                  <label className="text-xs font-medium text-[var(--text-muted)]">Expected Output</label>
                   <textarea
                     rows={4}
                     value={experiment.expected_output || ''}
                     onChange={(e) => handleFieldChange('expected_output', e.target.value)}
                     placeholder="Sorted Array: 1 2 4 8 12"
-                    className="bg-[#111111] text-[#F5F5F5] font-mono text-xs rounded-lg border border-[rgba(255,255,255,0.09)] p-3 focus:border-white focus:outline-none"
+                    className="bg-[var(--bg-card)] text-[var(--text-main)] font-mono text-xs rounded-lg border border-[var(--border-subtle)] p-3 focus:border-white focus:outline-none"
                   />
                 </div>
 
                 <div className="flex flex-col gap-1.5">
-                  <label className="text-xs font-medium text-[#A1A1A1]">Actual Output</label>
+                  <label className="text-xs font-medium text-[var(--text-muted)]">Actual Output</label>
                   <textarea
                     rows={4}
                     value={experiment.actual_output || ''}
                     onChange={(e) => handleFieldChange('actual_output', e.target.value)}
                     placeholder="Terminal run output..."
-                    className="bg-[#111111] text-[#F5F5F5] font-mono text-xs rounded-lg border border-[rgba(255,255,255,0.09)] p-3 focus:border-white focus:outline-none"
+                    className="bg-[var(--bg-card)] text-[var(--text-main)] font-mono text-xs rounded-lg border border-[var(--border-subtle)] p-3 focus:border-white focus:outline-none"
                   />
                 </div>
               </div>
 
               <div className="flex flex-col gap-1.5">
-                <label className="text-xs font-medium text-[#A1A1A1]">Observations & Corner Cases</label>
+                <label className="text-xs font-medium text-[var(--text-muted)]">Observations & Corner Cases</label>
                 <textarea
                   rows={4}
                   value={experiment.observations || ''}
                   onChange={(e) => handleFieldChange('observations', e.target.value)}
                   placeholder="Observed behavior when array is already sorted vs reverse sorted..."
-                  className="bg-[#111111] text-[#F5F5F5] text-xs rounded-lg border border-[rgba(255,255,255,0.09)] p-3 focus:border-white focus:outline-none"
+                  className="bg-[var(--bg-card)] text-[var(--text-main)] text-xs rounded-lg border border-[var(--border-subtle)] p-3 focus:border-white focus:outline-none"
                 />
               </div>
             </div>
@@ -761,13 +761,13 @@ export const ExperimentDetail: React.FC<ExperimentDetailProps> = ({ mode = 'edit
               </div>
 
               <div className="flex flex-col gap-1.5">
-                <label className="text-xs font-medium text-[#A1A1A1]">Personal Revision Notes</label>
+                <label className="text-xs font-medium text-[var(--text-muted)]">Personal Revision Notes</label>
                 <textarea
                   rows={8}
                   value={experiment.personal_notes || ''}
                   onChange={(e) => handleFieldChange('personal_notes', e.target.value)}
                   placeholder="Write your personal mnemonics, exam reminders, or pointers..."
-                  className="bg-[#111111] text-[#F5F5F5] text-xs rounded-lg border border-[rgba(255,255,255,0.09)] p-3 focus:border-white focus:outline-none leading-relaxed"
+                  className="bg-[var(--bg-card)] text-[var(--text-main)] text-xs rounded-lg border border-[var(--border-subtle)] p-3 focus:border-white focus:outline-none leading-relaxed"
                 />
               </div>
             </div>
@@ -777,7 +777,7 @@ export const ExperimentDetail: React.FC<ExperimentDetailProps> = ({ mode = 'edit
           {leftTab === 'notebook' && (
             <div className="p-6 flex flex-col gap-5 overflow-y-auto max-h-[660px]">
               {/* Header Box */}
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-4 bg-[#111111] rounded-xl border border-[rgba(255,255,255,0.08)]">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-4 bg-[var(--bg-card)] rounded-xl border border-[var(--border-subtle)]">
                 <div>
                   <div className="flex items-center gap-2">
                     <BookOpen className="w-4 h-4 text-white" />
@@ -790,7 +790,7 @@ export const ExperimentDetail: React.FC<ExperimentDetailProps> = ({ mode = 'edit
                       </span>
                     )}
                   </div>
-                  <p className="text-xs text-[#888888] mt-1 leading-relaxed">
+                  <p className="text-xs text-[var(--text-muted)] mt-1 leading-relaxed">
                     Upload a PDF copy or scan of your handwritten laboratory notebook. If your physical record is lost or submitted, your work is permanently preserved here.
                   </p>
                 </div>
@@ -815,7 +815,7 @@ export const ExperimentDetail: React.FC<ExperimentDetailProps> = ({ mode = 'edit
                       type="button"
                       disabled={isDeletingPdf}
                       onClick={handleDeleteNotebookPdf}
-                      className="p-1.5 text-[#888888] hover:text-[#FF6666] border border-[rgba(255,255,255,0.08)] hover:border-[#FF6666]/40 rounded-lg transition-colors"
+                      className="p-1.5 text-[var(--text-muted)] hover:text-[#FF6666] border border-[var(--border-subtle)] hover:border-[#FF6666]/40 rounded-lg transition-colors"
                       title="Remove PDF Backup"
                     >
                       <Trash2 className="w-3.5 h-3.5" />
@@ -826,13 +826,13 @@ export const ExperimentDetail: React.FC<ExperimentDetailProps> = ({ mode = 'edit
 
               {/* Body: Either Empty Uploader State OR PDF Viewer */}
               {!experiment.notebook_pdf_url ? (
-                <div className="border border-dashed border-[rgba(255,255,255,0.15)] hover:border-white/40 bg-[#111111]/40 rounded-xl p-8 flex flex-col items-center justify-center text-center gap-4 transition-colors">
-                  <div className="w-12 h-12 rounded-xl bg-[#171717] border border-[rgba(255,255,255,0.09)] flex items-center justify-center text-white">
+                <div className="border border-dashed border-[rgba(255,255,255,0.15)] hover:border-white/40 bg-[var(--bg-card)]/40 rounded-xl p-8 flex flex-col items-center justify-center text-center gap-4 transition-colors">
+                  <div className="w-12 h-12 rounded-xl bg-[var(--bg-metric)] border border-[var(--border-subtle)] flex items-center justify-center text-white">
                     <BookOpen className="w-6 h-6" />
                   </div>
                   <div className="space-y-1 max-w-md">
                     <h4 className="text-sm font-semibold text-white">No Practical Notebook Uploaded</h4>
-                    <p className="text-xs text-[#888888] leading-relaxed">
+                    <p className="text-xs text-[var(--text-muted)] leading-relaxed">
                       Protect against lost lab manuals and submission deadlines. Upload scanned handwritten pages, printed code with professor signatures, or PDF assignments.
                     </p>
                   </div>
@@ -851,7 +851,7 @@ export const ExperimentDetail: React.FC<ExperimentDetailProps> = ({ mode = 'edit
                     </div>
                   </label>
 
-                  <div className="flex items-center gap-4 text-[11px] text-[#666666] font-mono mt-1">
+                  <div className="flex items-center gap-4 text-[11px] text-[var(--text-dim)] font-mono mt-1">
                     <span>• PDF format only</span>
                     <span>• Up to 50 MB</span>
                     <span>• Instant split-view reader</span>
@@ -860,14 +860,14 @@ export const ExperimentDetail: React.FC<ExperimentDetailProps> = ({ mode = 'edit
               ) : (
                 <div className="flex flex-col gap-4">
                   {/* File Metadata Bar */}
-                  <div className="flex flex-wrap items-center justify-between gap-3 p-3 bg-[#111111] border border-[rgba(255,255,255,0.08)] rounded-xl font-mono text-xs">
+                  <div className="flex flex-wrap items-center justify-between gap-3 p-3 bg-[var(--bg-card)] border border-[var(--border-subtle)] rounded-xl font-mono text-xs">
                     <div className="flex items-center gap-2.5 truncate">
                       <FileCheck className="w-4 h-4 text-white shrink-0" />
-                      <span className="text-[#F5F5F5] font-medium truncate max-w-[280px]">
+                      <span className="text-[var(--text-main)] font-medium truncate max-w-[280px]">
                         {experiment.notebook_pdf_name || 'Practical_Notebook.pdf'}
                       </span>
                       {experiment.notebook_pdf_size && (
-                        <span className="text-[#888888] text-[11px]">
+                        <span className="text-[var(--text-muted)] text-[11px]">
                           ({(experiment.notebook_pdf_size / (1024 * 1024) >= 1)
                             ? `${(experiment.notebook_pdf_size / (1024 * 1024)).toFixed(2)} MB`
                             : `${Math.round(experiment.notebook_pdf_size / 1024)} KB`})
@@ -880,7 +880,7 @@ export const ExperimentDetail: React.FC<ExperimentDetailProps> = ({ mode = 'edit
                       <a
                         href={`${(import.meta.env.VITE_API_URL || 'http://localhost:8000').replace(/\/$/, '')}${experiment.notebook_pdf_url}`}
                         download={experiment.notebook_pdf_name || 'notebook.pdf'}
-                        className="inline-flex items-center gap-1.5 px-3 py-1 bg-[#171717] hover:bg-[#202020] text-white border border-[rgba(255,255,255,0.12)] hover:border-white/30 rounded-lg text-xs transition-colors"
+                        className="inline-flex items-center gap-1.5 px-3 py-1 bg-[var(--bg-metric)] hover:bg-[var(--bg-card-hover)] text-white border border-[rgba(255,255,255,0.12)] hover:border-white/30 rounded-lg text-xs transition-colors"
                         title="Download Backup Copy"
                       >
                         <Download className="w-3.5 h-3.5" />
@@ -892,7 +892,7 @@ export const ExperimentDetail: React.FC<ExperimentDetailProps> = ({ mode = 'edit
                         href={`${(import.meta.env.VITE_API_URL || 'http://localhost:8000').replace(/\/$/, '')}${experiment.notebook_pdf_url}`}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="inline-flex items-center gap-1.5 px-3 py-1 bg-[#171717] hover:bg-[#202020] text-[#A1A1A1] hover:text-white border border-[rgba(255,255,255,0.12)] rounded-lg text-xs transition-colors"
+                        className="inline-flex items-center gap-1.5 px-3 py-1 bg-[var(--bg-metric)] hover:bg-[var(--bg-card-hover)] text-[var(--text-muted)] hover:text-white border border-[rgba(255,255,255,0.12)] rounded-lg text-xs transition-colors"
                         title="Open Fullscreen in New Window"
                       >
                         <ExternalLink className="w-3.5 h-3.5" />
@@ -902,14 +902,14 @@ export const ExperimentDetail: React.FC<ExperimentDetailProps> = ({ mode = 'edit
                   </div>
 
                   {/* Built-in Embedded PDF Reader */}
-                  <div className="relative w-full rounded-xl overflow-hidden border border-[rgba(255,255,255,0.09)] bg-[#090909] shadow-inner">
+                  <div className="relative w-full rounded-xl overflow-hidden border border-[var(--border-subtle)] bg-[var(--bg-card)] shadow-inner">
                     <iframe
                       src={`${(import.meta.env.VITE_API_URL || 'http://localhost:8000').replace(/\/$/, '')}${experiment.notebook_pdf_url}#toolbar=1&navpanes=0`}
                       className="w-full h-[520px] rounded-xl border-none"
                       title="Student Practical Notebook Viewer"
                     />
                   </div>
-                  <div className="flex items-center justify-between text-[11px] text-[#666666]">
+                  <div className="flex items-center justify-between text-[11px] text-[var(--text-dim)]">
                     <span>Backup secured locally in CodeVault storage vault.</span>
                     {experiment.notebook_uploaded_at && (
                       <span>
@@ -928,9 +928,9 @@ export const ExperimentDetail: React.FC<ExperimentDetailProps> = ({ mode = 'edit
         </div>
 
         {/* RIGHT PANEL (5 cols) - AI Explainer, Viva, Related */}
-        <div className="lg:col-span-5 bg-[#141414] border border-[rgba(255,255,255,0.09)] rounded-xl overflow-hidden flex flex-col min-h-[680px]">
+        <div className="lg:col-span-5 bg-[var(--bg-card)] border border-[var(--border-subtle)] rounded-xl overflow-hidden flex flex-col min-h-[680px]">
           {/* Sub-Tabs: AI Explanation | Viva Questions | Related */}
-          <div className="flex items-center border-b border-[rgba(255,255,255,0.08)] bg-[#111111] px-4">
+          <div className="flex items-center border-b border-[var(--border-subtle)] bg-[var(--bg-card)] px-4">
             {[
               { id: 'ai', label: 'AI Explanation', icon: Sparkles },
               { id: 'viva', label: 'Viva Q&A', icon: HelpCircle },
@@ -944,8 +944,8 @@ export const ExperimentDetail: React.FC<ExperimentDetailProps> = ({ mode = 'edit
                   onClick={() => setRightTab(tab.id as any)}
                   className={`flex items-center gap-2 px-4 py-3 text-xs font-medium border-b-2 transition-all ${
                     isActive
-                      ? 'border-white text-white bg-[rgba(255,255,255,0.04)] font-semibold'
-                      : 'border-transparent text-[#888888] hover:text-[#D4D4D4]'
+                      ? 'border-white text-white bg-[var(--bg-metric)] font-semibold'
+                      : 'border-transparent text-[var(--text-muted)] hover:text-[var(--text-main)]'
                   }`}
                 >
                   <Icon className="w-3.5 h-3.5" />
@@ -959,7 +959,7 @@ export const ExperimentDetail: React.FC<ExperimentDetailProps> = ({ mode = 'edit
           {rightTab === 'ai' && (
             <div className="p-5 flex-1 flex flex-col overflow-y-auto max-h-[620px] space-y-4">
               {/* Mode Selector */}
-              <div className="bg-[#111111] p-1 rounded-lg border border-[rgba(255,255,255,0.08)] flex items-center justify-between gap-1 text-xs">
+              <div className="bg-[var(--bg-card)] p-1 rounded-lg border border-[var(--border-subtle)] flex items-center justify-between gap-1 text-xs">
                 {[
                   { id: 'beginner', label: 'Beginner' },
                   { id: 'detailed', label: 'Detailed' },
@@ -971,7 +971,7 @@ export const ExperimentDetail: React.FC<ExperimentDetailProps> = ({ mode = 'edit
                     className={`flex-1 py-1.5 rounded-md font-medium text-xs transition-colors ${
                       aiMode === m.id
                         ? 'bg-white text-black font-semibold'
-                        : 'text-[#888888] hover:text-white'
+                        : 'text-[var(--text-muted)] hover:text-white'
                     }`}
                   >
                     {m.label}
@@ -995,14 +995,14 @@ export const ExperimentDetail: React.FC<ExperimentDetailProps> = ({ mode = 'edit
               {isExplaining ? (
                 <div className="space-y-3 py-8 text-center">
                   <div className="animate-spin w-6 h-6 border-2 border-white border-t-transparent rounded-full mx-auto" />
-                  <p className="text-xs text-[#A1A1A1]">
+                  <p className="text-xs text-[var(--text-muted)]">
                     Analyzing algorithms, time complexity, and exam pointers...
                   </p>
                 </div>
               ) : aiExplanation ? (
                 <div className="space-y-3 pt-2">
                   {/* Overview */}
-                  <div className="border border-[rgba(255,255,255,0.08)] rounded-lg p-3 bg-[#111111]">
+                  <div className="border border-[var(--border-subtle)] rounded-lg p-3 bg-[var(--bg-card)]">
                     <div
                       onClick={() => toggleSection('overview')}
                       className="flex items-center justify-between cursor-pointer text-xs font-semibold text-white"
@@ -1011,14 +1011,14 @@ export const ExperimentDetail: React.FC<ExperimentDetailProps> = ({ mode = 'edit
                       {expandedSections['overview'] ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
                     </div>
                     {expandedSections['overview'] && (
-                      <p className="text-xs text-[#A1A1A1] mt-2 leading-relaxed">
+                      <p className="text-xs text-[var(--text-muted)] mt-2 leading-relaxed">
                         {aiExplanation.program_overview || aiExplanation.simple_explanation}
                       </p>
                     )}
                   </div>
 
                   {/* Logic Breakdown */}
-                  <div className="border border-[rgba(255,255,255,0.08)] rounded-lg p-3 bg-[#111111]">
+                  <div className="border border-[var(--border-subtle)] rounded-lg p-3 bg-[var(--bg-card)]">
                     <div
                       onClick={() => toggleSection('logic')}
                       className="flex items-center justify-between cursor-pointer text-xs font-semibold text-white"
@@ -1027,14 +1027,14 @@ export const ExperimentDetail: React.FC<ExperimentDetailProps> = ({ mode = 'edit
                       {expandedSections['logic'] ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
                     </div>
                     {expandedSections['logic'] && (
-                      <div className="text-xs text-[#A1A1A1] mt-2 whitespace-pre-line leading-relaxed font-mono">
+                      <div className="text-xs text-[var(--text-muted)] mt-2 whitespace-pre-line leading-relaxed font-mono">
                         {aiExplanation.logic_breakdown || aiExplanation.execution_flow}
                       </div>
                     )}
                   </div>
 
                   {/* Line by line */}
-                  <div className="border border-[rgba(255,255,255,0.08)] rounded-lg p-3 bg-[#111111]">
+                  <div className="border border-[var(--border-subtle)] rounded-lg p-3 bg-[var(--bg-card)]">
                     <div
                       onClick={() => toggleSection('line_by_line')}
                       className="flex items-center justify-between cursor-pointer text-xs font-semibold text-white"
@@ -1043,14 +1043,14 @@ export const ExperimentDetail: React.FC<ExperimentDetailProps> = ({ mode = 'edit
                       {expandedSections['line_by_line'] ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
                     </div>
                     {expandedSections['line_by_line'] && (
-                      <div className="text-xs text-[#A1A1A1] mt-2 whitespace-pre-line font-mono leading-relaxed">
+                      <div className="text-xs text-[var(--text-muted)] mt-2 whitespace-pre-line font-mono leading-relaxed">
                         {aiExplanation.line_by_line || 'Inspect code comments for line-by-line annotations.'}
                       </div>
                     )}
                   </div>
 
                   {/* Exam Points */}
-                  <div className="border border-[rgba(255,255,255,0.15)] rounded-lg p-3 bg-[#171717]">
+                  <div className="border border-[rgba(255,255,255,0.15)] rounded-lg p-3 bg-[var(--bg-metric)]">
                     <div
                       onClick={() => toggleSection('exam')}
                       className="flex items-center justify-between cursor-pointer text-xs font-semibold text-white"
@@ -1062,14 +1062,14 @@ export const ExperimentDetail: React.FC<ExperimentDetailProps> = ({ mode = 'edit
                       {expandedSections['exam'] ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
                     </div>
                     {expandedSections['exam'] && (
-                      <div className="text-xs text-[#D4D4D4] mt-2 whitespace-pre-line leading-relaxed">
+                      <div className="text-xs text-[var(--text-main)] mt-2 whitespace-pre-line leading-relaxed">
                         {aiExplanation.exam_points}
                       </div>
                     )}
                   </div>
 
                   {/* Common Mistakes */}
-                  <div className="border border-[rgba(255,255,255,0.08)] rounded-lg p-3 bg-[#111111]">
+                  <div className="border border-[var(--border-subtle)] rounded-lg p-3 bg-[var(--bg-card)]">
                     <div
                       onClick={() => toggleSection('mistakes')}
                       className="flex items-center justify-between cursor-pointer text-xs font-semibold text-white"
@@ -1081,7 +1081,7 @@ export const ExperimentDetail: React.FC<ExperimentDetailProps> = ({ mode = 'edit
                       {expandedSections['mistakes'] ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
                     </div>
                     {expandedSections['mistakes'] && (
-                      <div className="text-xs text-[#A1A1A1] mt-2 whitespace-pre-line leading-relaxed">
+                      <div className="text-xs text-[var(--text-muted)] mt-2 whitespace-pre-line leading-relaxed">
                         {aiExplanation.common_mistakes}
                       </div>
                     )}
@@ -1089,21 +1089,21 @@ export const ExperimentDetail: React.FC<ExperimentDetailProps> = ({ mode = 'edit
 
                   {/* Complexity Quick Cards */}
                   <div className="grid grid-cols-2 gap-2 pt-1">
-                    <div className="bg-[#111111] border border-[rgba(255,255,255,0.08)] p-2.5 rounded-lg">
-                      <span className="text-[10px] text-[#666666] uppercase block font-mono">Time Complexity</span>
+                    <div className="bg-[var(--bg-card)] border border-[var(--border-subtle)] p-2.5 rounded-lg">
+                      <span className="text-[10px] text-[var(--text-dim)] uppercase block font-mono">Time Complexity</span>
                       <span className="text-xs font-bold text-white font-mono">{aiExplanation.time_complexity || 'O(n)'}</span>
                     </div>
-                    <div className="bg-[#111111] border border-[rgba(255,255,255,0.08)] p-2.5 rounded-lg">
-                      <span className="text-[10px] text-[#666666] uppercase block font-mono">Space Complexity</span>
+                    <div className="bg-[var(--bg-card)] border border-[var(--border-subtle)] p-2.5 rounded-lg">
+                      <span className="text-[10px] text-[var(--text-dim)] uppercase block font-mono">Space Complexity</span>
                       <span className="text-xs font-bold text-white font-mono">{aiExplanation.space_complexity || 'O(1)'}</span>
                     </div>
                   </div>
                 </div>
               ) : (
-                <div className="text-center py-12 px-4 border border-dashed border-[rgba(255,255,255,0.08)] rounded-xl mt-4">
-                  <Sparkles className="w-8 h-8 text-[#666666] mx-auto mb-2" />
+                <div className="text-center py-12 px-4 border border-dashed border-[var(--border-subtle)] rounded-xl mt-4">
+                  <Sparkles className="w-8 h-8 text-[var(--text-dim)] mx-auto mb-2" />
                   <h4 className="text-sm font-semibold text-white">No explanation generated yet</h4>
-                  <p className="text-xs text-[#888888] mt-1 max-w-xs mx-auto">
+                  <p className="text-xs text-[var(--text-muted)] mt-1 max-w-xs mx-auto">
                     Click 'Explain with AI' to analyze code structure, execution flow, and get exam viva hints.
                   </p>
                 </div>
@@ -1115,13 +1115,13 @@ export const ExperimentDetail: React.FC<ExperimentDetailProps> = ({ mode = 'edit
           {rightTab === 'viva' && (
             <div className="p-5 flex-1 flex flex-col overflow-y-auto max-h-[620px] space-y-4">
               <div className="flex items-center justify-between gap-2">
-                <div className="flex items-center gap-1 bg-[#111111] p-1 rounded-lg border border-[rgba(255,255,255,0.08)] text-xs">
+                <div className="flex items-center gap-1 bg-[var(--bg-card)] p-1 rounded-lg border border-[var(--border-subtle)] text-xs">
                   {(['easy', 'medium', 'hard'] as const).map((d) => (
                     <button
                       key={d}
                       onClick={() => setVivaDifficulty(d)}
                       className={`px-2.5 py-1 rounded capitalize text-xs transition-colors ${
-                        vivaDifficulty === d ? 'bg-white text-black font-semibold' : 'text-[#888888]'
+                        vivaDifficulty === d ? 'bg-white text-black font-semibold' : 'text-[var(--text-muted)]'
                       }`}
                     >
                       {d}
@@ -1146,7 +1146,7 @@ export const ExperimentDetail: React.FC<ExperimentDetailProps> = ({ mode = 'edit
                     return (
                       <div
                         key={idx}
-                        className="bg-[#111111] border border-[rgba(255,255,255,0.08)] rounded-lg p-3.5 space-y-2"
+                        className="bg-[var(--bg-card)] border border-[var(--border-subtle)] rounded-lg p-3.5 space-y-2"
                       >
                         <div className="flex items-start justify-between gap-2">
                           <span className="text-xs font-semibold text-white leading-relaxed">
@@ -1158,13 +1158,13 @@ export const ExperimentDetail: React.FC<ExperimentDetailProps> = ({ mode = 'edit
                           onClick={() =>
                             setRevealedAnswers((prev) => ({ ...prev, [idx]: !isRevealed }))
                           }
-                          className="text-[11px] text-[#A1A1A1] hover:text-white underline block"
+                          className="text-[11px] text-[var(--text-muted)] hover:text-white underline block"
                         >
                           {isRevealed ? 'Hide Model Answer' : 'Reveal Model Answer →'}
                         </button>
 
                         {isRevealed && (
-                          <div className="pt-2 border-t border-[rgba(255,255,255,0.06)] text-xs text-[#D4D4D4] leading-relaxed">
+                          <div className="pt-2 border-t border-[var(--border-subtle)] text-xs text-[var(--text-main)] leading-relaxed">
                             {q.expected_answer}
                           </div>
                         )}
@@ -1173,10 +1173,10 @@ export const ExperimentDetail: React.FC<ExperimentDetailProps> = ({ mode = 'edit
                   })}
                 </div>
               ) : (
-                <div className="text-center py-12 px-4 border border-dashed border-[rgba(255,255,255,0.08)] rounded-xl mt-4">
-                  <HelpCircle className="w-8 h-8 text-[#666666] mx-auto mb-2" />
+                <div className="text-center py-12 px-4 border border-dashed border-[var(--border-subtle)] rounded-xl mt-4">
+                  <HelpCircle className="w-8 h-8 text-[var(--text-dim)] mx-auto mb-2" />
                   <h4 className="text-sm font-semibold text-white">No viva questions ready</h4>
-                  <p className="text-xs text-[#888888] mt-1 max-w-xs mx-auto">
+                  <p className="text-xs text-[var(--text-muted)] mt-1 max-w-xs mx-auto">
                     Generate exam questions tailored to this code and test your oral readiness.
                   </p>
                 </div>
@@ -1187,7 +1187,7 @@ export const ExperimentDetail: React.FC<ExperimentDetailProps> = ({ mode = 'edit
           {/* TAB 3: RELATED EXPERIMENTS */}
           {rightTab === 'related' && (
             <div className="p-5 flex-1 flex flex-col overflow-y-auto max-h-[620px] space-y-3">
-              <h4 className="text-xs font-semibold text-[#888888] uppercase tracking-wider font-mono">
+              <h4 className="text-xs font-semibold text-[var(--text-muted)] uppercase tracking-wider font-mono">
                 Related Course Practicals
               </h4>
               {relatedExperiments.length > 0 ? (
@@ -1195,17 +1195,17 @@ export const ExperimentDetail: React.FC<ExperimentDetailProps> = ({ mode = 'edit
                   <div
                     key={rel.id}
                     onClick={() => navigate(`/experiments/${rel.id}`)}
-                    className="p-3 bg-[#111111] border border-[rgba(255,255,255,0.08)] hover:border-[rgba(255,255,255,0.2)] rounded-lg cursor-pointer transition-all"
+                    className="p-3 bg-[var(--bg-card)] border border-[var(--border-subtle)] hover:border-[rgba(255,255,255,0.2)] rounded-lg cursor-pointer transition-all"
                   >
                     <div className="flex items-center justify-between text-[11px] mb-1">
                       <Badge variant="mono" size="sm">{rel.experiment_number || 'EXP'}</Badge>
-                      <span className="text-[#666666]">{rel.language}</span>
+                      <span className="text-[var(--text-dim)]">{rel.language}</span>
                     </div>
                     <div className="text-xs font-semibold text-white">{rel.title}</div>
                   </div>
                 ))
               ) : (
-                <p className="text-xs text-[#666666] py-8 text-center">
+                <p className="text-xs text-[var(--text-dim)] py-8 text-center">
                   No other experiments found in this subject yet.
                 </p>
               )}

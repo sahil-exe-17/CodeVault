@@ -170,7 +170,7 @@ export const IntroSplash: React.FC<IntroSplashProps> = ({ onComplete, forceShow 
           transition: { duration: 0.5, ease: [0.16, 1, 0.3, 1] },
         }}
         onClick={handleFinish}
-        className="fixed inset-0 z-[9999] flex flex-col items-center justify-between p-6 sm:p-12 bg-black text-[#F5F5F5] select-none cursor-pointer overflow-hidden"
+        className="fixed inset-0 z-[9999] flex flex-col items-center justify-between p-6 sm:p-12 bg-black text-[var(--text-main)] select-none cursor-pointer overflow-hidden"
       >
         {/* Background Architectural Canvas */}
         <canvas ref={canvasRef} className="absolute inset-0 w-full h-full pointer-events-none" />
@@ -186,7 +186,7 @@ export const IntroSplash: React.FC<IntroSplashProps> = ({ onComplete, forceShow 
 
           <div className="flex items-center gap-4">
             <span className="font-mono text-white/60">EST. 2026 // BUILD 4.0</span>
-            <span className="px-2 py-0.5 rounded bg-white/10 border border-white/15 text-[10px] text-white/80">
+            <span className="px-2 py-0.5 rounded bg-white/10 border border-[var(--border-subtle)] text-[10px] text-white/80">
               STABLE
             </span>
           </div>

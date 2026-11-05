@@ -123,7 +123,7 @@ export const AIExplainer: React.FC = () => {
         <h1 className="text-2xl font-bold font-['Manrope'] text-white">
           AI Code Explainer
         </h1>
-        <p className="text-xs text-[#888888] mt-1">
+        <p className="text-xs text-[var(--text-muted)] mt-1">
           Generate comprehensive algorithm breakdowns, complexity analysis, and exam viva pointers
         </p>
       </div>
@@ -131,9 +131,9 @@ export const AIExplainer: React.FC = () => {
       {/* Split Workspace */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-5">
         {/* Left Input Workspace (6 cols) */}
-        <div className="lg:col-span-6 bg-[#141414] border border-[rgba(255,255,255,0.09)] rounded-xl flex flex-col overflow-hidden">
+        <div className="lg:col-span-6 bg-[var(--bg-card)] border border-[var(--border-subtle)] rounded-xl flex flex-col overflow-hidden">
           {/* Header Controls */}
-          <div className="p-4 bg-[#111111] border-b border-[rgba(255,255,255,0.08)] space-y-3">
+          <div className="p-4 bg-[var(--bg-card)] border-b border-[var(--border-subtle)] space-y-3">
             <div className="flex flex-col sm:flex-row items-center gap-3">
               <div className="flex-1 w-full">
                 <Select
@@ -168,8 +168,8 @@ export const AIExplainer: React.FC = () => {
 
             {/* Mode selection buttons */}
             <div className="flex items-center gap-2">
-              <span className="text-[11px] text-[#888888] font-mono">MODE:</span>
-              <div className="flex items-center gap-1 bg-[#171717] p-1 rounded-lg border border-[rgba(255,255,255,0.08)] flex-1">
+              <span className="text-[11px] text-[var(--text-muted)] font-mono">MODE:</span>
+              <div className="flex items-center gap-1 bg-[var(--bg-metric)] p-1 rounded-lg border border-[var(--border-subtle)] flex-1">
                 {[
                   { id: 'beginner', label: 'Beginner' },
                   { id: 'detailed', label: 'Detailed' },
@@ -181,7 +181,7 @@ export const AIExplainer: React.FC = () => {
                     className={`flex-1 py-1 rounded text-xs font-medium transition-colors ${
                       mode === m.id
                         ? 'bg-white text-black font-semibold'
-                        : 'text-[#888888] hover:text-white'
+                        : 'text-[var(--text-muted)] hover:text-white'
                     }`}
                   >
                     {m.label}
@@ -211,7 +211,7 @@ export const AIExplainer: React.FC = () => {
           </div>
 
           {/* Bottom Action */}
-          <div className="p-4 border-t border-[rgba(255,255,255,0.08)] bg-[#111111]">
+          <div className="p-4 border-t border-[var(--border-subtle)] bg-[var(--bg-card)]">
             <Button
               variant="primary"
               size="md"
@@ -226,9 +226,9 @@ export const AIExplainer: React.FC = () => {
         </div>
 
         {/* Right Output Workspace (6 cols) */}
-        <div className="lg:col-span-6 bg-[#141414] border border-[rgba(255,255,255,0.09)] rounded-xl flex flex-col overflow-hidden">
+        <div className="lg:col-span-6 bg-[var(--bg-card)] border border-[var(--border-subtle)] rounded-xl flex flex-col overflow-hidden">
           {/* Tabs */}
-          <div className="flex items-center border-b border-[rgba(255,255,255,0.08)] bg-[#111111] px-3 overflow-x-auto">
+          <div className="flex items-center border-b border-[var(--border-subtle)] bg-[var(--bg-card)] px-3 overflow-x-auto">
             {[
               { id: 'overview', label: 'Overview' },
               { id: 'line', label: 'Line by Line' },
@@ -243,8 +243,8 @@ export const AIExplainer: React.FC = () => {
                 onClick={() => setActiveTab(tab.id as any)}
                 className={`px-3 py-3 text-xs whitespace-nowrap font-medium border-b-2 transition-all ${
                   activeTab === tab.id
-                    ? 'border-white text-white bg-[rgba(255,255,255,0.04)] font-semibold'
-                    : 'border-transparent text-[#888888] hover:text-[#D4D4D4]'
+                    ? 'border-white text-white bg-[var(--bg-metric)] font-semibold'
+                    : 'border-transparent text-[var(--text-muted)] hover:text-[var(--text-main)]'
                 }`}
               >
                 {tab.label}
@@ -258,7 +258,7 @@ export const AIExplainer: React.FC = () => {
               <div className="py-24 text-center space-y-3">
                 <div className="animate-spin w-7 h-7 border-2 border-white border-t-transparent rounded-full mx-auto" />
                 <h4 className="text-sm font-semibold text-white">Analyzing program structure...</h4>
-                <p className="text-xs text-[#888888] max-w-xs mx-auto">
+                <p className="text-xs text-[var(--text-muted)] max-w-xs mx-auto">
                   Generating deep logic graphs, time complexity, and practical exam hints with Gemini.
                 </p>
               </div>
@@ -267,28 +267,28 @@ export const AIExplainer: React.FC = () => {
                 {/* TAB: OVERVIEW */}
                 {activeTab === 'overview' && (
                   <div className="space-y-4">
-                    <div className="p-4 bg-[#111111] border border-[rgba(255,255,255,0.08)] rounded-xl space-y-2">
+                    <div className="p-4 bg-[var(--bg-card)] border border-[var(--border-subtle)] rounded-xl space-y-2">
                       <div className="flex items-center justify-between">
                         <span className="text-xs font-semibold text-white font-['Manrope']">Program Overview</span>
-                        <button onClick={() => handleCopySection(explanation.program_overview)} className="text-[#666666] hover:text-white">
+                        <button onClick={() => handleCopySection(explanation.program_overview)} className="text-[var(--text-dim)] hover:text-white">
                           <Copy className="w-3.5 h-3.5" />
                         </button>
                       </div>
-                      <p className="text-xs text-[#A1A1A1] leading-relaxed">
+                      <p className="text-xs text-[var(--text-muted)] leading-relaxed">
                         {explanation.program_overview}
                       </p>
                     </div>
 
-                    <div className="p-4 bg-[#111111] border border-[rgba(255,255,255,0.08)] rounded-xl space-y-2">
+                    <div className="p-4 bg-[var(--bg-card)] border border-[var(--border-subtle)] rounded-xl space-y-2">
                       <span className="text-xs font-semibold text-white font-['Manrope']">Simple Explanation</span>
-                      <p className="text-xs text-[#A1A1A1] leading-relaxed">
+                      <p className="text-xs text-[var(--text-muted)] leading-relaxed">
                         {explanation.simple_explanation}
                       </p>
                     </div>
 
-                    <div className="p-4 bg-[#111111] border border-[rgba(255,255,255,0.08)] rounded-xl space-y-2">
+                    <div className="p-4 bg-[var(--bg-card)] border border-[var(--border-subtle)] rounded-xl space-y-2">
                       <span className="text-xs font-semibold text-white font-['Manrope']">Sample Input & Output</span>
-                      <pre className="text-xs text-[#D4D4D4] font-mono bg-[#090909] p-3 rounded border border-[rgba(255,255,255,0.06)]">
+                      <pre className="text-xs text-[var(--text-main)] font-mono bg-[var(--bg-card)] p-3 rounded border border-[var(--border-subtle)]">
                         {explanation.io_explanation || 'Input: Array sequence\nOutput: Ordered array'}
                       </pre>
                     </div>
@@ -297,14 +297,14 @@ export const AIExplainer: React.FC = () => {
 
                 {/* TAB: LINE BY LINE */}
                 {activeTab === 'line' && (
-                  <div className="p-4 bg-[#111111] border border-[rgba(255,255,255,0.08)] rounded-xl space-y-3">
+                  <div className="p-4 bg-[var(--bg-card)] border border-[var(--border-subtle)] rounded-xl space-y-3">
                     <div className="flex items-center justify-between">
                       <span className="text-xs font-semibold text-white font-['Manrope']">Line-by-Line Breakdown</span>
-                      <button onClick={() => handleCopySection(explanation.line_by_line)} className="text-[#666666] hover:text-white">
+                      <button onClick={() => handleCopySection(explanation.line_by_line)} className="text-[var(--text-dim)] hover:text-white">
                         <Copy className="w-3.5 h-3.5" />
                       </button>
                     </div>
-                    <div className="text-xs text-[#D4D4D4] font-mono whitespace-pre-line leading-relaxed space-y-1">
+                    <div className="text-xs text-[var(--text-main)] font-mono whitespace-pre-line leading-relaxed space-y-1">
                       {explanation.line_by_line}
                     </div>
                   </div>
@@ -313,16 +313,16 @@ export const AIExplainer: React.FC = () => {
                 {/* TAB: LOGIC & FLOW */}
                 {activeTab === 'logic' && (
                   <div className="space-y-4">
-                    <div className="p-4 bg-[#111111] border border-[rgba(255,255,255,0.08)] rounded-xl space-y-2">
+                    <div className="p-4 bg-[var(--bg-card)] border border-[var(--border-subtle)] rounded-xl space-y-2">
                       <span className="text-xs font-semibold text-white font-['Manrope']">Logic Breakdown</span>
-                      <div className="text-xs text-[#A1A1A1] whitespace-pre-line leading-relaxed">
+                      <div className="text-xs text-[var(--text-muted)] whitespace-pre-line leading-relaxed">
                         {explanation.logic_breakdown}
                       </div>
                     </div>
 
-                    <div className="p-4 bg-[#111111] border border-[rgba(255,255,255,0.08)] rounded-xl space-y-2">
+                    <div className="p-4 bg-[var(--bg-card)] border border-[var(--border-subtle)] rounded-xl space-y-2">
                       <span className="text-xs font-semibold text-white font-['Manrope']">Execution Flow</span>
-                      <div className="text-xs font-mono text-[#D4D4D4] bg-[#090909] p-3 rounded border border-[rgba(255,255,255,0.06)] leading-relaxed">
+                      <div className="text-xs font-mono text-[var(--text-main)] bg-[var(--bg-card)] p-3 rounded border border-[var(--border-subtle)] leading-relaxed">
                         {explanation.execution_flow}
                       </div>
                     </div>
@@ -331,9 +331,9 @@ export const AIExplainer: React.FC = () => {
 
                 {/* TAB: VARIABLES */}
                 {activeTab === 'vars' && (
-                  <div className="p-4 bg-[#111111] border border-[rgba(255,255,255,0.08)] rounded-xl space-y-2">
+                  <div className="p-4 bg-[var(--bg-card)] border border-[var(--border-subtle)] rounded-xl space-y-2">
                     <span className="text-xs font-semibold text-white font-['Manrope']">Variables & Functions</span>
-                    <div className="text-xs text-[#A1A1A1] whitespace-pre-line leading-relaxed font-mono">
+                    <div className="text-xs text-[var(--text-muted)] whitespace-pre-line leading-relaxed font-mono">
                       {explanation.variables_and_functions}
                     </div>
                   </div>
@@ -341,9 +341,9 @@ export const AIExplainer: React.FC = () => {
 
                 {/* TAB: ALGORITHM */}
                 {activeTab === 'algo' && (
-                  <div className="p-4 bg-[#111111] border border-[rgba(255,255,255,0.08)] rounded-xl space-y-2">
+                  <div className="p-4 bg-[var(--bg-card)] border border-[var(--border-subtle)] rounded-xl space-y-2">
                     <span className="text-xs font-semibold text-white font-['Manrope']">Algorithm Explanation</span>
-                    <p className="text-xs text-[#A1A1A1] leading-relaxed">
+                    <p className="text-xs text-[var(--text-muted)] leading-relaxed">
                       {explanation.algorithm_explanation}
                     </p>
                   </div>
@@ -352,22 +352,22 @@ export const AIExplainer: React.FC = () => {
                 {/* TAB: EXAM READY */}
                 {activeTab === 'exam' && (
                   <div className="space-y-4">
-                    <div className="p-4 bg-[#171717] border border-[rgba(255,255,255,0.15)] rounded-xl space-y-2">
+                    <div className="p-4 bg-[var(--bg-metric)] border border-[rgba(255,255,255,0.15)] rounded-xl space-y-2">
                       <div className="flex items-center gap-2 text-white text-xs font-bold font-['Manrope']">
                         <Lightbulb className="w-4 h-4 text-white" />
                         <span>Important Practical Exam Points</span>
                       </div>
-                      <div className="text-xs text-[#D4D4D4] whitespace-pre-line leading-relaxed">
+                      <div className="text-xs text-[var(--text-main)] whitespace-pre-line leading-relaxed">
                         {explanation.exam_points}
                       </div>
                     </div>
 
-                    <div className="p-4 bg-[#111111] border border-[rgba(255,255,255,0.08)] rounded-xl space-y-2">
+                    <div className="p-4 bg-[var(--bg-card)] border border-[var(--border-subtle)] rounded-xl space-y-2">
                       <div className="flex items-center gap-2 text-white text-xs font-bold font-['Manrope']">
                         <ShieldAlert className="w-4 h-4 text-white" />
                         <span>Common Mistakes</span>
                       </div>
-                      <div className="text-xs text-[#A1A1A1] whitespace-pre-line leading-relaxed">
+                      <div className="text-xs text-[var(--text-muted)] whitespace-pre-line leading-relaxed">
                         {explanation.common_mistakes}
                       </div>
                     </div>
@@ -377,22 +377,22 @@ export const AIExplainer: React.FC = () => {
                 {/* TAB: COMPLEXITY */}
                 {activeTab === 'complexity' && (
                   <div className="grid grid-cols-2 gap-4">
-                    <div className="p-4 bg-[#111111] border border-[rgba(255,255,255,0.08)] rounded-xl space-y-1">
-                      <span className="text-[10px] text-[#666666] uppercase font-mono block">Time Complexity</span>
+                    <div className="p-4 bg-[var(--bg-card)] border border-[var(--border-subtle)] rounded-xl space-y-1">
+                      <span className="text-[10px] text-[var(--text-dim)] uppercase font-mono block">Time Complexity</span>
                       <span className="text-base font-bold text-white font-mono block">
                         {explanation.time_complexity}
                       </span>
-                      <p className="text-[11px] text-[#888888] pt-1">
+                      <p className="text-[11px] text-[var(--text-muted)] pt-1">
                         Worst-case nested loop iterations.
                       </p>
                     </div>
 
-                    <div className="p-4 bg-[#111111] border border-[rgba(255,255,255,0.08)] rounded-xl space-y-1">
-                      <span className="text-[10px] text-[#666666] uppercase font-mono block">Space Complexity</span>
+                    <div className="p-4 bg-[var(--bg-card)] border border-[var(--border-subtle)] rounded-xl space-y-1">
+                      <span className="text-[10px] text-[var(--text-dim)] uppercase font-mono block">Space Complexity</span>
                       <span className="text-base font-bold text-white font-mono block">
                         {explanation.space_complexity}
                       </span>
-                      <p className="text-[11px] text-[#888888] pt-1">
+                      <p className="text-[11px] text-[var(--text-muted)] pt-1">
                         Auxiliary stack & heap memory overhead.
                       </p>
                     </div>
@@ -401,9 +401,9 @@ export const AIExplainer: React.FC = () => {
               </div>
             ) : (
               <div className="text-center py-24 space-y-3">
-                <Sparkles className="w-8 h-8 text-[#666666] mx-auto" />
+                <Sparkles className="w-8 h-8 text-[var(--text-dim)] mx-auto" />
                 <h4 className="text-sm font-semibold text-white">Ready to Explain</h4>
-                <p className="text-xs text-[#888888] max-w-xs mx-auto">
+                <p className="text-xs text-[var(--text-muted)] max-w-xs mx-auto">
                   Click 'Explain with AI' to generate a full 12-point breakdown of this code for your practical exams.
                 </p>
               </div>
@@ -411,24 +411,24 @@ export const AIExplainer: React.FC = () => {
           </div>
 
           {/* Bottom Shortcuts */}
-          <div className="p-3 border-t border-[rgba(255,255,255,0.08)] bg-[#111111] flex items-center justify-between text-xs">
+          <div className="p-3 border-t border-[var(--border-subtle)] bg-[var(--bg-card)] flex items-center justify-between text-xs">
             <button
               onClick={() => navigate('/ai/ask')}
-              className="text-[#888888] hover:text-white flex items-center gap-1.5 transition-colors"
+              className="text-[var(--text-muted)] hover:text-white flex items-center gap-1.5 transition-colors"
             >
               <MessageSquare className="w-3.5 h-3.5" />
               <span>Ask follow-up</span>
             </button>
             <button
               onClick={() => navigate('/ai/viva-practice')}
-              className="text-[#888888] hover:text-white flex items-center gap-1.5 transition-colors"
+              className="text-[var(--text-muted)] hover:text-white flex items-center gap-1.5 transition-colors"
             >
               <HelpCircle className="w-3.5 h-3.5" />
               <span>Practice Viva</span>
             </button>
             <button
               onClick={() => navigate('/ai/revision-studio')}
-              className="text-[#888888] hover:text-white flex items-center gap-1.5 transition-colors"
+              className="text-[var(--text-muted)] hover:text-white flex items-center gap-1.5 transition-colors"
             >
               <Brain className="w-3.5 h-3.5" />
               <span>Revision Studio</span>

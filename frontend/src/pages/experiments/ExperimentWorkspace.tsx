@@ -425,23 +425,23 @@ export const ExperimentWorkspace: React.FC = () => {
   const subjectName = experiment.subjects?.name || 'Subject'
 
   return (
-    <div className="min-h-screen bg-[#090909] text-[#F5F5F5] select-none flex flex-col">
+    <div className="min-h-screen bg-[var(--bg-canvas)] text-[var(--text-main)] select-none flex flex-col transition-colors duration-200">
       <AppNavbar showAddSubject={false} />
 
       <main className="flex-1 max-w-6xl w-full mx-auto px-4 sm:px-6 py-5 space-y-5">
         {/* Top Header & Breadcrumb */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 border-b border-[rgba(255,255,255,0.08)]">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 border-b border-[var(--border-subtle)]">
           <div className="space-y-1">
             <Link
               to={`/subjects/${subjectId}`}
-              className="inline-flex items-center gap-1.5 text-xs text-[#888888] hover:text-white transition-colors"
+              className="inline-flex items-center gap-1.5 text-xs text-[var(--text-muted)] hover:text-white transition-colors"
             >
               <ArrowLeft className="w-3.5 h-3.5" />
               <span>Back to {subjectName}</span>
             </Link>
 
             <div className="flex flex-wrap items-center gap-2">
-              <span className="font-mono text-xs text-[#888888] bg-[#141414] px-2 py-0.5 rounded border border-[rgba(255,255,255,0.08)]">
+              <span className="font-mono text-xs text-[var(--text-muted)] bg-[var(--bg-card)] px-2 py-0.5 rounded border border-[var(--border-subtle)]">
                 {experiment.experiment_number || 'EXP'}
               </span>
               <input
@@ -454,7 +454,7 @@ export const ExperimentWorkspace: React.FC = () => {
               <button
                 type="button"
                 onClick={handleGetRecommendations}
-                className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-medium bg-white/10 hover:bg-white/20 text-white border border-white/10 transition-colors cursor-pointer shadow-sm"
+                className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-medium bg-white/10 hover:bg-white/20 text-white border border-[var(--border-subtle)] transition-colors cursor-pointer shadow-sm"
                 title="Get AI recommended name and optimizations for this code"
               >
                 <Sparkles className="w-3 h-3 text-white" />
@@ -466,11 +466,11 @@ export const ExperimentWorkspace: React.FC = () => {
           {/* Auto-save status + AI features */}
           <div className="flex flex-wrap items-center gap-2">
             {/* Auto-save indicator */}
-            <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#111111] border border-white/[0.08] text-xs font-mono select-none min-w-[90px] justify-center">
+            <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[var(--bg-card)] border border-[var(--border-subtle)] text-xs font-mono select-none min-w-[90px] justify-center">
               {autoSaveStatus === 'saving' && (
                 <>
-                  <Loader2 className="w-3 h-3 text-[#888888] animate-spin" />
-                  <span className="text-[#888888]">Saving…</span>
+                  <Loader2 className="w-3 h-3 text-[var(--text-muted)] animate-spin" />
+                  <span className="text-[var(--text-muted)]">Saving…</span>
                 </>
               )}
               {autoSaveStatus === 'saved' && (
@@ -480,7 +480,7 @@ export const ExperimentWorkspace: React.FC = () => {
                 </>
               )}
               {(autoSaveStatus === 'idle' || autoSaveStatus === 'pending') && (
-                <span className="text-[#555555]">Auto-save on</span>
+                <span className="text-[var(--text-dim)]">Auto-save on</span>
               )}
             </div>
 
@@ -499,7 +499,7 @@ export const ExperimentWorkspace: React.FC = () => {
               variant="secondary"
               size="sm"
               onClick={() => setIsScanOpen(true)}
-              className="h-8 text-xs font-medium px-3 bg-[#171717] hover:bg-[#202020] border-[rgba(255,255,255,0.1)]"
+              className="h-8 text-xs font-medium px-3 bg-[var(--bg-metric)] hover:bg-[var(--bg-card-hover)] border-[var(--border-subtle)]"
               title="Read code from photo of notebook or screen"
             >
               Read Code from Image
@@ -509,7 +509,7 @@ export const ExperimentWorkspace: React.FC = () => {
               variant="secondary"
               size="sm"
               onClick={handleExplainAI}
-              className="h-8 text-xs font-medium px-3 bg-[#171717] hover:bg-[#202020] border-[rgba(255,255,255,0.1)]"
+              className="h-8 text-xs font-medium px-3 bg-[var(--bg-metric)] hover:bg-[var(--bg-card-hover)] border-[var(--border-subtle)]"
             >
               Explain Code
             </Button>
@@ -518,7 +518,7 @@ export const ExperimentWorkspace: React.FC = () => {
               variant="secondary"
               size="sm"
               onClick={handleVivaAI}
-              className="h-8 text-xs font-medium px-3 bg-[#171717] hover:bg-[#202020] border-[rgba(255,255,255,0.1)]"
+              className="h-8 text-xs font-medium px-3 bg-[var(--bg-metric)] hover:bg-[var(--bg-card-hover)] border-[var(--border-subtle)]"
             >
               Viva Prep
             </Button>
@@ -527,7 +527,7 @@ export const ExperimentWorkspace: React.FC = () => {
               variant="secondary"
               size="sm"
               onClick={handleBugCheckAI}
-              className="h-8 text-xs font-medium px-3 bg-[#171717] hover:bg-[#202020] border-[rgba(255,255,255,0.1)]"
+              className="h-8 text-xs font-medium px-3 bg-[var(--bg-metric)] hover:bg-[var(--bg-card-hover)] border-[var(--border-subtle)]"
             >
               Find Bugs
             </Button>
@@ -535,9 +535,9 @@ export const ExperimentWorkspace: React.FC = () => {
         </div>
 
         {/* Multiple Codes System */}
-        <div className="bg-[#141414] border border-[rgba(255,255,255,0.08)] rounded-xl overflow-hidden flex flex-col shadow-sm">
+        <div className="bg-[var(--bg-card)] border border-[var(--border-subtle)] rounded-xl overflow-hidden flex flex-col shadow-sm">
           {/* Code Tabs Header */}
-          <div className="flex items-center justify-between border-b border-[rgba(255,255,255,0.08)] bg-[#111111] px-3 overflow-x-auto">
+          <div className="flex items-center justify-between border-b border-[var(--border-subtle)] bg-[var(--bg-card)] px-3 overflow-x-auto">
             <div className="flex items-center gap-1 py-1">
               {codeFiles.map((snippet) => {
                 const isActive = snippet.id === activeSnippet.id
@@ -549,7 +549,7 @@ export const ExperimentWorkspace: React.FC = () => {
                     className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-medium transition-colors cursor-pointer ${
                       isActive
                         ? 'bg-white text-black font-semibold shadow-sm'
-                        : 'text-[#888888] hover:text-white hover:bg-[rgba(255,255,255,0.04)]'
+                        : 'text-[var(--text-muted)] hover:text-white hover:bg-[var(--bg-metric)]'
                     }`}
                   >
                     <FileCode className="w-3.5 h-3.5" />
@@ -565,7 +565,7 @@ export const ExperimentWorkspace: React.FC = () => {
               <button
                 type="button"
                 onClick={handleAddCodeSnippet}
-                className="flex items-center gap-1 px-2.5 py-1.5 text-xs text-[#888888] hover:text-white hover:bg-[rgba(255,255,255,0.05)] rounded-lg transition-colors cursor-pointer border border-dashed border-[rgba(255,255,255,0.15)] ml-1"
+                className="flex items-center gap-1 px-2.5 py-1.5 text-xs text-[var(--text-muted)] hover:text-white hover:bg-[var(--bg-metric)] rounded-lg transition-colors cursor-pointer border border-dashed border-[rgba(255,255,255,0.15)] ml-1"
                 title="Add another code implementation or file"
               >
                 <Plus className="w-3.5 h-3.5" />
@@ -581,7 +581,7 @@ export const ExperimentWorkspace: React.FC = () => {
                 value={activeSnippet.title}
                 onChange={(e) => updateActiveSnippet('title', e.target.value)}
                 placeholder="Code Title"
-                className="bg-[#171717] text-white text-xs px-2 py-1 rounded border border-[rgba(255,255,255,0.1)] focus:border-white focus:outline-none w-28 sm:w-36 font-mono"
+                className="bg-[var(--bg-metric)] text-white text-xs px-2 py-1 rounded border border-[var(--border-subtle)] focus:border-white focus:outline-none w-28 sm:w-36 font-mono"
               />
 
               {/* Language Selector */}
@@ -607,7 +607,7 @@ export const ExperimentWorkspace: React.FC = () => {
               <button
                 type="button"
                 onClick={handleCopyActiveCode}
-                className="p-1.5 text-[#888888] hover:text-white rounded transition-colors cursor-pointer"
+                className="p-1.5 text-[var(--text-muted)] hover:text-white rounded transition-colors cursor-pointer"
                 title="Copy Code"
               >
                 <Copy className="w-3.5 h-3.5" />
@@ -616,7 +616,7 @@ export const ExperimentWorkspace: React.FC = () => {
               <button
                 type="button"
                 onClick={handleDownloadActiveCode}
-                className="p-1.5 text-[#888888] hover:text-white rounded transition-colors cursor-pointer"
+                className="p-1.5 text-[var(--text-muted)] hover:text-white rounded transition-colors cursor-pointer"
                 title="Download Code"
               >
                 <Download className="w-3.5 h-3.5" />
@@ -626,7 +626,7 @@ export const ExperimentWorkspace: React.FC = () => {
                 <button
                   type="button"
                   onClick={() => handleDeleteCodeSnippet(activeSnippet.id)}
-                  className="p-1.5 text-[#666666] hover:text-[#FF5555] rounded transition-colors cursor-pointer"
+                  className="p-1.5 text-[var(--text-dim)] hover:text-[#FF5555] rounded transition-colors cursor-pointer"
                   title="Delete this code tab"
                 >
                   <Trash2 className="w-3.5 h-3.5" />
@@ -636,7 +636,7 @@ export const ExperimentWorkspace: React.FC = () => {
           </div>
 
           {/* Monaco Code Editor */}
-          <div className="h-[460px] bg-[#0A0A0A]">
+          <div className="h-[460px] bg-[var(--bg-metric)]">
             <Editor
               height="100%"
               language={activeSnippet.language === 'cpp' ? 'cpp' : activeSnippet.language === 'c' ? 'c' : activeSnippet.language}
@@ -658,7 +658,7 @@ export const ExperimentWorkspace: React.FC = () => {
         </div>
 
         {/* Written Practical Notebook Section */}
-        <div className="bg-[#141414] border border-[rgba(255,255,255,0.08)] rounded-xl p-5 space-y-4 shadow-sm">
+        <div className="bg-[var(--bg-card)] border border-[var(--border-subtle)] rounded-xl p-5 space-y-4 shadow-sm">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
             <div>
               <div className="flex items-center gap-2">
@@ -672,7 +672,7 @@ export const ExperimentWorkspace: React.FC = () => {
                   </span>
                 )}
               </div>
-              <p className="text-xs text-[#888888] mt-1 leading-relaxed">
+              <p className="text-xs text-[var(--text-muted)] mt-1 leading-relaxed">
                 Upload a scanned PDF or photo of your handwritten lab notebook for this experiment. If physical manual is lost or submitted, your record stays preserved here.
               </p>
             </div>
@@ -697,7 +697,7 @@ export const ExperimentWorkspace: React.FC = () => {
                   type="button"
                   disabled={isDeletingPdf}
                   onClick={handleDeleteNotebookPdf}
-                  className="p-1.5 text-[#888888] hover:text-[#FF6666] border border-[rgba(255,255,255,0.08)] hover:border-[#FF6666]/40 rounded-lg transition-colors cursor-pointer"
+                  className="p-1.5 text-[var(--text-muted)] hover:text-[#FF6666] border border-[var(--border-subtle)] hover:border-[#FF6666]/40 rounded-lg transition-colors cursor-pointer"
                   title="Remove Notebook Backup"
                 >
                   <Trash2 className="w-3.5 h-3.5" />
@@ -709,14 +709,14 @@ export const ExperimentWorkspace: React.FC = () => {
           {/* Notebook Preview or Empty Notice */}
           {experiment.notebook_pdf_url ? (
             <div className="space-y-3 pt-2">
-              <div className="flex items-center justify-between p-3 bg-[#111111] rounded-lg border border-[rgba(255,255,255,0.06)] text-xs font-mono">
+              <div className="flex items-center justify-between p-3 bg-[var(--bg-card)] rounded-lg border border-[var(--border-subtle)] text-xs font-mono">
                 <div className="flex items-center gap-2 truncate">
                   <FileCheck className="w-4 h-4 text-white shrink-0" />
                   <span className="text-white truncate">
                     {experiment.notebook_pdf_name || 'Practical_Notebook.pdf'}
                   </span>
                   {experiment.notebook_pdf_size && (
-                    <span className="text-[#888888] text-[11px]">
+                    <span className="text-[var(--text-muted)] text-[11px]">
                       ({(experiment.notebook_pdf_size / 1024).toFixed(0)} KB)
                     </span>
                   )}
@@ -726,7 +726,7 @@ export const ExperimentWorkspace: React.FC = () => {
                   <a
                     href={`${(import.meta.env.VITE_API_URL || 'http://localhost:8000').replace(/\/$/, '')}${experiment.notebook_pdf_url}`}
                     download={experiment.notebook_pdf_name || 'notebook.pdf'}
-                    className="inline-flex items-center gap-1 px-2.5 py-1 bg-[#1A1A1A] hover:bg-[#252525] text-white border border-[rgba(255,255,255,0.1)] rounded text-xs transition-colors"
+                    className="inline-flex items-center gap-1 px-2.5 py-1 bg-[var(--bg-metric)] hover:bg-[var(--bg-card-hover)] text-white border border-[var(--border-subtle)] rounded text-xs transition-colors"
                   >
                     <Download className="w-3 h-3" />
                     <span>Download</span>
@@ -735,7 +735,7 @@ export const ExperimentWorkspace: React.FC = () => {
                     href={`${(import.meta.env.VITE_API_URL || 'http://localhost:8000').replace(/\/$/, '')}${experiment.notebook_pdf_url}`}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="inline-flex items-center gap-1 px-2.5 py-1 bg-[#1A1A1A] hover:bg-[#252525] text-[#D4D4D4] hover:text-white border border-[rgba(255,255,255,0.1)] rounded text-xs transition-colors"
+                    className="inline-flex items-center gap-1 px-2.5 py-1 bg-[var(--bg-metric)] hover:bg-[var(--bg-card-hover)] text-[var(--text-main)] hover:text-white border border-[var(--border-subtle)] rounded text-xs transition-colors"
                   >
                     <ExternalLink className="w-3 h-3" />
                     <span>Open Viewer</span>
@@ -744,7 +744,7 @@ export const ExperimentWorkspace: React.FC = () => {
               </div>
 
               {/* Embedded PDF View */}
-              <div className="w-full h-80 rounded-lg overflow-hidden border border-[rgba(255,255,255,0.08)] bg-[#090909]">
+              <div className="w-full h-80 rounded-lg overflow-hidden border border-[var(--border-subtle)] bg-[var(--bg-card)]">
                 <iframe
                   src={`${(import.meta.env.VITE_API_URL || 'http://localhost:8000').replace(/\/$/, '')}${experiment.notebook_pdf_url}#toolbar=0`}
                   className="w-full h-full border-none"
@@ -753,14 +753,14 @@ export const ExperimentWorkspace: React.FC = () => {
               </div>
             </div>
           ) : (
-            <div className="p-4 bg-[#111111] rounded-lg border border-dashed border-[rgba(255,255,255,0.08)] text-center text-xs text-[#777777]">
+            <div className="p-4 bg-[var(--bg-card)] rounded-lg border border-dashed border-[var(--border-subtle)] text-center text-xs text-[var(--text-dim)]">
               No written practical notebook attached yet. Upload a scanned PDF to keep your manual backed up.
             </div>
           )}
         </div>
 
         {/* Experiment Aim & Algorithm Details */}
-        <div className="bg-[#141414] border border-[rgba(255,255,255,0.08)] rounded-xl p-5 space-y-4 shadow-sm">
+        <div className="bg-[var(--bg-card)] border border-[var(--border-subtle)] rounded-xl p-5 space-y-4 shadow-sm">
           <div className="flex items-center gap-2">
             <Layers className="w-4 h-4 text-white" />
             <h3 className="text-sm font-semibold text-white font-['Manrope']">
@@ -770,24 +770,24 @@ export const ExperimentWorkspace: React.FC = () => {
 
           <div className="space-y-3">
             <div className="flex flex-col gap-1.5">
-              <label className="text-xs font-medium text-[#A1A1A1]">Experiment Aim</label>
+              <label className="text-xs font-medium text-[var(--text-muted)]">Experiment Aim</label>
               <input
                 type="text"
                 placeholder="State the objective of this practical..."
                 value={experiment.aim || ''}
                 onChange={(e) => setExperiment((p) => ({ ...p, aim: e.target.value }))}
-                className="bg-[#111111] text-[#F5F5F5] text-xs rounded-lg border border-[rgba(255,255,255,0.09)] px-3 py-2.5 focus:border-white focus:outline-none"
+                className="bg-[var(--bg-card)] text-[var(--text-main)] text-xs rounded-lg border border-[var(--border-subtle)] px-3 py-2.5 focus:border-white focus:outline-none"
               />
             </div>
 
             <div className="flex flex-col gap-1.5">
-              <label className="text-xs font-medium text-[#A1A1A1]">Step-by-Step Algorithm</label>
+              <label className="text-xs font-medium text-[var(--text-muted)]">Step-by-Step Algorithm</label>
               <textarea
                 rows={3}
                 placeholder="1. Start\n2. Initialize array\n3. Perform comparisons\n4. Stop"
                 value={experiment.algorithm || ''}
                 onChange={(e) => setExperiment((p) => ({ ...p, algorithm: e.target.value }))}
-                className="bg-[#111111] text-[#F5F5F5] font-mono text-xs rounded-lg border border-[rgba(255,255,255,0.09)] p-3 focus:border-white focus:outline-none leading-relaxed"
+                className="bg-[var(--bg-card)] text-[var(--text-main)] font-mono text-xs rounded-lg border border-[var(--border-subtle)] p-3 focus:border-white focus:outline-none leading-relaxed"
               />
             </div>
 
@@ -850,39 +850,39 @@ export const ExperimentWorkspace: React.FC = () => {
           {isAiLoading ? (
             <div className="p-8 text-center space-y-3">
               <div className="w-5 h-5 border-2 border-white/20 border-t-white rounded-full animate-spin mx-auto" />
-              <p className="text-xs text-[#888888]">Analyzing code...</p>
+              <p className="text-xs text-[var(--text-muted)]">Analyzing code...</p>
             </div>
           ) : aiOutput?.type === 'explain' ? (
             <div className="space-y-4 text-xs">
-              <div className="p-3 bg-[#141414] rounded-xl border border-[rgba(255,255,255,0.08)] space-y-1">
+              <div className="p-3 bg-[var(--bg-card)] rounded-xl border border-[var(--border-subtle)] space-y-1">
                 <span className="font-semibold text-white">Overview</span>
-                <p className="text-[#A1A1A1] leading-relaxed">{aiOutput.data?.program_overview}</p>
+                <p className="text-[var(--text-muted)] leading-relaxed">{aiOutput.data?.program_overview}</p>
               </div>
 
               {aiOutput.data?.logic_breakdown && (
-                <div className="p-3 bg-[#141414] rounded-xl border border-[rgba(255,255,255,0.08)] space-y-1">
+                <div className="p-3 bg-[var(--bg-card)] rounded-xl border border-[var(--border-subtle)] space-y-1">
                   <span className="font-semibold text-white">Logic Breakdown</span>
-                  <pre className="text-[#A1A1A1] font-mono text-[11px] whitespace-pre-wrap">
+                  <pre className="text-[var(--text-muted)] font-mono text-[11px] whitespace-pre-wrap">
                     {aiOutput.data.logic_breakdown}
                   </pre>
                 </div>
               )}
 
               <div className="grid grid-cols-2 gap-3">
-                <div className="p-3 bg-[#141414] rounded-xl border border-[rgba(255,255,255,0.08)]">
+                <div className="p-3 bg-[var(--bg-card)] rounded-xl border border-[var(--border-subtle)]">
                   <span className="font-semibold text-white">Time Complexity</span>
-                  <p className="text-[#A1A1A1] font-mono mt-1">{aiOutput.data?.time_complexity}</p>
+                  <p className="text-[var(--text-muted)] font-mono mt-1">{aiOutput.data?.time_complexity}</p>
                 </div>
-                <div className="p-3 bg-[#141414] rounded-xl border border-[rgba(255,255,255,0.08)]">
+                <div className="p-3 bg-[var(--bg-card)] rounded-xl border border-[var(--border-subtle)]">
                   <span className="font-semibold text-white">Space Complexity</span>
-                  <p className="text-[#A1A1A1] font-mono mt-1">{aiOutput.data?.space_complexity}</p>
+                  <p className="text-[var(--text-muted)] font-mono mt-1">{aiOutput.data?.space_complexity}</p>
                 </div>
               </div>
 
               {aiOutput.data?.exam_points && (
-                <div className="p-3 bg-[#141414] rounded-xl border border-[rgba(255,255,255,0.08)] space-y-1">
+                <div className="p-3 bg-[var(--bg-card)] rounded-xl border border-[var(--border-subtle)] space-y-1">
                   <span className="font-semibold text-white">Exam Key Points</span>
-                  <p className="text-[#A1A1A1] leading-relaxed">{aiOutput.data.exam_points}</p>
+                  <p className="text-[var(--text-muted)] leading-relaxed">{aiOutput.data.exam_points}</p>
                 </div>
               )}
             </div>
@@ -891,13 +891,13 @@ export const ExperimentWorkspace: React.FC = () => {
               {aiOutput.items?.map((item: any, idx: number) => (
                 <div
                   key={idx}
-                  className="p-3.5 bg-[#141414] border border-[rgba(255,255,255,0.08)] rounded-xl space-y-1.5 text-xs"
+                  className="p-3.5 bg-[var(--bg-card)] border border-[var(--border-subtle)] rounded-xl space-y-1.5 text-xs"
                 >
-                  <div className="flex items-center justify-between text-[#888888] text-[11px]">
+                  <div className="flex items-center justify-between text-[var(--text-muted)] text-[11px]">
                     <span className="font-semibold text-white">Question {idx + 1}</span>
                   </div>
                   <p className="text-white font-medium">{item.question}</p>
-                  <div className="p-2.5 bg-[#0D0D0D] rounded-lg border border-[rgba(255,255,255,0.06)] text-[#A1A1A1]">
+                  <div className="p-2.5 bg-[#0D0D0D] rounded-lg border border-[var(--border-subtle)] text-[var(--text-muted)]">
                     <span className="text-[11px] text-white font-semibold block mb-0.5">Sample Answer:</span>
                     <p className="text-[11px] leading-relaxed">{item.expected_answer}</p>
                   </div>
@@ -906,21 +906,21 @@ export const ExperimentWorkspace: React.FC = () => {
             </div>
           ) : aiOutput?.type === 'bugs' ? (
             <div className="space-y-3 text-xs">
-              <p className="text-[#888888]">Static code verification review:</p>
+              <p className="text-[var(--text-muted)]">Static code verification review:</p>
               {aiOutput.data?.bugs?.map((bug: any, idx: number) => (
                 <div
                   key={idx}
-                  className="p-3 bg-[#141414] rounded-xl border border-[rgba(255,255,255,0.08)] space-y-1"
+                  className="p-3 bg-[var(--bg-card)] rounded-xl border border-[var(--border-subtle)] space-y-1"
                 >
                   <span className="font-semibold text-white">{bug.line || 'Inspection Item'}</span>
-                  <p className="text-[#A1A1A1]">{bug.description}</p>
-                  {bug.fix && <p className="text-[11px] font-mono text-[#D4D4D4]">Fix: {bug.fix}</p>}
+                  <p className="text-[var(--text-muted)]">{bug.description}</p>
+                  {bug.fix && <p className="text-[11px] font-mono text-[var(--text-main)]">Fix: {bug.fix}</p>}
                 </div>
               ))}
             </div>
           ) : null}
 
-          <div className="flex justify-end pt-3 border-t border-[rgba(255,255,255,0.08)]">
+          <div className="flex justify-end pt-3 border-t border-[var(--border-subtle)]">
             <Button variant="ghost" size="sm" onClick={() => setIsAiModalOpen(false)}>
               Close
             </Button>

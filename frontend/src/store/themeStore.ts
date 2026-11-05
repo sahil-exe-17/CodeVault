@@ -17,16 +17,20 @@ const getInitialTheme = (): Theme => {
   }
 }
 
-const applyTheme = (theme: Theme) => {
+export const applyTheme = (theme: Theme) => {
   const root = document.documentElement
   if (theme === 'light') {
+    root.classList.remove('dark')
+    root.classList.add('light')
     root.setAttribute('data-theme', 'light')
   } else {
+    root.classList.remove('light')
+    root.classList.add('dark')
     root.removeAttribute('data-theme')
   }
 }
 
-// Apply on startup
+// Apply on startup immediately
 applyTheme(getInitialTheme())
 
 export const useThemeStore = create<ThemeState>((set, get) => ({
@@ -43,4 +47,3 @@ export const useThemeStore = create<ThemeState>((set, get) => ({
     get().setTheme(next)
   },
 }))
-

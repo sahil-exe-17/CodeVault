@@ -154,7 +154,7 @@ export const GoogleAuthModal: React.FC<GoogleAuthModalProps> = ({
     <AnimatePresence>
       <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/85 backdrop-blur-md">
         {/* Solid Modal Card - No Bouncing / Tilt */}
-        <div className="relative w-full max-w-md bg-[#111116] border border-white/15 rounded-3xl p-7 sm:p-8 shadow-[0_25px_90px_rgba(0,0,0,0.95)] overflow-hidden text-[#F5F5F5]">
+        <div className="relative w-full max-w-md bg-[#111116] border border-[var(--border-subtle)] rounded-3xl p-7 sm:p-8 shadow-[0_25px_90px_rgba(0,0,0,0.95)] overflow-hidden text-[var(--text-main)]">
           {/* Subtle ambient light */}
           <div className="absolute -top-24 -left-24 w-52 h-52 bg-white/[0.04] rounded-full blur-3xl pointer-events-none" />
 
@@ -162,14 +162,14 @@ export const GoogleAuthModal: React.FC<GoogleAuthModalProps> = ({
           <button
             type="button"
             onClick={onClose}
-            className="absolute top-5 right-5 w-8 h-8 rounded-full bg-white/5 hover:bg-white/10 border border-white/10 flex items-center justify-center text-white/50 hover:text-white transition-all cursor-pointer"
+            className="absolute top-5 right-5 w-8 h-8 rounded-full bg-white/5 hover:bg-white/10 border border-[var(--border-subtle)] flex items-center justify-center text-white/50 hover:text-white transition-all cursor-pointer"
           >
             <X className="w-3.5 h-3.5" />
           </button>
 
           {/* Google Official G Logo */}
           <div className="flex flex-col items-center text-center space-y-2 mb-6">
-            <div className="w-12 h-12 rounded-2xl bg-[#181820] border border-white/15 flex items-center justify-center shadow-lg">
+            <div className="w-12 h-12 rounded-2xl bg-[#181820] border border-[var(--border-subtle)] flex items-center justify-center shadow-lg">
               <svg className="w-6 h-6" viewBox="0 0 24 24">
                 <path
                   fill="#4285F4"
@@ -199,7 +199,7 @@ export const GoogleAuthModal: React.FC<GoogleAuthModalProps> = ({
 
           {/* If Google Client ID is configured, show native GIS button */}
           {clientId.trim() && (
-            <div className="mb-5 p-4 rounded-2xl bg-[#171720] border border-white/10 flex flex-col items-center justify-center">
+            <div className="mb-5 p-4 rounded-2xl bg-[#171720] border border-[var(--border-subtle)] flex flex-col items-center justify-center">
               <div ref={googleBtnContainerRef} className="w-full flex justify-center" />
               <p className="text-[10px] font-mono text-white/40 mt-2 text-center">
                 Click above to use your browser's active Google account
@@ -238,7 +238,7 @@ export const GoogleAuthModal: React.FC<GoogleAuthModalProps> = ({
           </form>
 
           {/* Toggle Developer Google OAuth Client ID */}
-          <div className="mt-5 pt-3.5 border-t border-white/[0.08]">
+          <div className="mt-5 pt-3.5 border-t border-[var(--border-subtle)]">
             <button
               type="button"
               onClick={() => setShowConfig(!showConfig)}

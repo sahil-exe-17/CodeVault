@@ -10,7 +10,7 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
   const [isCollapsed, setIsCollapsed] = useState(false)
 
   return (
-    <div className="min-h-screen bg-[#090909] text-[#F5F5F5] flex">
+    <div className="min-h-screen bg-[var(--bg-card)] text-[var(--text-main)] flex">
       {/* Sidebar */}
       <Sidebar
         isCollapsed={isCollapsed}

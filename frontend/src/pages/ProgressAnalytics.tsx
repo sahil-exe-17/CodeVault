@@ -107,70 +107,70 @@ export const ProgressAnalytics: React.FC = () => {
         <h1 className="text-2xl font-bold font-['Manrope'] text-white">
           Progress Analytics
         </h1>
-        <p className="text-xs text-[#888888] mt-1">
+        <p className="text-xs text-[var(--text-muted)] mt-1">
           Detailed metrics tracking your experiment documentation, revision velocity, and practical quiz scores
         </p>
       </div>
 
       {/* 4 Stats Cards */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        <div className="bg-[#141414] border border-[rgba(255,255,255,0.08)] rounded-xl p-5 shadow-sm">
-          <div className="flex items-center justify-between text-[#888888] mb-2 text-xs">
+        <div className="bg-[var(--bg-card)] border border-[var(--border-subtle)] rounded-xl p-5 shadow-sm">
+          <div className="flex items-center justify-between text-[var(--text-muted)] mb-2 text-xs">
             <span>Total Experiments</span>
-            <BookOpen className="w-4 h-4 text-[#666666]" />
+            <BookOpen className="w-4 h-4 text-[var(--text-dim)]" />
           </div>
           <div className="text-3xl font-extrabold font-['Manrope'] text-white">
             {overview.total_experiments}
           </div>
-          <span className="text-[11px] text-[#888888] mt-1 block">Documented practicals</span>
+          <span className="text-[11px] text-[var(--text-muted)] mt-1 block">Documented practicals</span>
         </div>
 
-        <div className="bg-[#141414] border border-[rgba(255,255,255,0.08)] rounded-xl p-5 shadow-sm">
-          <div className="flex items-center justify-between text-[#888888] mb-2 text-xs">
+        <div className="bg-[var(--bg-card)] border border-[var(--border-subtle)] rounded-xl p-5 shadow-sm">
+          <div className="flex items-center justify-between text-[var(--text-muted)] mb-2 text-xs">
             <span>Revision Rate</span>
-            <CheckCircle2 className="w-4 h-4 text-[#666666]" />
+            <CheckCircle2 className="w-4 h-4 text-[var(--text-dim)]" />
           </div>
           <div className="text-3xl font-extrabold font-['Manrope'] text-white">
             {overview.revision_completion_percent}%
           </div>
-          <span className="text-[11px] text-[#888888] mt-1 block">Reviewed & verified</span>
+          <span className="text-[11px] text-[var(--text-muted)] mt-1 block">Reviewed & verified</span>
         </div>
 
-        <div className="bg-[#141414] border border-[rgba(255,255,255,0.08)] rounded-xl p-5 shadow-sm">
-          <div className="flex items-center justify-between text-[#888888] mb-2 text-xs">
+        <div className="bg-[var(--bg-card)] border border-[var(--border-subtle)] rounded-xl p-5 shadow-sm">
+          <div className="flex items-center justify-between text-[var(--text-muted)] mb-2 text-xs">
             <span>Avg Quiz Score</span>
-            <Trophy className="w-4 h-4 text-[#666666]" />
+            <Trophy className="w-4 h-4 text-[var(--text-dim)]" />
           </div>
           <div className="text-3xl font-extrabold font-['Manrope'] text-white">
             {overview.avg_quiz_score}%
           </div>
-          <span className="text-[11px] text-[#888888] mt-1 block">MCQ & viva retention</span>
+          <span className="text-[11px] text-[var(--text-muted)] mt-1 block">MCQ & viva retention</span>
         </div>
 
-        <div className="bg-[#141414] border border-[rgba(255,255,255,0.08)] rounded-xl p-5 shadow-sm">
-          <div className="flex items-center justify-between text-[#888888] mb-2 text-xs">
+        <div className="bg-[var(--bg-card)] border border-[var(--border-subtle)] rounded-xl p-5 shadow-sm">
+          <div className="flex items-center justify-between text-[var(--text-muted)] mb-2 text-xs">
             <span>Active Streak</span>
             <Zap className="w-4 h-4 text-white" />
           </div>
           <div className="text-3xl font-extrabold font-['Manrope'] text-white">
             5 Days
           </div>
-          <span className="text-[11px] text-[#888888] mt-1 block">Consistent daily pace</span>
+          <span className="text-[11px] text-[var(--text-muted)] mt-1 block">Consistent daily pace</span>
         </div>
       </div>
 
       {/* Charts Row: Weekly Activity (Area Chart) & Programming Languages (Donut) */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
         {/* Weekly Activity Area Chart (7 cols) */}
-        <div className="lg:col-span-7 bg-[#141414] border border-[rgba(255,255,255,0.08)] rounded-xl p-5 space-y-4">
+        <div className="lg:col-span-7 bg-[var(--bg-card)] border border-[var(--border-subtle)] rounded-xl p-5 space-y-4">
           <div className="flex items-center justify-between">
             <div>
               <h3 className="text-sm font-semibold font-['Manrope'] text-white">
                 Revision & Coding Activity
               </h3>
-              <p className="text-xs text-[#888888]">Daily practical events over the last 7 days</p>
+              <p className="text-xs text-[var(--text-muted)]">Daily practical events over the last 7 days</p>
             </div>
-            <span className="text-[10px] text-[#666666] font-mono">Area Curve</span>
+            <span className="text-[10px] text-[var(--text-dim)] font-mono">Area Curve</span>
           </div>
 
           <div className="w-full h-56">
@@ -189,9 +189,9 @@ export const ProgressAnalytics: React.FC = () => {
                     if (active && payload && payload.length) {
                       const d = payload[0].payload
                       return (
-                        <div className="bg-[#171717] border border-[rgba(255,255,255,0.15)] p-2 rounded text-xs shadow-xl">
+                        <div className="bg-[var(--bg-metric)] border border-[rgba(255,255,255,0.15)] p-2 rounded text-xs shadow-xl">
                           <span className="font-semibold text-white">{d.day_name}</span>
-                          <span className="text-[#888888] block text-[10px]">
+                          <span className="text-[var(--text-muted)] block text-[10px]">
                             Added: {d.added} • Revised: {d.revised}
                           </span>
                         </div>
@@ -207,12 +207,12 @@ export const ProgressAnalytics: React.FC = () => {
         </div>
 
         {/* Languages Distribution Donut (5 cols) */}
-        <div className="lg:col-span-5 bg-[#141414] border border-[rgba(255,255,255,0.08)] rounded-xl p-5 flex flex-col justify-between">
+        <div className="lg:col-span-5 bg-[var(--bg-card)] border border-[var(--border-subtle)] rounded-xl p-5 flex flex-col justify-between">
           <div>
             <h3 className="text-sm font-semibold font-['Manrope'] text-white mb-1">
               Programming Languages
             </h3>
-            <p className="text-xs text-[#888888] mb-2">Experiments by technical stack</p>
+            <p className="text-xs text-[var(--text-muted)] mb-2">Experiments by technical stack</p>
             <DonutChart data={byLanguage} />
           </div>
         </div>
@@ -221,15 +221,15 @@ export const ProgressAnalytics: React.FC = () => {
       {/* Charts Row: Quiz Performance Over Time & Subject Progress */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
         {/* Quiz Performance Line Chart (7 cols) */}
-        <div className="lg:col-span-7 bg-[#141414] border border-[rgba(255,255,255,0.08)] rounded-xl p-5 space-y-4">
+        <div className="lg:col-span-7 bg-[var(--bg-card)] border border-[var(--border-subtle)] rounded-xl p-5 space-y-4">
           <div className="flex items-center justify-between">
             <div>
               <h3 className="text-sm font-semibold font-['Manrope'] text-white">
                 Quiz & Viva Performance Over Time
               </h3>
-              <p className="text-xs text-[#888888]">Scoring percentage progression across attempts</p>
+              <p className="text-xs text-[var(--text-muted)]">Scoring percentage progression across attempts</p>
             </div>
-            <span className="text-[10px] text-[#666666] font-mono">0-100% Scale</span>
+            <span className="text-[10px] text-[var(--text-dim)] font-mono">0-100% Scale</span>
           </div>
 
           <div className="w-full h-52">
@@ -242,7 +242,7 @@ export const ProgressAnalytics: React.FC = () => {
                     if (active && payload && payload.length) {
                       const d = payload[0].payload
                       return (
-                        <div className="bg-[#171717] border border-[rgba(255,255,255,0.15)] p-2 rounded text-xs shadow-xl">
+                        <div className="bg-[var(--bg-metric)] border border-[rgba(255,255,255,0.15)] p-2 rounded text-xs shadow-xl">
                           <span className="font-semibold text-white">{d.quiz_title}</span>
                           <span className="text-white block text-sm font-bold font-mono">
                             {d.score_percent}%
@@ -260,12 +260,12 @@ export const ProgressAnalytics: React.FC = () => {
         </div>
 
         {/* Subject Revision Progress Bars (5 cols) */}
-        <div className="lg:col-span-5 bg-[#141414] border border-[rgba(255,255,255,0.08)] rounded-xl p-5 space-y-4">
+        <div className="lg:col-span-5 bg-[var(--bg-card)] border border-[var(--border-subtle)] rounded-xl p-5 space-y-4">
           <div>
             <h3 className="text-sm font-semibold font-['Manrope'] text-white">
               Revision Progress by Subject
             </h3>
-            <p className="text-xs text-[#888888]">Completion across curriculum</p>
+            <p className="text-xs text-[var(--text-muted)]">Completion across curriculum</p>
           </div>
 
           <div className="space-y-4 pt-1">
@@ -273,7 +273,7 @@ export const ProgressAnalytics: React.FC = () => {
               <div key={idx} className="space-y-1.5">
                 <div className="flex items-center justify-between text-xs">
                   <span className="text-white font-medium">{s.subject_name}</span>
-                  <span className="text-[#888888] font-mono">{s.progress_percent || 60}%</span>
+                  <span className="text-[var(--text-muted)] font-mono">{s.progress_percent || 60}%</span>
                 </div>
                 <div className="w-full h-2 bg-[#222222] rounded-full overflow-hidden">
                   <div
@@ -288,7 +288,7 @@ export const ProgressAnalytics: React.FC = () => {
       </div>
 
       {/* Weak Topics Table */}
-      <div className="bg-[#141414] border border-[rgba(255,255,255,0.08)] rounded-xl p-5 space-y-4">
+      <div className="bg-[var(--bg-card)] border border-[var(--border-subtle)] rounded-xl p-5 space-y-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             <AlertTriangle className="w-4 h-4 text-white" />
@@ -296,12 +296,12 @@ export const ProgressAnalytics: React.FC = () => {
               Areas Needing Attention
             </h3>
           </div>
-          <span className="text-xs text-[#888888]">Recommended for your next revision block</span>
+          <span className="text-xs text-[var(--text-muted)]">Recommended for your next revision block</span>
         </div>
 
         <div className="overflow-x-auto">
           <table className="w-full text-left text-xs">
-            <thead className="bg-[#111111] text-[#888888] font-mono text-[10px] uppercase border-b border-[rgba(255,255,255,0.06)]">
+            <thead className="bg-[var(--bg-card)] text-[var(--text-muted)] font-mono text-[10px] uppercase border-b border-[var(--border-subtle)]">
               <tr>
                 <th className="py-2.5 px-3">Topic / Algorithm</th>
                 <th className="py-2.5 px-3">Subject</th>
@@ -309,13 +309,13 @@ export const ProgressAnalytics: React.FC = () => {
                 <th className="py-2.5 px-3">Suggested Action</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-[rgba(255,255,255,0.04)] text-[#D4D4D4]">
+            <tbody className="divide-y divide-[rgba(255,255,255,0.04)] text-[var(--text-main)]">
               {weakTopics.map((topic, i) => (
                 <tr key={i} className="hover:bg-[rgba(255,255,255,0.02)]">
                   <td className="py-3 px-3 font-semibold text-white">{topic.topic}</td>
-                  <td className="py-3 px-3 text-[#A1A1A1]">{topic.subject}</td>
-                  <td className="py-3 px-3 font-mono text-[#888888]">{topic.revision_count}</td>
-                  <td className="py-3 px-3 text-[#888888]">{topic.suggestion}</td>
+                  <td className="py-3 px-3 text-[var(--text-muted)]">{topic.subject}</td>
+                  <td className="py-3 px-3 font-mono text-[var(--text-muted)]">{topic.revision_count}</td>
+                  <td className="py-3 px-3 text-[var(--text-muted)]">{topic.suggestion}</td>
                 </tr>
               ))}
             </tbody>

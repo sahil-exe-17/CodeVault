@@ -270,16 +270,16 @@ export const ScanPhotoModal: React.FC<ScanPhotoModalProps> = ({
         {!selectedFile ? (
           <div
             onClick={() => fileInputRef.current?.click()}
-            className="border-2 border-dashed border-[rgba(255,255,255,0.15)] hover:border-white/40 bg-[#111111]/40 rounded-xl p-8 flex flex-col items-center justify-center text-center gap-3 transition-colors cursor-pointer"
+            className="border-2 border-dashed border-[rgba(255,255,255,0.15)] hover:border-white/40 bg-[var(--bg-card)]/40 rounded-xl p-8 flex flex-col items-center justify-center text-center gap-3 transition-colors cursor-pointer"
           >
-            <div className="w-12 h-12 rounded-xl bg-[#171717] border border-[rgba(255,255,255,0.09)] flex items-center justify-center text-white shadow-md">
+            <div className="w-12 h-12 rounded-xl bg-[var(--bg-metric)] border border-[var(--border-subtle)] flex items-center justify-center text-white shadow-md">
               <Camera className="w-6 h-6" />
             </div>
             <div className="space-y-1">
               <h4 className="text-sm font-semibold text-white font-['Manrope']">
                 Take or Select Photo of Code
               </h4>
-              <p className="text-xs text-[#888888] max-w-sm leading-relaxed">
+              <p className="text-xs text-[var(--text-muted)] max-w-sm leading-relaxed">
                 Supports handwritten lab notebook pages, whiteboard algorithms, lab manual prints, or monitor screens.
               </p>
             </div>
@@ -298,9 +298,9 @@ export const ScanPhotoModal: React.FC<ScanPhotoModalProps> = ({
         ) : (
           <div className="space-y-4">
             {/* Photo Preview & Controls */}
-            <div className="flex flex-col sm:flex-row items-center gap-4 p-3.5 bg-[#111111] rounded-xl border border-[rgba(255,255,255,0.08)]">
+            <div className="flex flex-col sm:flex-row items-center gap-4 p-3.5 bg-[var(--bg-card)] rounded-xl border border-[var(--border-subtle)]">
               {previewUrl && (
-                <div className="w-20 h-20 rounded-lg overflow-hidden border border-[rgba(255,255,255,0.1)] bg-black shrink-0 relative group">
+                <div className="w-20 h-20 rounded-lg overflow-hidden border border-[var(--border-subtle)] bg-black shrink-0 relative group">
                   <img
                     src={previewUrl}
                     alt="Code snapshot"
@@ -317,7 +317,7 @@ export const ScanPhotoModal: React.FC<ScanPhotoModalProps> = ({
                     {(selectedFile.size / 1024).toFixed(0)} KB
                   </Badge>
                 </div>
-                <p className="text-[11px] text-[#888888]">
+                <p className="text-[11px] text-[var(--text-muted)]">
                   {isScanning
                     ? `${scanStatus || 'AI reading code...'} (${scanSeconds}s)`
                     : extractedData
@@ -355,7 +355,7 @@ export const ScanPhotoModal: React.FC<ScanPhotoModalProps> = ({
             {extractedData && (
               <div className="space-y-3 pt-1">
                 {/* AI Recommended Title & Language */}
-                <div className="p-3 bg-[#111116] rounded-xl border border-white/10 space-y-2">
+                <div className="p-3 bg-[#111116] rounded-xl border border-[var(--border-subtle)] space-y-2">
                   <div className="flex items-center justify-between">
                     <span className="text-[11px] font-semibold text-white/80 flex items-center gap-1.5">
                       <Sparkles className="w-3 h-3 text-white" />
@@ -374,7 +374,7 @@ export const ScanPhotoModal: React.FC<ScanPhotoModalProps> = ({
                         value={editedTitle}
                         onChange={(e) => setEditedTitle(e.target.value)}
                         placeholder="Experiment Title"
-                        className="bg-[#0c0c0e] text-white font-bold text-xs sm:text-sm px-3 py-1.5 rounded-lg border border-white/10 focus:border-white focus:outline-none w-full"
+                        className="bg-[#0c0c0e] text-white font-bold text-xs sm:text-sm px-3 py-1.5 rounded-lg border border-[var(--border-subtle)] focus:border-white focus:outline-none w-full"
                       />
                     </div>
                     <Select
@@ -397,9 +397,9 @@ export const ScanPhotoModal: React.FC<ScanPhotoModalProps> = ({
 
                 {/* Transcribed Code Editor */}
                 <div className="space-y-1">
-                  <div className="flex items-center justify-between text-[11px] text-[#888888]">
+                  <div className="flex items-center justify-between text-[11px] text-[var(--text-muted)]">
                     <span>Transcribed Source Code:</span>
-                    <span className="font-mono text-[10px] text-[#666666]">
+                    <span className="font-mono text-[10px] text-[var(--text-dim)]">
                       {editedCode.split('\n').length} lines
                     </span>
                   </div>
@@ -407,13 +407,13 @@ export const ScanPhotoModal: React.FC<ScanPhotoModalProps> = ({
                     rows={9}
                     value={editedCode}
                     onChange={(e) => setEditedCode(e.target.value)}
-                    className="w-full bg-[#090909] text-[#F5F5F5] font-mono text-xs rounded-xl border border-[rgba(255,255,255,0.09)] p-3 focus:border-white focus:outline-none leading-relaxed resize-none shadow-inner"
+                    className="w-full bg-[var(--bg-card)] text-[var(--text-main)] font-mono text-xs rounded-xl border border-[var(--border-subtle)] p-3 focus:border-white focus:outline-none leading-relaxed resize-none shadow-inner"
                   />
                 </div>
 
                 {/* Aim & Algorithmic Notes */}
                 {extractedData.aim && (
-                  <div className="p-3 bg-[#111111] rounded-lg border border-[rgba(255,255,255,0.06)] text-xs text-[#A1A1A1] space-y-1">
+                  <div className="p-3 bg-[var(--bg-card)] rounded-lg border border-[var(--border-subtle)] text-xs text-[var(--text-muted)] space-y-1">
                     <span className="text-white font-medium text-[11px] flex items-center gap-1">
                       <Lightbulb className="w-3 h-3 text-white" />
                       Inferred Academic Aim:
@@ -427,7 +427,7 @@ export const ScanPhotoModal: React.FC<ScanPhotoModalProps> = ({
         )}
 
         {/* Modal Footer */}
-        <div className="flex items-center justify-end gap-2 pt-3 border-t border-[rgba(255,255,255,0.08)]">
+        <div className="flex items-center justify-end gap-2 pt-3 border-t border-[var(--border-subtle)]">
           <Button variant="ghost" size="sm" onClick={onClose}>
             Cancel
           </Button>

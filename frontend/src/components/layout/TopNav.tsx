@@ -40,13 +40,13 @@ export const TopNav: React.FC = () => {
 
   return (
     <>
-      <header className="sticky top-0 z-30 h-14 bg-[#090909]/85 backdrop-blur-md border-b border-[rgba(255,255,255,0.09)] px-6 flex items-center justify-between select-none">
+      <header className="sticky top-0 z-30 h-14 bg-[var(--bg-card)]/85 backdrop-blur-md border-b border-[var(--border-subtle)] px-6 flex items-center justify-between select-none">
         {/* Left Title & Breadcrumbs */}
         <div className="flex flex-col">
-          <span className="text-[10px] text-[#666666] uppercase tracking-wider font-mono">
+          <span className="text-[10px] text-[var(--text-dim)] uppercase tracking-wider font-mono">
             {crumb}
           </span>
-          <h2 className="text-base font-bold text-[#F5F5F5] font-['Manrope'] leading-tight">
+          <h2 className="text-base font-bold text-[var(--text-main)] font-['Manrope'] leading-tight">
             {title}
           </h2>
         </div>
@@ -54,15 +54,15 @@ export const TopNav: React.FC = () => {
         {/* Center Search Bar */}
         <div className="flex-1 max-w-md mx-6">
           <form onSubmit={handleSearchSubmit} className="relative">
-            <Search className="w-3.5 h-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-[#666666]" />
+            <Search className="w-3.5 h-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-[var(--text-dim)]" />
             <input
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="Search experiments, topics, or algorithms... (Press Enter)"
-              className="w-full bg-[#111111] text-xs text-[#F5F5F5] placeholder-[#555555] rounded-lg pl-9 pr-8 py-1.5 border border-[rgba(255,255,255,0.08)] focus:border-white focus:outline-none transition-colors"
+              className="w-full bg-[var(--bg-card)] text-xs text-[var(--text-main)] placeholder-[#555555] rounded-lg pl-9 pr-8 py-1.5 border border-[var(--border-subtle)] focus:border-white focus:outline-none transition-colors"
             />
-            <span className="absolute right-2.5 top-1/2 -translate-y-1/2 text-[10px] text-[#555555] font-mono border border-[rgba(255,255,255,0.08)] px-1 rounded">
+            <span className="absolute right-2.5 top-1/2 -translate-y-1/2 text-[10px] text-[var(--text-dim)] font-mono border border-[var(--border-subtle)] px-1 rounded">
               ⌘K
             </span>
           </form>
@@ -74,7 +74,7 @@ export const TopNav: React.FC = () => {
             variant="ghost"
             size="sm"
             onClick={() => navigate('/ai/explain')}
-            className="hidden sm:flex text-xs text-[#A1A1A1] hover:text-white gap-1.5"
+            className="hidden sm:flex text-xs text-[var(--text-muted)] hover:text-white gap-1.5"
           >
             <Sparkles className="w-3.5 h-3.5 text-white" />
             <span>AI Explainer</span>
@@ -92,7 +92,7 @@ export const TopNav: React.FC = () => {
           <div className="h-4 w-[1px] bg-[rgba(255,255,255,0.09)] mx-1" />
 
           <button
-            className="p-1.5 text-[#666666] hover:text-white rounded-lg transition-colors relative"
+            className="p-1.5 text-[var(--text-dim)] hover:text-white rounded-lg transition-colors relative"
             title="Notifications"
           >
             <Bell className="w-4 h-4" />

@@ -67,7 +67,7 @@ export const ExperimentCard: React.FC<ExperimentCardProps> = ({
   return (
     <div
       onClick={() => navigate(`/experiments/${experiment.id}`)}
-      className="group relative bg-[#171717] border border-[rgba(255,255,255,0.09)] hover:border-[rgba(255,255,255,0.22)] rounded-xl p-5 flex flex-col justify-between transition-all duration-200 cursor-pointer shadow-sm hover:shadow-md"
+      className="group relative bg-[var(--bg-metric)] border border-[var(--border-subtle)] hover:border-[rgba(255,255,255,0.22)] rounded-xl p-5 flex flex-col justify-between transition-all duration-200 cursor-pointer shadow-sm hover:shadow-md"
     >
       <div>
         {/* Top Badges & Actions */}
@@ -87,7 +87,7 @@ export const ExperimentCard: React.FC<ExperimentCardProps> = ({
               </Badge>
             )}
             {experiment.notebook_pdf_url && (
-              <Badge variant="outline" size="sm" className="text-[#D4D4D4] border-white/20">
+              <Badge variant="outline" size="sm" className="text-[var(--text-main)] border-white/20">
                  Notebook
               </Badge>
             )}
@@ -97,7 +97,7 @@ export const ExperimentCard: React.FC<ExperimentCardProps> = ({
             <button
               onClick={handleToggleBookmark}
               className={`p-1 rounded transition-colors ${
-                isBookmarked ? 'text-white' : 'text-[#666666] hover:text-[#A1A1A1]'
+                isBookmarked ? 'text-white' : 'text-[var(--text-dim)] hover:text-[var(--text-muted)]'
               }`}
               title="Bookmark experiment"
             >
@@ -111,7 +111,7 @@ export const ExperimentCard: React.FC<ExperimentCardProps> = ({
                   e.stopPropagation()
                   setShowMenu(!showMenu)
                 }}
-                className="p-1 text-[#666666] hover:text-white rounded transition-colors"
+                className="p-1 text-[var(--text-dim)] hover:text-white rounded transition-colors"
               >
                 <MoreVertical className="w-3.5 h-3.5" />
               </button>
@@ -119,14 +119,14 @@ export const ExperimentCard: React.FC<ExperimentCardProps> = ({
               {showMenu && (
                 <div
                   onClick={(e) => e.stopPropagation()}
-                  className="absolute right-0 top-6 w-32 bg-[#111111] border border-[rgba(255,255,255,0.12)] rounded-lg shadow-xl py-1 z-20"
+                  className="absolute right-0 top-6 w-32 bg-[var(--bg-card)] border border-[rgba(255,255,255,0.12)] rounded-lg shadow-xl py-1 z-20"
                 >
                   <button
                     onClick={() => {
                       setShowMenu(false)
                       navigate(`/experiments/${experiment.id}`)
                     }}
-                    className="w-full text-left px-3 py-1.5 text-xs text-[#F5F5F5] hover:bg-[rgba(255,255,255,0.06)] flex items-center gap-2"
+                    className="w-full text-left px-3 py-1.5 text-xs text-[var(--text-main)] hover:bg-[rgba(255,255,255,0.06)] flex items-center gap-2"
                   >
                     <ArrowUpRight className="w-3.5 h-3.5" /> Open
                   </button>
@@ -135,17 +135,17 @@ export const ExperimentCard: React.FC<ExperimentCardProps> = ({
                       setShowMenu(false)
                       navigate(`/ai/explain?id=${experiment.id}`)
                     }}
-                    className="w-full text-left px-3 py-1.5 text-xs text-[#F5F5F5] hover:bg-[rgba(255,255,255,0.06)] flex items-center gap-2"
+                    className="w-full text-left px-3 py-1.5 text-xs text-[var(--text-main)] hover:bg-[rgba(255,255,255,0.06)] flex items-center gap-2"
                   >
                     <Sparkles className="w-3.5 h-3.5" /> Explain
                   </button>
                   <button
                     onClick={handleDuplicate}
-                    className="w-full text-left px-3 py-1.5 text-xs text-[#F5F5F5] hover:bg-[rgba(255,255,255,0.06)] flex items-center gap-2"
+                    className="w-full text-left px-3 py-1.5 text-xs text-[var(--text-main)] hover:bg-[rgba(255,255,255,0.06)] flex items-center gap-2"
                   >
                     <Copy className="w-3.5 h-3.5" /> Duplicate
                   </button>
-                  <div className="h-[1px] bg-[rgba(255,255,255,0.08)] my-1" />
+                  <div className="h-[1px] bg-[var(--bg-metric)] my-1" />
                   <button
                     onClick={handleDelete}
                     className="w-full text-left px-3 py-1.5 text-xs text-neutral-300 hover:text-white hover:bg-[rgba(255,255,255,0.06)] flex items-center gap-2"
@@ -159,13 +159,13 @@ export const ExperimentCard: React.FC<ExperimentCardProps> = ({
         </div>
 
         {/* Title */}
-        <h3 className="text-sm font-semibold text-[#F5F5F5] font-['Manrope'] group-hover:text-white transition-colors mb-1 line-clamp-1">
+        <h3 className="text-sm font-semibold text-[var(--text-main)] font-['Manrope'] group-hover:text-white transition-colors mb-1 line-clamp-1">
           {experiment.title}
         </h3>
 
         {/* Subject & Topic */}
-        <div className="flex items-center gap-1.5 text-xs text-[#A1A1A1] mb-2 truncate">
-          <span className="text-[#666666] font-medium">{subjectName}</span>
+        <div className="flex items-center gap-1.5 text-xs text-[var(--text-muted)] mb-2 truncate">
+          <span className="text-[var(--text-dim)] font-medium">{subjectName}</span>
           {experiment.topic && (
             <>
               <span className="text-[#444444]">•</span>
@@ -176,16 +176,16 @@ export const ExperimentCard: React.FC<ExperimentCardProps> = ({
 
         {/* Aim snippet */}
         {experiment.aim && (
-          <p className="text-xs text-[#777777] line-clamp-2 leading-relaxed mb-4">
+          <p className="text-xs text-[var(--text-dim)] line-clamp-2 leading-relaxed mb-4">
             {experiment.aim}
           </p>
         )}
       </div>
 
       {/* Footer Info */}
-      <div className="pt-3 border-t border-[rgba(255,255,255,0.06)] flex items-center justify-between text-[11px] text-[#666666] font-mono">
+      <div className="pt-3 border-t border-[var(--border-subtle)] flex items-center justify-between text-[11px] text-[var(--text-dim)] font-mono">
         <span>{formattedDate}</span>
-        <div className="flex items-center gap-2 text-[#888888] group-hover:text-white transition-colors">
+        <div className="flex items-center gap-2 text-[var(--text-muted)] group-hover:text-white transition-colors">
           <span>Open Workspace</span>
           <ArrowUpRight className="w-3 h-3" />
         </div>

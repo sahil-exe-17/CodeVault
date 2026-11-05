@@ -114,7 +114,7 @@ export const AuthPage: React.FC = () => {
 
   return (
     <div
-      className="relative min-h-screen w-full bg-[#050507] text-[#F5F5F5] flex items-center justify-center p-4 overflow-hidden select-none"
+      className="relative min-h-screen w-full bg-[#050507] text-[var(--text-main)] flex items-center justify-center p-4 overflow-hidden select-none"
     >
       {/* Dark Ambient Atmosphere Layer */}
       <div className="absolute inset-0 bg-[#050507] pointer-events-none" />
@@ -133,7 +133,7 @@ export const AuthPage: React.FC = () => {
         {/* Top Header Controls: Segmented Toggle + Close Button */}
         <div className="flex items-center justify-between mb-7">
           {/* Segmented Pill Switcher (Sign up / Sign in) */}
-          <div className="flex items-center p-1 bg-[#1a1a20]/80 border border-white/[0.08] rounded-full backdrop-blur-md">
+          <div className="flex items-center p-1 bg-[#1a1a20]/80 border border-[var(--border-subtle)] rounded-full backdrop-blur-md">
             <button
               type="button"
               onClick={() => setMode('signup')}
@@ -144,7 +144,7 @@ export const AuthPage: React.FC = () => {
               {mode === 'signup' && (
                 <motion.div
                   layoutId="active-pill"
-                  className="absolute inset-0 bg-[#282830] border border-white/15 rounded-full shadow-sm"
+                  className="absolute inset-0 bg-[#282830] border border-[var(--border-subtle)] rounded-full shadow-sm"
                   transition={{ type: 'spring', stiffness: 400, damping: 30 }}
                 />
               )}
@@ -161,7 +161,7 @@ export const AuthPage: React.FC = () => {
               {mode === 'signin' && (
                 <motion.div
                   layoutId="active-pill"
-                  className="absolute inset-0 bg-[#282830] border border-white/15 rounded-full shadow-sm"
+                  className="absolute inset-0 bg-[#282830] border border-[var(--border-subtle)] rounded-full shadow-sm"
                   transition={{ type: 'spring', stiffness: 400, damping: 30 }}
                 />
               )}
@@ -275,7 +275,7 @@ export const AuthPage: React.FC = () => {
                 icon: '⏳',
               })
             }}
-            className="w-full h-11 px-4 rounded-xl bg-[#1a1a20]/80 hover:bg-[#23232c] text-white/90 border border-white/[0.08] hover:border-white/15 text-xs font-medium flex items-center justify-center gap-2.5 transition-all cursor-pointer shadow-sm active:scale-[0.99] group"
+            className="w-full h-11 px-4 rounded-xl bg-[#1a1a20]/80 hover:bg-[#23232c] text-white/90 border border-[var(--border-subtle)] hover:border-[var(--border-subtle)] text-xs font-medium flex items-center justify-center gap-2.5 transition-all cursor-pointer shadow-sm active:scale-[0.99] group"
           >
             <svg className="w-4 h-4 shrink-0" viewBox="0 0 24 24">
               <path
@@ -296,7 +296,7 @@ export const AuthPage: React.FC = () => {
               />
             </svg>
             <span className="font-medium text-white/90">Sign in with Google</span>
-            <span className="ml-1.5 px-2 py-0.5 text-[10px] font-mono tracking-wide rounded-full bg-white/10 text-white/60 border border-white/10">
+            <span className="ml-1.5 px-2 py-0.5 text-[10px] font-mono tracking-wide rounded-full bg-white/10 text-white/60 border border-[var(--border-subtle)]">
               Coming Soon
             </span>
           </button>

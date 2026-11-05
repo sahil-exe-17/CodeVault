@@ -255,7 +255,7 @@ export const AllExperiments: React.FC = () => {
           <h1 className="text-2xl font-bold font-['Manrope'] text-white">
             All Experiments
           </h1>
-          <p className="text-xs text-[#888888] mt-1">
+          <p className="text-xs text-[var(--text-muted)] mt-1">
             {filteredExperiments.length} experiments organized across subjects
           </p>
         </div>
@@ -289,17 +289,17 @@ export const AllExperiments: React.FC = () => {
       </div>
 
       {/* Filter and Search Bar */}
-      <div className="bg-[#141414] border border-[rgba(255,255,255,0.08)] rounded-xl p-3.5 space-y-3">
+      <div className="bg-[var(--bg-card)] border border-[var(--border-subtle)] rounded-xl p-3.5 space-y-3">
         <div className="flex flex-col md:flex-row items-center gap-3">
           {/* Search Input */}
           <div className="relative flex-1 w-full">
-            <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-[#666666]" />
+            <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-[var(--text-dim)]" />
             <input
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="Search experiments by title, topic, or code..."
-              className="w-full bg-[#111111] text-xs text-[#F5F5F5] placeholder-[#555555] rounded-lg pl-9 pr-3 py-2 border border-[rgba(255,255,255,0.08)] focus:border-white focus:outline-none"
+              className="w-full bg-[var(--bg-card)] text-xs text-[var(--text-main)] placeholder-[#555555] rounded-lg pl-9 pr-3 py-2 border border-[var(--border-subtle)] focus:border-white focus:outline-none"
             />
           </div>
 
@@ -368,7 +368,7 @@ export const AllExperiments: React.FC = () => {
               className={`p-2 rounded-lg border transition-colors flex items-center gap-1.5 text-xs ${
                 bookmarkedOnly
                   ? 'bg-white text-black border-white font-semibold'
-                  : 'bg-[#111111] text-[#888888] border-[rgba(255,255,255,0.09)] hover:text-white'
+                  : 'bg-[var(--bg-card)] text-[var(--text-muted)] border-[var(--border-subtle)] hover:text-white'
               }`}
               title="Filter by bookmarks"
             >
@@ -376,11 +376,11 @@ export const AllExperiments: React.FC = () => {
             </button>
 
             {/* View Grid/List toggle */}
-            <div className="flex items-center border border-[rgba(255,255,255,0.09)] rounded-lg p-0.5 bg-[#111111]">
+            <div className="flex items-center border border-[var(--border-subtle)] rounded-lg p-0.5 bg-[var(--bg-card)]">
               <button
                 onClick={() => setViewMode('grid')}
                 className={`p-1.5 rounded transition-colors ${
-                  viewMode === 'grid' ? 'bg-[#222222] text-white' : 'text-[#666666] hover:text-white'
+                  viewMode === 'grid' ? 'bg-[#222222] text-white' : 'text-[var(--text-dim)] hover:text-white'
                 }`}
                 title="Grid View"
               >
@@ -389,7 +389,7 @@ export const AllExperiments: React.FC = () => {
               <button
                 onClick={() => setViewMode('list')}
                 className={`p-1.5 rounded transition-colors ${
-                  viewMode === 'list' ? 'bg-[#222222] text-white' : 'text-[#666666] hover:text-white'
+                  viewMode === 'list' ? 'bg-[#222222] text-white' : 'text-[var(--text-dim)] hover:text-white'
                 }`}
                 title="List View"
               >
@@ -424,9 +424,9 @@ export const AllExperiments: React.FC = () => {
         </div>
       ) : (
         /* List View */
-        <div className="bg-[#141414] border border-[rgba(255,255,255,0.08)] rounded-xl overflow-hidden">
+        <div className="bg-[var(--bg-card)] border border-[var(--border-subtle)] rounded-xl overflow-hidden">
           <table className="w-full text-left text-xs">
-            <thead className="bg-[#111111] text-[#888888] uppercase tracking-wider font-mono text-[10px] border-b border-[rgba(255,255,255,0.06)]">
+            <thead className="bg-[var(--bg-card)] text-[var(--text-muted)] uppercase tracking-wider font-mono text-[10px] border-b border-[var(--border-subtle)]">
               <tr>
                 <th className="py-3 px-4">#</th>
                 <th className="py-3 px-4">Title</th>
@@ -437,20 +437,20 @@ export const AllExperiments: React.FC = () => {
                 <th className="py-3 px-4 text-right">Actions</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-[rgba(255,255,255,0.04)] text-[#D4D4D4]">
+            <tbody className="divide-y divide-[rgba(255,255,255,0.04)] text-[var(--text-main)]">
               {filteredExperiments.map((exp) => (
                 <tr
                   key={exp.id}
                   onClick={() => navigate(`/experiments/${exp.id}`)}
                   className="hover:bg-[rgba(255,255,255,0.03)] cursor-pointer transition-colors"
                 >
-                  <td className="py-3.5 px-4 font-mono text-[#666666]">
+                  <td className="py-3.5 px-4 font-mono text-[var(--text-dim)]">
                     {exp.experiment_number || 'EXP'}
                   </td>
                   <td className="py-3.5 px-4 font-semibold text-white">
                     {exp.title}
                   </td>
-                  <td className="py-3.5 px-4 text-[#A1A1A1]">
+                  <td className="py-3.5 px-4 text-[var(--text-muted)]">
                     {exp.subjects?.name || 'Computer Science'}
                   </td>
                   <td className="py-3.5 px-4">
@@ -458,7 +458,7 @@ export const AllExperiments: React.FC = () => {
                       {exp.language}
                     </Badge>
                   </td>
-                  <td className="py-3.5 px-4 font-mono text-[#888888]">
+                  <td className="py-3.5 px-4 font-mono text-[var(--text-muted)]">
                     {exp.time_complexity || 'O(n)'}
                   </td>
                   <td className="py-3.5 px-4">
@@ -468,12 +468,12 @@ export const AllExperiments: React.FC = () => {
                           <CheckCircle2 className="w-3 h-3 text-white" /> Revised
                         </span>
                       ) : (
-                        <span className="inline-flex items-center gap-1 text-[11px] text-[#666666]">
+                        <span className="inline-flex items-center gap-1 text-[11px] text-[var(--text-dim)]">
                           <Clock className="w-3 h-3" /> Pending
                         </span>
                       )}
                       {exp.notebook_pdf_url && (
-                        <span className="text-[10px] px-1.5 py-0.5 rounded font-mono bg-white/10 text-[#D4D4D4] border border-white/20" title="Practical Notebook PDF Backed Up">
+                        <span className="text-[10px] px-1.5 py-0.5 rounded font-mono bg-white/10 text-[var(--text-main)] border border-white/20" title="Practical Notebook PDF Backed Up">
                            PDF
                         </span>
                       )}
@@ -485,7 +485,7 @@ export const AllExperiments: React.FC = () => {
                         e.stopPropagation()
                         navigate(`/experiments/${exp.id}`)
                       }}
-                      className="text-xs text-[#888888] hover:text-white transition-colors"
+                      className="text-xs text-[var(--text-muted)] hover:text-white transition-colors"
                     >
                       Open →
                     </button>

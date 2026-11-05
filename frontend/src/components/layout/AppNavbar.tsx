@@ -39,34 +39,34 @@ export const AppNavbar: React.FC<AppNavbarProps> = ({
     <header
       ref={navRef}
       onMouseMove={handleMouseMove}
-      className="sticky top-0 z-40 w-full bg-[#07070a]/75 backdrop-blur-2xl border-b border-white/[0.08] select-none transition-all"
+      className="sticky top-0 z-40 w-full bg-[var(--bg-header)] backdrop-blur-2xl border-b border-[var(--border-subtle)] select-none transition-colors duration-200"
     >
       {/* 1. Dynamic Cursor Spotlight across Top Bar */}
       <div
-        className="absolute top-0 bottom-0 pointer-events-none transition-opacity duration-300 w-96 -translate-x-1/2 opacity-30 blur-2xl"
+        className="absolute top-0 bottom-0 pointer-events-none transition-opacity duration-300 w-96 -translate-x-1/2 opacity-20 blur-2xl"
         style={{
           left: `${mousePos.x}px`,
-          background: 'radial-gradient(ellipse at top, rgba(244, 63, 94, 0.25), rgba(56, 189, 248, 0.2), transparent 70%)',
+          background: 'radial-gradient(ellipse at top, rgba(244, 63, 94, 0.2), rgba(56, 189, 248, 0.15), transparent 70%)',
         }}
       />
 
       {/* 2. Traveling Animated Laser Beam along the bottom edge */}
       <div className="absolute bottom-0 left-0 right-0 h-[1.5px] overflow-hidden pointer-events-none">
-        <div className="w-[200%] h-full bg-gradient-to-r from-transparent via-pink-500 via-amber-300 via-emerald-400 via-sky-400 to-transparent animate-[laser-pan_6s_linear_infinite] opacity-60" />
+        <div className="w-[200%] h-full bg-gradient-to-r from-transparent via-pink-500 via-amber-300 via-emerald-400 via-sky-400 to-transparent animate-[laser-pan_6s_linear_infinite] opacity-50" />
       </div>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 h-15 flex items-center justify-between gap-4 relative z-10">
         {/* Brand */}
         <div className="flex items-center gap-4">
           <Link to="/subjects" className="flex items-center gap-2.5 group">
-            <div className="w-8 h-8 rounded-xl bg-white/[0.08] border border-white/15 p-1 flex items-center justify-center group-hover:border-white/40 group-hover:bg-white/[0.12] transition-all shadow-sm">
+            <div className="w-8 h-8 rounded-xl bg-[var(--bg-metric)] border border-[var(--border-subtle)] p-1 flex items-center justify-center group-hover:border-[var(--border-hover)] transition-all shadow-sm">
               <img
                 src="/logo-tight.png"
                 alt="CodeVault Logo"
                 className="w-full h-full object-contain filter drop-shadow-[0_0_8px_rgba(255,255,255,0.45)]"
               />
             </div>
-            <span className="font-bold text-base tracking-tight text-white font-['Manrope'] group-hover:opacity-90 transition-opacity">
+            <span className="font-bold text-base tracking-tight text-[var(--text-main)] font-['Manrope'] group-hover:opacity-90 transition-opacity">
               CodeVault
             </span>
           </Link>
@@ -81,10 +81,10 @@ export const AppNavbar: React.FC<AppNavbarProps> = ({
               whileTap={{ scale: 0.97 }}
               type="button"
               onClick={onAddSubject}
-              className="relative group overflow-hidden px-4 py-2 rounded-xl bg-white hover:bg-neutral-100 text-black text-xs font-semibold flex items-center gap-2 shadow-[0_0_25px_rgba(255,255,255,0.22)] cursor-pointer transition-all duration-200"
+              className="relative group overflow-hidden px-4 py-2 rounded-xl bg-[var(--btn-cta-bg)] text-[var(--btn-cta-text)] text-xs font-semibold flex items-center gap-2 shadow-sm cursor-pointer transition-all duration-200"
             >
               {/* Shimmer light sweep */}
-              <div className="absolute inset-0 -translate-x-full group-hover:animate-[shimmer_1.5s_infinite] bg-gradient-to-r from-transparent via-black/10 to-transparent" />
+              <div className="absolute inset-0 -translate-x-full group-hover:animate-[shimmer_1.5s_infinite] bg-gradient-to-r from-transparent via-white/10 to-transparent" />
               <span className="tracking-tight font-medium">+ Add Subject</span>
             </motion.button>
           )}
@@ -94,7 +94,7 @@ export const AppNavbar: React.FC<AppNavbarProps> = ({
             type="button"
             onClick={toggleTheme}
             title={theme === 'dark' ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
-            className="w-8 h-8 flex items-center justify-center rounded-xl border border-white/10 hover:border-white/25 bg-white/[0.05] hover:bg-white/[0.10] transition-all cursor-pointer text-white/60 hover:text-white"
+            className="w-8 h-8 flex items-center justify-center rounded-xl border border-[var(--border-subtle)] hover:border-[var(--border-hover)] bg-[var(--bg-metric)] hover:bg-[var(--bg-card-hover)] transition-all cursor-pointer text-[var(--text-muted)] hover:text-[var(--text-main)] shadow-sm"
           >
             {theme === 'dark'
               ? <Sun className="w-3.5 h-3.5" />
@@ -107,11 +107,11 @@ export const AppNavbar: React.FC<AppNavbarProps> = ({
             <button
               type="button"
               onClick={() => setShowUserMenu(!showUserMenu)}
-              className="flex items-center gap-2.5 px-2.5 py-1.5 rounded-xl bg-[#14141a]/90 hover:bg-[#1e1e26] border border-white/10 hover:border-white/20 transition-all cursor-pointer shadow-sm group"
+              className="flex items-center gap-2.5 px-2.5 py-1.5 rounded-xl bg-[var(--bg-card)] hover:bg-[var(--bg-card-hover)] border border-[var(--border-subtle)] hover:border-[var(--border-hover)] transition-all cursor-pointer shadow-sm group"
             >
               {/* Avatar / Initials with glowing border */}
               <div className="relative">
-                <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-white/20 via-white/10 to-transparent border border-white/20 flex items-center justify-center text-xs font-mono font-bold text-white shadow-sm">
+                <div className="w-7 h-7 rounded-lg bg-[var(--bg-metric)] border border-[var(--border-subtle)] flex items-center justify-center text-xs font-mono font-bold text-[var(--text-main)] shadow-sm">
                   {user?.avatar_url ? (
                     <img
                       src={user.avatar_url}
@@ -125,15 +125,15 @@ export const AppNavbar: React.FC<AppNavbarProps> = ({
               </div>
 
               <div className="hidden sm:block text-left">
-                <p className="text-xs font-medium text-white/90 leading-tight max-w-[110px] truncate">
+                <p className="text-xs font-medium text-[var(--text-main)] leading-tight max-w-[110px] truncate">
                   {displayName}
                 </p>
-                <p className="text-[10px] font-mono text-white/40 leading-none mt-0.5">
+                <p className="text-[10px] font-mono text-[var(--text-dim)] leading-none mt-0.5">
                   {user?.semester || 'Semester 4'}
                 </p>
               </div>
 
-              <ChevronDown className="w-3.5 h-3.5 text-white/40 group-hover:text-white transition-transform duration-200" />
+              <ChevronDown className="w-3.5 h-3.5 text-[var(--text-dim)] group-hover:text-[var(--text-main)] transition-transform duration-200" />
             </button>
 
             {/* Dropdown Menu */}
@@ -149,14 +149,14 @@ export const AppNavbar: React.FC<AppNavbarProps> = ({
                     animate={{ opacity: 1, scale: 1, y: 0 }}
                     exit={{ opacity: 0, scale: 0.95, y: -8 }}
                     transition={{ type: 'spring', damping: 25, stiffness: 350 }}
-                    className="absolute right-0 top-12 w-64 bg-[#111116]/95 backdrop-blur-2xl border border-white/15 rounded-2xl shadow-[0_20px_60px_rgba(0,0,0,0.85)] p-2 z-50 text-xs text-[#F5F5F5] overflow-hidden"
+                    className="absolute right-0 top-12 w-64 bg-[var(--bg-card)] backdrop-blur-2xl border border-[var(--border-subtle)] rounded-2xl shadow-xl p-2 z-50 text-xs text-[var(--text-main)] overflow-hidden"
                   >
                     {/* User Info Header */}
-                    <div className="px-3 py-2.5 bg-white/[0.03] rounded-xl border border-white/[0.06] mb-1.5">
-                      <p className="font-semibold text-white truncate text-sm">{displayName}</p>
-                      <p className="text-[11px] text-white/45 truncate font-mono mt-0.5">{user?.email}</p>
+                    <div className="px-3 py-2.5 bg-[var(--bg-metric)] rounded-xl border border-[var(--border-subtle)] mb-1.5">
+                      <p className="font-semibold text-[var(--text-main)] truncate text-sm">{displayName}</p>
+                      <p className="text-[11px] text-[var(--text-muted)] truncate font-mono mt-0.5">{user?.email}</p>
                       {user?.college && (
-                        <p className="text-[10px] text-white/35 truncate mt-1">
+                        <p className="text-[10px] text-[var(--text-dim)] truncate mt-1">
                           {user.college} {user.department ? `• ${user.department}` : ''}
                         </p>
                       )}
@@ -169,7 +169,7 @@ export const AppNavbar: React.FC<AppNavbarProps> = ({
                           setShowUserMenu(false)
                           window.dispatchEvent(new CustomEvent('codevault:replay-intro'))
                         }}
-                        className="w-full text-left px-3 py-2 rounded-lg text-white/70 hover:text-white hover:bg-white/[0.07] flex items-center gap-2.5 cursor-pointer transition-colors"
+                        className="w-full text-left px-3 py-2 rounded-lg text-[var(--text-muted)] hover:text-[var(--text-main)] hover:bg-[var(--bg-metric)] flex items-center gap-2.5 cursor-pointer transition-colors"
                       >
                         <Sparkles className="w-3.5 h-3.5 text-cyan-400" />
                         <span>Replay Startup Intro</span>
@@ -181,16 +181,16 @@ export const AppNavbar: React.FC<AppNavbarProps> = ({
                           setShowUserMenu(false)
                           navigate('/onboarding')
                         }}
-                        className="w-full text-left px-3 py-2 rounded-lg text-white/70 hover:text-white hover:bg-white/[0.07] flex items-center gap-2.5 cursor-pointer transition-colors"
+                        className="w-full text-left px-3 py-2 rounded-lg text-[var(--text-muted)] hover:text-[var(--text-main)] hover:bg-[var(--bg-metric)] flex items-center gap-2.5 cursor-pointer transition-colors"
                       >
-                        <UserIcon className="w-3.5 h-3.5 text-white/50" />
+                        <UserIcon className="w-3.5 h-3.5 text-[var(--text-dim)]" />
                         <span>Academic Profile</span>
                       </button>
 
                       <button
                         type="button"
                         onClick={handleSignOut}
-                        className="w-full text-left px-3 py-2 rounded-lg text-rose-400 hover:text-rose-300 hover:bg-rose-500/10 flex items-center gap-2.5 cursor-pointer transition-colors"
+                        className="w-full text-left px-3 py-2 rounded-lg text-rose-500 hover:text-rose-600 hover:bg-rose-500/10 flex items-center gap-2.5 cursor-pointer transition-colors"
                       >
                         <LogOut className="w-3.5 h-3.5" />
                         <span>Sign Out</span>

@@ -208,10 +208,10 @@ export const Dashboard: React.FC = () => {
       {/* Header Greeting */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl md:text-3xl font-bold font-['Manrope'] text-[#F5F5F5] tracking-tight">
+          <h1 className="text-2xl md:text-3xl font-bold font-['Manrope'] text-[var(--text-main)] tracking-tight">
             {greeting()}, {name}.
           </h1>
-          <p className="text-sm text-[#A1A1A1] mt-1">
+          <p className="text-sm text-[var(--text-muted)] mt-1">
             Your coding knowledge, organised in one place.
           </p>
         </div>
@@ -246,54 +246,54 @@ export const Dashboard: React.FC = () => {
 
       {/* 4 Stats Cards */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        <div className="bg-[#171717] border border-[rgba(255,255,255,0.09)] rounded-xl p-5 shadow-sm">
-          <div className="flex items-center justify-between text-[#888888] mb-2 text-xs">
+        <div className="bg-[var(--bg-metric)] border border-[var(--border-subtle)] rounded-xl p-5 shadow-sm">
+          <div className="flex items-center justify-between text-[var(--text-muted)] mb-2 text-xs">
             <span>Total Experiments</span>
-            <BookOpen className="w-4 h-4 text-[#666666]" />
+            <BookOpen className="w-4 h-4 text-[var(--text-dim)]" />
           </div>
           <div className="text-3xl font-extrabold font-['Manrope'] text-white">
             {overview.total_experiments || experiments.length}
           </div>
-          <div className="text-[11px] text-[#888888] mt-1.5 flex items-center gap-1">
+          <div className="text-[11px] text-[var(--text-muted)] mt-1.5 flex items-center gap-1">
             <span>Across {overview.total_subjects || subjects.length} subjects</span>
           </div>
         </div>
 
-        <div className="bg-[#171717] border border-[rgba(255,255,255,0.09)] rounded-xl p-5 shadow-sm">
-          <div className="flex items-center justify-between text-[#888888] mb-2 text-xs">
+        <div className="bg-[var(--bg-metric)] border border-[var(--border-subtle)] rounded-xl p-5 shadow-sm">
+          <div className="flex items-center justify-between text-[var(--text-muted)] mb-2 text-xs">
             <span>Active Subjects</span>
-            <BookOpen className="w-4 h-4 text-[#666666]" />
+            <BookOpen className="w-4 h-4 text-[var(--text-dim)]" />
           </div>
           <div className="text-3xl font-extrabold font-['Manrope'] text-white">
             {overview.total_subjects || subjects.length}
           </div>
-          <div className="text-[11px] text-[#888888] mt-1.5">
+          <div className="text-[11px] text-[var(--text-muted)] mt-1.5">
             <span>Organized curriculum</span>
           </div>
         </div>
 
-        <div className="bg-[#171717] border border-[rgba(255,255,255,0.09)] rounded-xl p-5 shadow-sm">
-          <div className="flex items-center justify-between text-[#888888] mb-2 text-xs">
+        <div className="bg-[var(--bg-metric)] border border-[var(--border-subtle)] rounded-xl p-5 shadow-sm">
+          <div className="flex items-center justify-between text-[var(--text-muted)] mb-2 text-xs">
             <span>Revision Completed</span>
-            <CheckCircle2 className="w-4 h-4 text-[#666666]" />
+            <CheckCircle2 className="w-4 h-4 text-[var(--text-dim)]" />
           </div>
           <div className="text-3xl font-extrabold font-['Manrope'] text-white">
             {overview.revision_completion_percent}%
           </div>
-          <div className="text-[11px] text-[#888888] mt-1.5">
+          <div className="text-[11px] text-[var(--text-muted)] mt-1.5">
             <span>{overview.revised_count} of {overview.total_experiments} completed</span>
           </div>
         </div>
 
-        <div className="bg-[#171717] border border-[rgba(255,255,255,0.09)] rounded-xl p-5 shadow-sm">
-          <div className="flex items-center justify-between text-[#888888] mb-2 text-xs">
+        <div className="bg-[var(--bg-metric)] border border-[var(--border-subtle)] rounded-xl p-5 shadow-sm">
+          <div className="flex items-center justify-between text-[var(--text-muted)] mb-2 text-xs">
             <span>Pending Revision</span>
-            <Clock className="w-4 h-4 text-[#666666]" />
+            <Clock className="w-4 h-4 text-[var(--text-dim)]" />
           </div>
           <div className="text-3xl font-extrabold font-['Manrope'] text-white">
             {overview.pending_revision}
           </div>
-          <div className="text-[11px] text-[#888888] mt-1.5">
+          <div className="text-[11px] text-[var(--text-muted)] mt-1.5">
             <span>Ready for flashcards</span>
           </div>
         </div>
@@ -304,12 +304,12 @@ export const Dashboard: React.FC = () => {
         {/* Continue Learning (2 cols) */}
         <div className="lg:col-span-2 space-y-3">
           <div className="flex items-center justify-between">
-            <h3 className="text-base font-semibold font-['Manrope'] text-[#F5F5F5]">
+            <h3 className="text-base font-semibold font-['Manrope'] text-[var(--text-main)]">
               Continue Learning
             </h3>
             <button
               onClick={() => navigate('/experiments')}
-              className="text-xs text-[#888888] hover:text-white flex items-center gap-1 transition-colors"
+              className="text-xs text-[var(--text-muted)] hover:text-white flex items-center gap-1 transition-colors"
             >
               <span>View all</span>
               <ArrowRight className="w-3 h-3" />
@@ -321,7 +321,7 @@ export const Dashboard: React.FC = () => {
               <div
                 key={exp.id}
                 onClick={() => navigate(`/experiments/${exp.id}`)}
-                className="bg-[#141414] border border-[rgba(255,255,255,0.08)] hover:border-[rgba(255,255,255,0.2)] rounded-xl p-4 transition-all cursor-pointer group flex flex-col justify-between"
+                className="bg-[var(--bg-card)] border border-[var(--border-subtle)] hover:border-[rgba(255,255,255,0.2)] rounded-xl p-4 transition-all cursor-pointer group flex flex-col justify-between"
               >
                 <div>
                   <div className="flex items-center justify-between gap-2 mb-2">
@@ -332,17 +332,17 @@ export const Dashboard: React.FC = () => {
                       {exp.language}
                     </Badge>
                   </div>
-                  <h4 className="text-sm font-semibold text-[#F5F5F5] group-hover:text-white transition-colors line-clamp-1 mb-1 font-['Manrope']">
+                  <h4 className="text-sm font-semibold text-[var(--text-main)] group-hover:text-white transition-colors line-clamp-1 mb-1 font-['Manrope']">
                     {exp.title}
                   </h4>
-                  <p className="text-xs text-[#777777] line-clamp-1">
+                  <p className="text-xs text-[var(--text-dim)] line-clamp-1">
                     {exp.subjects?.name || 'Computer Science'}
                   </p>
                 </div>
 
-                <div className="pt-3 mt-3 border-t border-[rgba(255,255,255,0.06)] flex items-center justify-between text-[11px] text-[#666666]">
+                <div className="pt-3 mt-3 border-t border-[var(--border-subtle)] flex items-center justify-between text-[11px] text-[var(--text-dim)]">
                   <span>Complexity: {exp.time_complexity || 'O(n)'}</span>
-                  <span className="text-[#A1A1A1] group-hover:text-white flex items-center gap-1">
+                  <span className="text-[var(--text-muted)] group-hover:text-white flex items-center gap-1">
                     Resume <ChevronRight className="w-3 h-3" />
                   </span>
                 </div>
@@ -352,21 +352,21 @@ export const Dashboard: React.FC = () => {
         </div>
 
         {/* Weekly Activity Chart (1 col) */}
-        <div className="bg-[#141414] border border-[rgba(255,255,255,0.08)] rounded-xl p-5 flex flex-col justify-between">
+        <div className="bg-[var(--bg-card)] border border-[var(--border-subtle)] rounded-xl p-5 flex flex-col justify-between">
           <div>
             <div className="flex items-center justify-between mb-1">
               <h3 className="text-sm font-semibold font-['Manrope'] text-white">
                 Weekly Activity
               </h3>
-              <span className="text-[10px] text-[#888888] font-mono">Last 7 Days</span>
+              <span className="text-[10px] text-[var(--text-muted)] font-mono">Last 7 Days</span>
             </div>
-            <p className="text-xs text-[#888888] mb-4">
+            <p className="text-xs text-[var(--text-muted)] mb-4">
               Experiments revised and added
             </p>
             <ActivityChart data={weeklyActivity} />
           </div>
 
-          <div className="pt-3 border-t border-[rgba(255,255,255,0.06)] flex items-center justify-between text-xs text-[#888888]">
+          <div className="pt-3 border-t border-[var(--border-subtle)] flex items-center justify-between text-xs text-[var(--text-muted)]">
             <span>Keep up the daily momentum</span>
             <button
               onClick={() => navigate('/revision-planner')}
@@ -379,52 +379,52 @@ export const Dashboard: React.FC = () => {
       </div>
 
       {/* Quick Actions Panel */}
-      <div className="bg-[#141414] border border-[rgba(255,255,255,0.08)] rounded-xl p-5">
+      <div className="bg-[var(--bg-card)] border border-[var(--border-subtle)] rounded-xl p-5">
         <h3 className="text-sm font-semibold font-['Manrope'] text-white mb-3">
           Quick Actions
         </h3>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
           <button
             onClick={() => setIsNewModalOpen(true)}
-            className="flex items-center gap-3 p-3 rounded-lg bg-[#1a1a1a] border border-[rgba(255,255,255,0.06)] hover:border-[rgba(255,255,255,0.18)] hover:bg-[#202020] transition-all text-left"
+            className="flex items-center gap-3 p-3 rounded-lg bg-[var(--bg-metric)] border border-[var(--border-subtle)] hover:border-[rgba(255,255,255,0.18)] hover:bg-[var(--bg-card-hover)] transition-all text-left"
           >
             <Plus className="w-4 h-4 text-white" />
             <div>
               <div className="text-xs font-semibold text-white">Add Experiment</div>
-              <div className="text-[10px] text-[#888888]">New program</div>
+              <div className="text-[10px] text-[var(--text-muted)]">New program</div>
             </div>
           </button>
 
           <button
             onClick={() => navigate('/experiments/new')}
-            className="flex items-center gap-3 p-3 rounded-lg bg-[#1a1a1a] border border-[rgba(255,255,255,0.06)] hover:border-[rgba(255,255,255,0.18)] hover:bg-[#202020] transition-all text-left"
+            className="flex items-center gap-3 p-3 rounded-lg bg-[var(--bg-metric)] border border-[var(--border-subtle)] hover:border-[rgba(255,255,255,0.18)] hover:bg-[var(--bg-card-hover)] transition-all text-left"
           >
             <Upload className="w-4 h-4 text-white" />
             <div>
               <div className="text-xs font-semibold text-white">Import Code</div>
-              <div className="text-[10px] text-[#888888]">Upload file</div>
+              <div className="text-[10px] text-[var(--text-muted)]">Upload file</div>
             </div>
           </button>
 
           <button
             onClick={() => navigate('/ai/revision-studio')}
-            className="flex items-center gap-3 p-3 rounded-lg bg-[#1a1a1a] border border-[rgba(255,255,255,0.06)] hover:border-[rgba(255,255,255,0.18)] hover:bg-[#202020] transition-all text-left"
+            className="flex items-center gap-3 p-3 rounded-lg bg-[var(--bg-metric)] border border-[var(--border-subtle)] hover:border-[rgba(255,255,255,0.18)] hover:bg-[var(--bg-card-hover)] transition-all text-left"
           >
             <Brain className="w-4 h-4 text-white" />
             <div>
               <div className="text-xs font-semibold text-white">Start Revision</div>
-              <div className="text-[10px] text-[#888888]">Flashcards & MCQs</div>
+              <div className="text-[10px] text-[var(--text-muted)]">Flashcards & MCQs</div>
             </div>
           </button>
 
           <button
             onClick={() => navigate('/ai/ask')}
-            className="flex items-center gap-3 p-3 rounded-lg bg-[#1a1a1a] border border-[rgba(255,255,255,0.06)] hover:border-[rgba(255,255,255,0.18)] hover:bg-[#202020] transition-all text-left"
+            className="flex items-center gap-3 p-3 rounded-lg bg-[var(--bg-metric)] border border-[var(--border-subtle)] hover:border-[rgba(255,255,255,0.18)] hover:bg-[var(--bg-card-hover)] transition-all text-left"
           >
             <MessageSquare className="w-4 h-4 text-white" />
             <div>
               <div className="text-xs font-semibold text-white">Ask AI</div>
-              <div className="text-[10px] text-[#888888]">Contextual chat</div>
+              <div className="text-[10px] text-[var(--text-muted)]">Contextual chat</div>
             </div>
           </button>
         </div>
@@ -433,12 +433,12 @@ export const Dashboard: React.FC = () => {
       {/* Subject Overview Cards */}
       <div>
         <div className="flex items-center justify-between mb-4">
-          <h3 className="text-base font-semibold font-['Manrope'] text-[#F5F5F5]">
+          <h3 className="text-base font-semibold font-['Manrope'] text-[var(--text-main)]">
             Subject Overview
           </h3>
           <button
             onClick={() => navigate('/subjects')}
-            className="text-xs text-[#888888] hover:text-white flex items-center gap-1 transition-colors"
+            className="text-xs text-[var(--text-muted)] hover:text-white flex items-center gap-1 transition-colors"
           >
             <span>Manage subjects</span>
             <ArrowRight className="w-3 h-3" />
@@ -450,25 +450,25 @@ export const Dashboard: React.FC = () => {
             <div
               key={sub.id}
               onClick={() => navigate(`/experiments?subject=${sub.id}`)}
-              className="bg-[#141414] border border-[rgba(255,255,255,0.08)] hover:border-[rgba(255,255,255,0.2)] rounded-xl p-5 cursor-pointer transition-all group"
+              className="bg-[var(--bg-card)] border border-[var(--border-subtle)] hover:border-[rgba(255,255,255,0.2)] rounded-xl p-5 cursor-pointer transition-all group"
             >
               <div className="flex items-center justify-between mb-2">
-                <span className="text-[10px] text-[#888888] font-mono uppercase tracking-wider">
+                <span className="text-[10px] text-[var(--text-muted)] font-mono uppercase tracking-wider">
                   {sub.semester || 'Semester'}
                 </span>
-                <span className="text-xs font-mono text-[#A1A1A1]">
+                <span className="text-xs font-mono text-[var(--text-muted)]">
                   {sub.experiment_count || 4} experiments
                 </span>
               </div>
               <h4 className="text-base font-semibold text-white font-['Manrope'] group-hover:text-neutral-200 transition-colors mb-1">
                 {sub.name}
               </h4>
-              <p className="text-xs text-[#777777] line-clamp-2 mb-4 leading-relaxed">
+              <p className="text-xs text-[var(--text-dim)] line-clamp-2 mb-4 leading-relaxed">
                 {sub.description || 'Core engineering coursework and laboratory practicals.'}
               </p>
               {/* Progress bar */}
               <div className="space-y-1.5">
-                <div className="flex items-center justify-between text-[11px] text-[#888888]">
+                <div className="flex items-center justify-between text-[11px] text-[var(--text-muted)]">
                   <span>Revision Progress</span>
                   <span className="font-mono text-white">65%</span>
                 </div>
@@ -482,8 +482,8 @@ export const Dashboard: React.FC = () => {
       </div>
 
       {/* Recent Experiments Table */}
-      <div className="bg-[#141414] border border-[rgba(255,255,255,0.08)] rounded-xl overflow-hidden">
-        <div className="p-5 border-b border-[rgba(255,255,255,0.06)] flex items-center justify-between">
+      <div className="bg-[var(--bg-card)] border border-[var(--border-subtle)] rounded-xl overflow-hidden">
+        <div className="p-5 border-b border-[var(--border-subtle)] flex items-center justify-between">
           <h3 className="text-base font-semibold font-['Manrope'] text-white">
             Recent Experiments
           </h3>
@@ -491,7 +491,7 @@ export const Dashboard: React.FC = () => {
             variant="ghost"
             size="sm"
             onClick={() => navigate('/experiments')}
-            className="text-xs text-[#888888]"
+            className="text-xs text-[var(--text-muted)]"
           >
             All Experiments →
           </Button>
@@ -499,7 +499,7 @@ export const Dashboard: React.FC = () => {
 
         <div className="overflow-x-auto">
           <table className="w-full text-left text-xs">
-            <thead className="bg-[#111111] text-[#888888] uppercase tracking-wider font-mono text-[10px] border-b border-[rgba(255,255,255,0.06)]">
+            <thead className="bg-[var(--bg-card)] text-[var(--text-muted)] uppercase tracking-wider font-mono text-[10px] border-b border-[var(--border-subtle)]">
               <tr>
                 <th className="py-3 px-4">#</th>
                 <th className="py-3 px-4">Experiment Name</th>
@@ -510,20 +510,20 @@ export const Dashboard: React.FC = () => {
                 <th className="py-3 px-4 text-right">Action</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-[rgba(255,255,255,0.04)] text-[#D4D4D4]">
+            <tbody className="divide-y divide-[rgba(255,255,255,0.04)] text-[var(--text-main)]">
               {experiments.map((exp, idx) => (
                 <tr
                   key={exp.id}
                   onClick={() => navigate(`/experiments/${exp.id}`)}
                   className="hover:bg-[rgba(255,255,255,0.03)] cursor-pointer transition-colors"
                 >
-                  <td className="py-3.5 px-4 font-mono text-[#666666]">
+                  <td className="py-3.5 px-4 font-mono text-[var(--text-dim)]">
                     {exp.experiment_number || `0${idx + 1}`}
                   </td>
                   <td className="py-3.5 px-4 font-semibold text-white">
                     {exp.title}
                   </td>
-                  <td className="py-3.5 px-4 text-[#A1A1A1]">
+                  <td className="py-3.5 px-4 text-[var(--text-muted)]">
                     {exp.subjects?.name || 'Computer Science'}
                   </td>
                   <td className="py-3.5 px-4">
@@ -531,7 +531,7 @@ export const Dashboard: React.FC = () => {
                       {exp.language}
                     </Badge>
                   </td>
-                  <td className="py-3.5 px-4 font-mono text-[#888888]">
+                  <td className="py-3.5 px-4 font-mono text-[var(--text-muted)]">
                     {exp.time_complexity || 'O(n)'}
                   </td>
                   <td className="py-3.5 px-4">
@@ -540,7 +540,7 @@ export const Dashboard: React.FC = () => {
                         <CheckCircle2 className="w-3 h-3 text-white" /> Revised
                       </span>
                     ) : (
-                      <span className="inline-flex items-center gap-1 text-[11px] text-[#666666]">
+                      <span className="inline-flex items-center gap-1 text-[11px] text-[var(--text-dim)]">
                         <Clock className="w-3 h-3" /> Pending
                       </span>
                     )}
@@ -551,7 +551,7 @@ export const Dashboard: React.FC = () => {
                         e.stopPropagation()
                         navigate(`/experiments/${exp.id}`)
                       }}
-                      className="text-xs text-[#888888] hover:text-white transition-colors"
+                      className="text-xs text-[var(--text-muted)] hover:text-white transition-colors"
                     >
                       Open →
                     </button>
