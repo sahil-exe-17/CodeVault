@@ -46,7 +46,7 @@
   }
 
   /* ══════════════════════════════════════════════════════════
-     LIGHT THEME — applied via [data-theme="light"] on <html>
+     LIGHT THEME TOKENS — applied via [data-theme="light"]
      ══════════════════════════════════════════════════════════ */
   [data-theme="light"] {
     /* Layout */
@@ -65,7 +65,7 @@
     --border-hover: rgba(0, 0, 0, 0.18);
     --accent:       #000000;
 
-    /* ── Custom Select tokens (light matching reference image) ── */
+    /* ── Custom Select tokens (light matching reference) ── */
     --sel-bg:              #FFFFFF;
     --sel-bg-hover:        #F9FAFB;
     --sel-text:            #1F2937;
@@ -77,7 +77,7 @@
     --sel-drop-shadow:     0 20px 45px -10px rgba(0, 0, 0, 0.12), 0 0 0 1px rgba(0, 0, 0, 0.05);
     --sel-drop-border:     #E5E7EB;
     --sel-search-bg:       #FFFFFF;
-    --sel-search-border:   #86EFAC; /* subtle light green accent border like the screenshot */
+    --sel-search-border:   #86EFAC;
     --sel-item-bg:         #FFFFFF;
     --sel-item-border:     #E5E7EB;
     --sel-item-hover-bg:   #F9FAFB;
@@ -117,60 +117,152 @@
 }
 
 /* ══════════════════════════════════════════════════════════
-   GLOBAL LIGHT THEME OVERRIDES
-   Ensures existing hardcoded dark Tailwind classes seamlessly flip
+   HIGH-FIDELITY LIGHT THEME SYSTEM
+   Transforms all background surfaces, cards, text, and inputs
+   into a crisp, high-contrast, modern light theme.
    ══════════════════════════════════════════════════════════ */
-[data-theme="light"] body {
+
+/* 1. Body & Screen Wrappers */
+[data-theme="light"] body,
+[data-theme="light"] .min-h-screen,
+[data-theme="light"] [class*="bg-[#05050"],
+[data-theme="light"] [class*="bg-[#07070"],
+[data-theme="light"] [class*="bg-[#09090"] {
   background-color: #F8F9FA !important;
   color: #111827 !important;
 }
 
-[data-theme="light"] .bg-\[\#050507\],
-[data-theme="light"] .bg-\[\#07070a\],
-[data-theme="light"] .bg-\[\#090909\],
-[data-theme="light"] .bg-\[\#0a0a0f\] {
-  background-color: #F8F9FA !important;
-}
-
-[data-theme="light"] .bg-\[\#111111\],
-[data-theme="light"] .bg-\[\#141414\],
-[data-theme="light"] .bg-\[\#171717\],
-[data-theme="light"] .bg-\[\#14141a\],
-[data-theme="light"] .bg-\[\#111116\] {
+/* 2. Elevated Cards, Modals, Sections, and Panels */
+[data-theme="light"] [class*="bg-[#0c0c0e]"],
+[data-theme="light"] [class*="bg-[#0e0e0e]"],
+[data-theme="light"] [class*="bg-[#0f0f0f]"],
+[data-theme="light"] [class*="bg-[#0A0A0A]"],
+[data-theme="light"] [class*="bg-[#10101"],
+[data-theme="light"] [class*="bg-[#11111"],
+[data-theme="light"] [class*="bg-[#12121"],
+[data-theme="light"] [class*="bg-[#14141"],
+[data-theme="light"] [class*="bg-[#16161"],
+[data-theme="light"] [class*="bg-[#17171"],
+[data-theme="light"] [class*="bg-[#17172"],
+[data-theme="light"] [class*="bg-[#18182"],
+[data-theme="light"] [class*="bg-[#1a1a1"],
+[data-theme="light"] [class*="bg-[#1a1a2"],
+[data-theme="light"] [class*="bg-[#1c1c1"],
+[data-theme="light"] [class*="bg-[#1c1c2"],
+[data-theme="light"] [class*="bg-[#1e1e2"],
+[data-theme="light"] [class*="bg-[#20202"],
+[data-theme="light"] [class*="bg-[#22222"] {
   background-color: #FFFFFF !important;
 }
 
-[data-theme="light"] .bg-\[\#1c1c1c\],
-[data-theme="light"] .bg-\[\#202020\],
-[data-theme="light"] .bg-\[\#1e1e26\] {
-  background-color: #F3F4F6 !important;
+/* 3. Navigation Bar */
+[data-theme="light"] header,
+[data-theme="light"] [class*="bg-[#07070a]"] {
+  background-color: rgba(255, 255, 255, 0.88) !important;
+  backdrop-filter: blur(20px) !important;
+  -webkit-backdrop-filter: blur(20px) !important;
+  border-bottom-color: rgba(0, 0, 0, 0.08) !important;
 }
 
-[data-theme="light"] .text-white,
-[data-theme="light"] .text-\[\#F5F5F5\] {
+/* 4. Modal Backdrop and Modals */
+[data-theme="light"] .fixed.inset-0[class*="bg-black"] {
+  background-color: rgba(0, 0, 0, 0.40) !important;
+  backdrop-filter: blur(6px) !important;
+}
+
+[data-theme="light"] [role="dialog"],
+[data-theme="light"] [class*="rounded-2xl"][class*="shadow-2xl"],
+[data-theme="light"] [class*="rounded-3xl"][class*="shadow-"] {
+  background-color: #FFFFFF !important;
+  box-shadow: 0 20px 40px -15px rgba(0, 0, 0, 0.12), 0 0 0 1px rgba(0, 0, 0, 0.05) !important;
+}
+
+/* 5. Typography: High-contrast Dark Text */
+[data-theme="light"] [class*="text-white"],
+[data-theme="light"] [class*="text-[#F5F5F5]"],
+[data-theme="light"] [class*="text-[#D4D4D4]"],
+[data-theme="light"] h1,
+[data-theme="light"] h2,
+[data-theme="light"] h3,
+[data-theme="light"] h4 {
   color: #111827 !important;
 }
 
-[data-theme="light"] .text-\[\#888888\],
-[data-theme="light"] .text-\[\#A1A1A1\],
-[data-theme="light"] .text-\[\#666666\] {
+[data-theme="light"] [class*="text-white/9"],
+[data-theme="light"] [class*="text-white/8"] {
+  color: #1F2937 !important;
+}
+
+[data-theme="light"] [class*="text-white/7"],
+[data-theme="light"] [class*="text-white/6"],
+[data-theme="light"] [class*="text-white/5"],
+[data-theme="light"] [class*="text-[#888888]"],
+[data-theme="light"] [class*="text-[#A1A1A1]"] {
   color: #4B5563 !important;
 }
 
-[data-theme="light"] .border-white\/\[0\.08\],
-[data-theme="light"] .border-white\/\[0\.09\],
-[data-theme="light"] .border-white\/10,
-[data-theme="light"] .border-white\/15,
-[data-theme="light"] .border-\[rgba\(255\,255\,255\,0\.08\)\],
-[data-theme="light"] .border-\[rgba\(255\,255\,255\,0\.09\)\],
-[data-theme="light"] .border-\[rgba\(255\,255\,255\,0\.1\)\] {
+[data-theme="light"] [class*="text-white/4"],
+[data-theme="light"] [class*="text-white/3"],
+[data-theme="light"] [class*="text-[#666666]"],
+[data-theme="light"] [class*="text-[#555555]"] {
+  color: #6B7280 !important;
+}
+
+/* 6. Subtle Borders for Light Theme */
+[data-theme="light"] [class*="border-white"],
+[data-theme="light"] [class*="border-[rgba(255,255,255"] {
   border-color: rgba(0, 0, 0, 0.08) !important;
 }
 
-[data-theme="light"] .border-white\/20,
-[data-theme="light"] .border-white\/25,
-[data-theme="light"] .border-\[rgba\(255\,255\,255\,0\.2\)\] {
-  border-color: rgba(0, 0, 0, 0.15) !important;
+[data-theme="light"] [class*="hover:border-white"]:hover {
+  border-color: rgba(0, 0, 0, 0.22) !important;
+}
+
+/* 7. Form Inputs & Textareas */
+[data-theme="light"] input:not([type="checkbox"]):not([type="radio"]),
+[data-theme="light"] textarea {
+  background-color: #FFFFFF !important;
+  color: #111827 !important;
+  border-color: #E5E7EB !important;
+}
+
+[data-theme="light"] input::placeholder,
+[data-theme="light"] textarea::placeholder {
+  color: #9CA3AF !important;
+}
+
+[data-theme="light"] input:focus,
+[data-theme="light"] textarea:focus {
+  border-color: #111827 !important;
+}
+
+/* 8. Primary Buttons (invert white CTA to black with white text in light mode) */
+[data-theme="light"] button[class*="bg-white"],
+[data-theme="light"] [class*="bg-white"][class*="text-black"] {
+  background-color: #111827 !important;
+  color: #FFFFFF !important;
+}
+
+[data-theme="light"] button[class*="bg-white"]:hover,
+[data-theme="light"] [class*="bg-white"][class*="text-black"]:hover {
+  background-color: #1F2937 !important;
+}
+
+/* 9. Secondary Buttons & Badges */
+[data-theme="light"] button[class*="bg-[#171717]"],
+[data-theme="light"] [class*="bg-white/[0.04]"],
+[data-theme="light"] [class*="bg-white/[0.06]"],
+[data-theme="light"] [class*="bg-white/[0.08]"],
+[data-theme="light"] [class*="bg-white/10"] {
+  background-color: #F3F4F6 !important;
+  color: #1F2937 !important;
+  border-color: rgba(0, 0, 0, 0.08) !important;
+}
+
+/* 10. Card Hover Highlighting */
+[data-theme="light"] [class*="hover:bg-[#1"]:hover,
+[data-theme="light"] [class*="hover:bg-[#2"]:hover {
+  background-color: #F9FAFB !important;
 }
 
 /* ══════════════════════════════════════════════════════════
@@ -277,6 +369,21 @@
   border-radius: 9999px;
   background-color: var(--sel-bubble-bg);
   flex-shrink: 0;
+}
+
+/* Animations */
+@keyframes laser-pan {
+  0% { transform: translateX(-50%); }
+  100% { transform: translateX(0%); }
+}
+
+@keyframes shimmer {
+  100% { transform: translateX(100%); }
+}
+
+@keyframes pulse-subtle {
+  0%, 100% { opacity: 0.6; transform: scale(1); }
+  50% { opacity: 1; transform: scale(1.02); }
 }
 
 /* Scrollbar */

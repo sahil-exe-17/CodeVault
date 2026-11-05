@@ -17,6 +17,7 @@ import {
 import { Button } from '@/components/ui/Button'
 import { Badge } from '@/components/ui/Badge'
 import { Select, SelectOption } from '@/components/ui/Select'
+import { useThemeStore } from '@/store/themeStore'
 import { experimentsApi, aiApi } from '@/lib/api'
 import type { Experiment, AIExplanation } from '@/types'
 import toast from 'react-hot-toast'
@@ -24,6 +25,7 @@ import toast from 'react-hot-toast'
 export const AIExplainer: React.FC = () => {
   const navigate = useNavigate()
   const [searchParams] = useSearchParams()
+  const { theme } = useThemeStore()
 
   const [experiments, setExperiments] = useState<Experiment[]>([])
   const [selectedExpId, setSelectedExpId] = useState<string>(searchParams.get('id') || '')
@@ -194,7 +196,7 @@ export const AIExplainer: React.FC = () => {
             <Editor
               height="480px"
               language={language === 'c' || language === 'cpp' ? 'cpp' : language}
-              theme="vs-dark"
+              theme={theme === 'light' ? 'light' : 'vs-dark'}
               value={code}
               onChange={(v) => setCode(v || '')}
               options={{

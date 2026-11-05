@@ -29,6 +29,7 @@ import {
 } from 'lucide-react'
 import { Button } from '@/components/ui/Button'
 import { Select, SelectOption } from '@/components/ui/Select'
+import { useThemeStore } from '@/store/themeStore'
 import { Badge } from '@/components/ui/Badge'
 import { Input } from '@/components/ui/Input'
 import { ScanPhotoModal } from '@/components/experiments/ScanPhotoModal'
@@ -44,6 +45,7 @@ export const ExperimentDetail: React.FC<ExperimentDetailProps> = ({ mode = 'edit
   const { id } = useParams<{ id: string }>()
   const [searchParams] = useSearchParams()
   const navigate = useNavigate()
+  const { theme } = useThemeStore()
 
   // Main Tabs
   const [leftTab, setLeftTab] = useState<'code' | 'info' | 'io' | 'notes' | 'notebook'>('code')
@@ -606,7 +608,7 @@ export const ExperimentDetail: React.FC<ExperimentDetailProps> = ({ mode = 'edit
                       ? 'cpp'
                       : experiment.language || 'c'
                   }
-                  theme="vs-dark"
+                  theme={theme === 'light' ? 'light' : 'vs-dark'}
                   value={experiment.source_code || ''}
                   onChange={(val) => handleFieldChange('source_code', val || '')}
                   options={{

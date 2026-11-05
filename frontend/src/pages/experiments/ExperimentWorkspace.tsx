@@ -28,12 +28,14 @@ import { AppNavbar } from '@/components/layout/AppNavbar'
 import { ScanPhotoModal } from '@/components/experiments/ScanPhotoModal'
 import { AIRecommendationsModal, type CodeRecommendationData } from '@/components/experiments/AIRecommendationsModal'
 import { experimentsApi, aiApi } from '@/lib/api'
+import { useThemeStore } from '@/store/themeStore'
 import type { Experiment, CodeSnippetItem } from '@/types'
 import toast from 'react-hot-toast'
 
 export const ExperimentWorkspace: React.FC = () => {
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
+  const { theme } = useThemeStore()
 
   const [experiment, setExperiment] = useState<Partial<Experiment>>({
     title: 'New Experiment',
@@ -639,7 +641,7 @@ export const ExperimentWorkspace: React.FC = () => {
               height="100%"
               language={activeSnippet.language === 'cpp' ? 'cpp' : activeSnippet.language === 'c' ? 'c' : activeSnippet.language}
               value={activeSnippet.code}
-              theme="vs-dark"
+              theme={theme === 'light' ? 'light' : 'vs-dark'}
               onChange={(value) => updateActiveSnippet('code', value || '')}
               options={{
                 fontSize,
