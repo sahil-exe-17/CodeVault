@@ -56,27 +56,38 @@ export const toggleThemeWithCircularAnimation = (e?: React.MouseEvent | MouseEve
   const doc = document as any
   if (doc && typeof doc.startViewTransition === 'function') {
     const isGoingToLight = next === 'light'
-    const transition = doc.startViewTransition(() => {
-      useThemeStore.getState().setTheme(next)
-    })
+    try {
+      const transition = doc.startViewTransition(() => {
+        useThemeStore.getState().setTheme(next)
+      })
 
-    transition.ready.then(() => {
-      const clipAnimation = [
-        `circle(0px at ${x}px ${y}px)`,
-        `circle(${maxRadius}px at ${x}px ${y}px)`,
-      ]
-      document.documentElement.animate(
-        {
-          clipPath: isGoingToLight ? clipAnimation : [...clipAnimation].reverse(),
-        },
-        {
-          duration: 500,
-          easing: 'cubic-bezier(0.16, 1, 0.3, 1)',
-          pseudoElement: isGoingToLight ? '::view-transition-new(root)' : '::view-transition-old(root)',
-        }
-      )
-    })
-    return
+      transition.ready
+        .then(() => {
+          const clipAnimation = [
+            `circle(0px at ${x}px ${y}px)`,
+            `circle(${maxRadius}px at ${x}px ${y}px)`,
+          ]
+          try {
+            document.documentElement.animate(
+              {
+                clipPath: isGoingToLight ? clipAnimation : [...clipAnimation].reverse(),
+              },
+              {
+                duration: 500,
+                easing: 'cubic-bezier(0.16, 1, 0.3, 1)',
+                pseudoElement: isGoingToLight ? '::view-transition-new(root)' : '::view-transition-old(root)',
+              }
+            )
+          } catch {
+            // Browser might not support pseudoElement in Web Animations API
+          }
+        })
+        .catch(() => {})
+      return
+    } catch {
+      useThemeStore.getState().setTheme(next)
+      return
+    }
   }
 
   // 2. Fallback: dynamic expanding circular ripple overlay for older browsers

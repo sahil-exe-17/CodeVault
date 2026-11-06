@@ -56,6 +56,42 @@ const getInitialUser = (): User | null => {
   }
 }
 
+const isRealBackendValidationError = (err: any): boolean => {
+  if (!err) return false
+
+  const status = err.status || err.response?.status
+  // HTTP 405 (Method Not Allowed), 404 (Not Found), 502/503/504 (Server/Proxy offline) are infrastructure errors on static/Vercel hosting
+  if (status === 405 || status === 404 || status === 502 || status === 503 || status === 504) {
+    return false
+  }
+
+  const msg = String(err.message || '')
+  if (
+    msg.includes('405') ||
+    msg.includes('404') ||
+    msg.includes('502') ||
+    msg.includes('503') ||
+    msg.includes('Network Error') ||
+    msg.includes('ECONNREFUSED') ||
+    msg.includes('Failed to fetch') ||
+    msg.includes('HTML instead of JSON') ||
+    msg.includes('Method Not Allowed')
+  ) {
+    return false
+  }
+
+  // Only re-throw when FastAPI returned an explicit JSON error with detail (e.g. 400 bad request, 409 conflict, 422 unprocessable entity)
+  if (
+    (status === 400 || status === 401 || status === 409 || status === 422) &&
+    typeof err.response?.data?.detail === 'string' &&
+    err.response.data.detail.length > 0
+  ) {
+    return true
+  }
+
+  return false
+}
+
 export const useAuthStore = create<AuthState>((set, get) => ({
   user: getInitialUser(),
   token: localStorage.getItem('codevault_token') || null,
@@ -84,12 +120,14 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       localStorage.setItem('codevault_token', token)
       localStorage.setItem('codevault_user', JSON.stringify(user))
       saveStoredProfile(user.email, user)
+      if (password) {
+        try { localStorage.setItem(`cv_pwd_${cleanEmail}`, password) } catch {}
+      }
 
       set({ user, token, loading: false })
       return user
     } catch (err: any) {
-      // If it's a specific credential validation error from backend (like wrong password), throw it!
-      if (err.message && !err.message.includes('Network Error') && !err.message.includes('ECONNREFUSED')) {
+      if (isRealBackendValidationError(err)) {
         set({ loading: false })
         throw err
       }
@@ -98,6 +136,13 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       console.warn('Backend network unreachable during signin, loading local consistent session:', err.message)
       const existing = getStoredProfile(cleanEmail)
       const stableId = getDeterministicUserId(cleanEmail)
+
+      // Check offline password if one was previously stored
+      const storedPwd = localStorage.getItem(`cv_pwd_${cleanEmail}`)
+      if (storedPwd && password && storedPwd !== password) {
+        set({ loading: false })
+        throw new Error('Incorrect password. Please verify your credentials.')
+      }
 
       const localUser: User = {
         id: stableId,
@@ -112,6 +157,10 @@ export const useAuthStore = create<AuthState>((set, get) => ({
         is_profile_completed: existing ? Boolean(existing.is_profile_completed) : true,
         auth_provider: 'email',
         ...existing,
+      }
+
+      if (password && !storedPwd) {
+        try { localStorage.setItem(`cv_pwd_${cleanEmail}`, password) } catch {}
       }
 
       const token = `token_${localUser.id}`
@@ -139,17 +188,19 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       localStorage.setItem('codevault_token', token)
       localStorage.setItem('codevault_user', JSON.stringify(user))
       saveStoredProfile(user.email, user)
+      if (password) {
+        try { localStorage.setItem(`cv_pwd_${cleanEmail}`, password) } catch {}
+      }
 
       set({ user, token, loading: false })
       return user
     } catch (err: any) {
-      // If email already exists or password too short, throw it so UI tells the user!
-      if (err.message && !err.message.includes('Network Error') && !err.message.includes('ECONNREFUSED')) {
+      if (isRealBackendValidationError(err)) {
         set({ loading: false })
         throw err
       }
 
-      // If network is unreachable, provision consistent user by email
+      // If network is unreachable or on static host (405/404), provision consistent user by email
       console.warn('Backend network unreachable during signup, creating consistent local user:', err.message)
       const stableId = getDeterministicUserId(cleanEmail)
       const existing = getStoredProfile(cleanEmail)
@@ -162,6 +213,10 @@ export const useAuthStore = create<AuthState>((set, get) => ({
         is_profile_completed: false,
         auth_provider: 'email',
         ...existing,
+      }
+
+      if (password) {
+        try { localStorage.setItem(`cv_pwd_${cleanEmail}`, password) } catch {}
       }
 
       const token = `token_${localUser.id}`
