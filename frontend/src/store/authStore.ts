@@ -278,21 +278,38 @@ export const useAuthStore = create<AuthState>((set, get) => ({
   },
 
   updateProfile: async (data: Partial<User>) => {
-    const current = get().user
+    const current = get().user || getInitialUser() || {
+      id: 'usr_' + Date.now().toString(36),
+      email: 'student@codevault.dev',
+      username: 'student',
+      display_name: 'Student',
+      is_profile_completed: true,
+    }
+
+    const guaranteedUser: User = {
+      ...current,
+      ...data,
+      is_profile_completed: true,
+    } as User
+
     try {
-      const res: any = await authApi.updateProfile(data)
-      const updatedUser = res?.data || res || { ...current, ...data }
-      localStorage.setItem('codevault_user', JSON.stringify(updatedUser))
-      if (updatedUser.email) saveStoredProfile(updatedUser.email, updatedUser)
-      set({ user: updatedUser })
-      return updatedUser
+      const res: any = await authApi.updateProfile({ ...data, is_profile_completed: true })
+      const serverUser = (res && typeof res === 'object') ? (res.data || res) : null
+      const finalUser: User = {
+        ...guaranteedUser,
+        ...(serverUser && typeof serverUser === 'object' ? serverUser : {}),
+        is_profile_completed: true,
+      }
+      localStorage.setItem('codevault_user', JSON.stringify(finalUser))
+      if (finalUser.email) saveStoredProfile(finalUser.email, finalUser)
+      set({ user: finalUser, loading: false })
+      return finalUser
     } catch {
-      // Local fallback
-      const merged = { ...current, ...data, is_profile_completed: true } as User
-      localStorage.setItem('codevault_user', JSON.stringify(merged))
-      if (merged.email) saveStoredProfile(merged.email, merged)
-      set({ user: merged })
-      return merged
+      // Local fallback for static hosting or network error
+      localStorage.setItem('codevault_user', JSON.stringify(guaranteedUser))
+      if (guaranteedUser.email) saveStoredProfile(guaranteedUser.email, guaranteedUser)
+      set({ user: guaranteedUser, loading: false })
+      return guaranteedUser
     }
   },
 

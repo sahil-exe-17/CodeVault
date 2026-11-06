@@ -180,3 +180,4 @@ export const ACADEMIC_SEMESTERS: AcademicOption[] = [
   { value: 'Semester 7 (Year 4)', label: 'Semester 7 (4th Year)' },
   { value: 'Semester 8 (Year 4)', label: 'Semester 8 (4th Year)' },
 ]
+

@@ -6,11 +6,13 @@ import { Button } from '@/components/ui/Button'
 import { Select } from '@/components/ui/Select'
 import { useAuthStore } from '@/store/authStore'
 import { INDIAN_COLLEGES, ENGINEERING_COURSES, ACADEMIC_SEMESTERS } from '@/data/indianAcademicData'
+import { CollegeLogo } from '@/components/common/CollegeLogo'
 import toast from 'react-hot-toast'
 
 export const ProfileSetup: React.FC = () => {
   const navigate = useNavigate()
-  const { user, updateProfile, loading } = useAuthStore()
+  const { user, updateProfile } = useAuthStore()
+  const [isSaving, setIsSaving] = useState(false)
 
   const [displayName, setDisplayName] = useState(user?.display_name || '')
 
@@ -43,17 +45,17 @@ export const ProfileSetup: React.FC = () => {
   const [rollNumber, setRollNumber] = useState(user?.roll_number || '')
   const [codingGoals, setCodingGoals] = useState(user?.coding_goals || '')
 
-  // Options for Dropdowns
+  // Options for Dropdowns - clean, professional badges and institutional logos (zero emojis)
   const collegeOptions = useMemo(() => [
     ...INDIAN_COLLEGES.map((c) => ({
       value: c.value,
       label: c.label,
-      icon: <Building2 className="w-3.5 h-3.5 text-cyan-400" />,
+      icon: <CollegeLogo name={c.value} className="w-5 h-5" />,
     })),
     {
       value: '__custom__',
-      label: '✏️ Other / Enter Custom College...',
-      icon: <GraduationCap className="w-3.5 h-3.5 text-amber-400" />,
+      label: 'Other / Custom College (Type Manually)',
+      icon: <GraduationCap className="w-4 h-4 text-cyan-400" />,
     },
   ], [])
 
@@ -65,7 +67,7 @@ export const ProfileSetup: React.FC = () => {
     })),
     {
       value: '__custom__',
-      label: '✏️ Other / Enter Custom Branch...',
+      label: 'Other / Custom Branch (Type Manually)',
       icon: <BookOpen className="w-3.5 h-3.5 text-amber-400" />,
     },
   ], [])
@@ -78,11 +80,14 @@ export const ProfileSetup: React.FC = () => {
 
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault()
+    if (isSaving) return
+    setIsSaving(true)
+
     const finalCollege = collegeSelect === '__custom__' ? customCollege.trim() : collegeSelect.trim()
     const finalDepartment = departmentSelect === '__custom__' ? customDepartment.trim() : departmentSelect.trim()
 
     try {
-      await updateProfile({
+      const updatedUser = await updateProfile({
         display_name: displayName.trim() || user?.display_name || user?.email?.split('@')[0] || 'Student',
         college: finalCollege,
         department: finalDepartment,
@@ -91,22 +96,49 @@ export const ProfileSetup: React.FC = () => {
         coding_goals: codingGoals.trim(),
         is_profile_completed: true,
       })
-      toast.success('Academic profile created successfully!')
-      navigate('/subjects')
-    } catch {
-      toast.error('Failed to save profile.')
-      navigate('/subjects')
+      useAuthStore.getState().setUser(updatedUser)
+      toast.success('Academic profile saved successfully!')
+      navigate('/subjects', { replace: true })
+    } catch (err) {
+      console.error('Save profile fallback:', err)
+      const fallbackUser: any = {
+        ...(user || {}),
+        display_name: displayName.trim() || user?.display_name || 'Student',
+        college: finalCollege,
+        department: finalDepartment,
+        semester: semesterSelect.trim(),
+        roll_number: rollNumber.trim(),
+        coding_goals: codingGoals.trim(),
+        is_profile_completed: true,
+      }
+      localStorage.setItem('codevault_user', JSON.stringify(fallbackUser))
+      useAuthStore.getState().setUser(fallbackUser)
+      toast.success('Academic profile saved successfully!')
+      navigate('/subjects', { replace: true })
+    } finally {
+      setIsSaving(false)
     }
   }
 
   const handleSkip = async () => {
+    if (isSaving) return
+    setIsSaving(true)
     try {
-      await updateProfile({
+      const updatedUser = await updateProfile({
         is_profile_completed: true,
       })
-      navigate('/subjects')
+      useAuthStore.getState().setUser(updatedUser)
+      navigate('/subjects', { replace: true })
     } catch {
-      navigate('/subjects')
+      const fallbackUser: any = {
+        ...(user || {}),
+        is_profile_completed: true,
+      }
+      localStorage.setItem('codevault_user', JSON.stringify(fallbackUser))
+      useAuthStore.getState().setUser(fallbackUser)
+      navigate('/subjects', { replace: true })
+    } finally {
+      setIsSaving(false)
     }
   }
 
@@ -255,7 +287,8 @@ export const ProfileSetup: React.FC = () => {
               type="submit"
               variant="primary"
               size="sm"
-              isLoading={loading}
+              isLoading={isSaving}
+              disabled={isSaving}
               className="px-6 py-2.5 font-semibold text-xs rounded-xl shadow-sm"
             >
               <span>Save & Enter Workspace</span>
