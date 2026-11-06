@@ -122,9 +122,9 @@ export const OfficialLabRecordModal: React.FC<OfficialLabRecordModalProps> = ({
 
   // Load attached photos for this experiment
   useEffect(() => {
-    if (!experiment.id) return
+    const keyId = experiment.id || experiment.title || 'current'
     try {
-      const storageKey = `cv_lab_record_photos_${experiment.id}`
+      const storageKey = `cv_lab_record_photos_${keyId}`
       const saved = localStorage.getItem(storageKey)
       if (saved) {
         const parsed = JSON.parse(saved)
@@ -133,15 +133,15 @@ export const OfficialLabRecordModal: React.FC<OfficialLabRecordModalProps> = ({
         }
       }
     } catch {}
-  }, [experiment.id])
+  }, [experiment.id, experiment.title])
 
   const persistPhotos = (images: string[]) => {
-    if (!experiment.id) return
+    const keyId = experiment.id || experiment.title || 'current'
     try {
-      const storageKey = `cv_lab_record_photos_${experiment.id}`
+      const storageKey = `cv_lab_record_photos_${keyId}`
       localStorage.setItem(storageKey, JSON.stringify(images))
     } catch (e) {
-      console.warn('Failed to persist lab record photos:', e)
+      console.warn('Failed to persist lab record photos to localStorage quota:', e)
     }
   }
 
@@ -206,39 +206,115 @@ export const OfficialLabRecordModal: React.FC<OfficialLabRecordModalProps> = ({
     }
   }
 
-  // Handle uploading photos of handwritten pages / notebook scans
-  const handlePhotoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const files = e.target.files
-    if (!files || files.length === 0) return
-
-    setIsAttachingPhoto(true)
-    const newImgs: string[] = []
-    let loadedCount = 0
-
-    Array.from(files).forEach((file) => {
-      if (!file.type.startsWith('image/')) {
-        toast.error(`"${file.name}" is not an image file.`)
+  /**
+   * Compresses student camera photos to memory-safe 1400px JPEGs
+   * Prevents localStorage quota limits and GPU canvas crashes during PDF rendering
+   */
+  const compressImageForLabRecord = (file: File): Promise<string> => {
+    return new Promise((resolve, reject) => {
+      const isImg = file.type.startsWith('image/') || /\.(jpe?g|png|webp|bmp|heic|heif|gif)$/i.test(file.name)
+      if (!isImg) {
+        reject(new Error(`"${file.name}" is not an image.`))
         return
       }
 
-      const reader = new FileReader()
-      reader.onload = () => {
-        const base64 = reader.result as string
-        newImgs.push(base64)
-        loadedCount++
-        if (loadedCount === files.length) {
-          setHandwrittenImages((prev) => {
-            const updated = [...prev, ...newImgs]
-            persistPhotos(updated)
-            return updated
-          })
-          setIsAttachingPhoto(false)
-          toast.success(`Attached ${newImgs.length} handwritten observation sheet(s)!`)
+      const objectUrl = URL.createObjectURL(file)
+      const img = new Image()
+
+      img.onload = () => {
+        URL.revokeObjectURL(objectUrl)
+        try {
+          const MAX_DIM = 1400
+          let { width, height } = img
+
+          if (width > MAX_DIM || height > MAX_DIM) {
+            if (width > height) {
+              height = Math.round((height * MAX_DIM) / width)
+              width = MAX_DIM
+            } else {
+              width = Math.round((width * MAX_DIM) / height)
+              height = MAX_DIM
+            }
+          }
+
+          const canvas = document.createElement('canvas')
+          canvas.width = width
+          canvas.height = height
+          const ctx = canvas.getContext('2d')
+          if (!ctx) {
+            const reader = new FileReader()
+            reader.onload = () => resolve(reader.result as string)
+            reader.onerror = () => reject(new Error('FileReader failed'))
+            reader.readAsDataURL(file)
+            return
+          }
+
+          ctx.fillStyle = '#FFFFFF'
+          ctx.fillRect(0, 0, width, height)
+          ctx.drawImage(img, 0, 0, width, height)
+
+          const compressed = canvas.toDataURL('image/jpeg', 0.85)
+          resolve(compressed)
+        } catch (err) {
+          const reader = new FileReader()
+          reader.onload = () => resolve(reader.result as string)
+          reader.onerror = () => reject(err)
+          reader.readAsDataURL(file)
         }
       }
-      reader.readAsDataURL(file)
+
+      img.onerror = () => {
+        URL.revokeObjectURL(objectUrl)
+        const reader = new FileReader()
+        reader.onload = () => resolve(reader.result as string)
+        reader.onerror = () => reject(new Error(`Failed to load "${file.name}"`))
+        reader.readAsDataURL(file)
+      }
+
+      img.src = objectUrl
     })
-    e.target.value = ''
+  }
+
+  // Handle uploading photos of handwritten pages / notebook scans with full auto-compression
+  const handlePhotoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const fileList = e.target.files
+    if (!fileList || fileList.length === 0) return
+
+    const files = Array.from(fileList)
+    setIsAttachingPhoto(true)
+    const toastId = toast.loading(`Attaching & optimizing ${files.length} handwritten photo(s)...`)
+
+    try {
+      const results = await Promise.allSettled(files.map(compressImageForLabRecord))
+      const successfulImages: string[] = []
+
+      results.forEach((res, i) => {
+        if (res.status === 'fulfilled') {
+          successfulImages.push(res.value)
+        } else {
+          console.warn('Photo processing skipped for:', files[i].name, res.reason)
+          toast.error(`"${files[i].name}" could not be attached as an image.`)
+        }
+      })
+
+      if (successfulImages.length > 0) {
+        setHandwrittenImages((prev) => {
+          const updated = [...prev, ...successfulImages]
+          persistPhotos(updated)
+          return updated
+        })
+        // Guarantee that the handwritten scans section is active in the output PDF
+        setIncludeHandwrittenScans(true)
+        toast.success(`Attached ${successfulImages.length} handwritten page(s) to PDF!`, { id: toastId })
+      } else {
+        toast.error('No valid photos attached. Please upload JPG, PNG, or WEBP photos.', { id: toastId })
+      }
+    } catch (err: any) {
+      toast.error('Error attaching photos: ' + (err.message || 'Error'), { id: toastId })
+    } finally {
+      setIsAttachingPhoto(false)
+      e.target.value = ''
+    }
   }
 
   const handleRemovePhoto = (index: number) => {
@@ -1425,20 +1501,34 @@ export const OfficialLabRecordModal: React.FC<OfficialLabRecordModalProps> = ({
                   ref={fileInputRef}
                   type="file"
                   multiple
-                  accept="image/*"
+                  accept="image/*,.jpg,.jpeg,.png,.webp,.bmp,.heic,.heif"
                   onChange={handlePhotoUpload}
                   className="hidden"
                 />
 
-                <button
-                  type="button"
+                <div
+                  onDragOver={(e) => { e.preventDefault(); e.stopPropagation(); }}
+                  onDrop={(e) => {
+                    e.preventDefault()
+                    e.stopPropagation()
+                    if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+                      const pseudoEvent = {
+                        target: { files: e.dataTransfer.files, value: '' }
+                      } as unknown as React.ChangeEvent<HTMLInputElement>
+                      handlePhotoUpload(pseudoEvent)
+                    }
+                  }}
                   onClick={() => fileInputRef.current?.click()}
-                  disabled={isAttachingPhoto}
-                  className="w-full py-2.5 px-3 rounded-xl border border-dashed border-[var(--border-hover)] hover:border-white bg-[var(--bg-metric)] hover:bg-[var(--bg-card-hover)] text-xs font-semibold flex items-center justify-center gap-2 transition-all cursor-pointer"
+                  className="w-full py-3 px-3 rounded-xl border border-dashed border-white/20 hover:border-white bg-[var(--bg-metric)] hover:bg-[var(--bg-card-hover)] text-xs font-semibold flex flex-col items-center justify-center gap-1.5 transition-all cursor-pointer group"
                 >
-                  <Upload className="w-3.5 h-3.5 text-white" />
-                  <span>{isAttachingPhoto ? 'Loading Photos...' : '+ Attach Handwritten Page Photos'}</span>
-                </button>
+                  <div className="flex items-center gap-2">
+                    <Upload className="w-4 h-4 text-white group-hover:scale-110 transition-transform" />
+                    <span className="text-white">{isAttachingPhoto ? 'Processing Photos...' : '+ Attach Handwritten Page Photos'}</span>
+                  </div>
+                  <span className="text-[10px] text-[var(--text-muted)] font-normal text-center">
+                    Click to select or drag & drop camera photos (.jpg, .png, .webp)
+                  </span>
+                </div>
 
                 {/* Attached Photo Thumbnails */}
                 {handwrittenImages.length > 0 && (

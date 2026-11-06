@@ -285,22 +285,42 @@ export const ExperimentWorkspace: React.FC = () => {
     URL.revokeObjectURL(url)
   }
 
-  // Practical Notebook PDF Handlers
+  // Practical Notebook PDF Handlers (supports both PDF and auto-converting photos to PDF)
   const handleNotebookPdfUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
     if (!file || !id) return
 
-    if (!file.name.toLowerCase().endsWith('.pdf') && file.type !== 'application/pdf') {
-      toast.error('Please upload a PDF file (.pdf)')
-      return
-    }
-
-    const formData = new FormData()
-    formData.append('file', file)
-
     setIsUploadingPdf(true)
-    const toastId = toast.loading('Uploading written practical notebook...')
+    const toastId = toast.loading('Processing practical notebook upload...')
+
     try {
+      let finalFile = file
+
+      // If user uploaded an image photo, convert it directly to a clean A4 PDF!
+      const isImg = file.type.startsWith('image/') || /\.(jpe?g|png|webp|bmp|heic)$/i.test(file.name)
+      if (isImg) {
+        toast.loading('Converting notebook photo to PDF...', { id: toastId })
+        const { jsPDF } = await import('jspdf')
+        const base64 = await new Promise<string>((resolve, reject) => {
+          const reader = new FileReader()
+          reader.onload = () => resolve(reader.result as string)
+          reader.onerror = reject
+          reader.readAsDataURL(file)
+        })
+
+        const pdfDoc = new jsPDF({ unit: 'mm', format: 'a4', orientation: 'portrait' })
+        pdfDoc.addImage(base64, 'JPEG', 10, 10, 190, 0)
+        const pdfBlob = pdfDoc.output('blob')
+        finalFile = new File([pdfBlob], file.name.replace(/\.[^/.]+$/, '') + '_Notebook.pdf', {
+          type: 'application/pdf',
+        })
+      } else if (!file.name.toLowerCase().endsWith('.pdf') && file.type !== 'application/pdf') {
+        throw new Error('Please upload a PDF file (.pdf) or image photo (.jpg, .png).')
+      }
+
+      const formData = new FormData()
+      formData.append('file', finalFile)
+
       const res: any = await experimentsApi.uploadNotebookPdf(id, formData)
       const data = res?.data || res
       setExperiment((prev) => ({
@@ -310,7 +330,7 @@ export const ExperimentWorkspace: React.FC = () => {
         notebook_pdf_size: data.notebook_pdf_size,
         notebook_uploaded_at: data.notebook_uploaded_at,
       }))
-      toast.success('Written practical notebook uploaded.', { id: toastId })
+      toast.success(isImg ? 'Notebook photo converted to PDF and saved!' : 'Written practical notebook uploaded.', { id: toastId })
     } catch (err: any) {
       toast.error(err.message || 'Failed to upload notebook PDF', { id: toastId })
     } finally {
@@ -806,14 +826,14 @@ export const ExperimentWorkspace: React.FC = () => {
               <label className="cursor-pointer">
                 <input
                   type="file"
-                  accept=".pdf,application/pdf"
+                  accept="application/pdf,image/*,.jpg,.jpeg,.png,.webp,.heic"
                   disabled={isUploadingPdf}
                   onChange={handleNotebookPdfUpload}
                   className="hidden"
                 />
                 <div className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium bg-white text-black hover:bg-[#E5E5E5] transition-colors cursor-pointer">
                   <Upload className="w-3.5 h-3.5" />
-                  <span>{experiment.notebook_pdf_url ? 'Replace Notebook PDF' : 'Upload Written Notebook (PDF)'}</span>
+                  <span>{experiment.notebook_pdf_url ? 'Replace Notebook (PDF/Photo)' : 'Upload Written Notebook (PDF or Photos)'}</span>
                 </div>
               </label>
 
