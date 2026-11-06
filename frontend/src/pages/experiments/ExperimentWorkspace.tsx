@@ -31,6 +31,7 @@ import { ScanPhotoModal } from '@/components/experiments/ScanPhotoModal'
 import { AIRecommendationsModal, type CodeRecommendationData } from '@/components/experiments/AIRecommendationsModal'
 import { OfficialLabRecordModal } from '@/components/experiments/OfficialLabRecordModal'
 import { experimentsApi, aiApi } from '@/lib/api'
+import { explainCodeWithAi, generateAlgorithmFromCode, getCodeRecommendations } from '@/lib/aiService'
 import { useThemeStore } from '@/store/themeStore'
 import type { Experiment, CodeSnippetItem } from '@/types'
 import toast from 'react-hot-toast'
@@ -90,6 +91,10 @@ export const ExperimentWorkspace: React.FC = () => {
   const [aiModalTitle, setAiModalTitle] = useState('')
   const [isAiLoading, setIsAiLoading] = useState(false)
   const [aiOutput, setAiOutput] = useState<any>(null)
+
+  // AI Algorithm & Aim generation states
+  const [isGeneratingAlgo, setIsGeneratingAlgo] = useState(false)
+  const [isGeneratingAim, setIsGeneratingAim] = useState(false)
 
   // University Lab Record / Exam Printout Modal
   const [isLabRecordOpen, setIsLabRecordOpen] = useState(false)
@@ -340,31 +345,82 @@ export const ExperimentWorkspace: React.FC = () => {
   // AI Actions
   const handleExplainAI = async () => {
     setIsAiLoading(true)
-    setAiModalTitle(`AI Explanation — ${activeSnippet.title}`)
+    setAiModalTitle(`Academic AI Code Explanation — ${activeSnippet.title}`)
     setIsAiModalOpen(true)
     setAiOutput(null)
 
     try {
-      const res: any = await aiApi.explain({
-        experiment_id: id,
+      const data = await explainCodeWithAi({
         code: activeSnippet.code,
         language: activeSnippet.language,
         mode: 'exam',
+        experiment_id: id,
       })
-      setAiOutput({ type: 'explain', data: res?.data || res })
-    } catch {
-      setAiOutput({
-        type: 'explain',
-        data: {
-          program_overview: `Algorithmic implementation in ${activeSnippet.language.toUpperCase()}.`,
-          logic_breakdown: '1. Input buffer initialization.\n2. Invariant boundary checks.\n3. Deterministic state transitions.',
-          time_complexity: 'Worst Case: O(n^2) | Best Case: O(n)',
-          space_complexity: 'Auxiliary Memory: O(1) in-place',
-          exam_points: 'Always present the termination proof and loop boundaries during viva.',
-        },
-      })
+      setAiOutput({ type: 'explain', data })
+    } catch (err: any) {
+      toast.error('Could not generate explanation: ' + (err.message || 'Error'))
     } finally {
       setIsAiLoading(false)
+    }
+  }
+
+  // Automatic Step-by-Step Algorithm Generator from Source Code
+  const handleWriteAlgorithmWithAi = async () => {
+    const targetCode = activeSnippet?.code || experiment.source_code || ''
+    if (!targetCode.trim()) {
+      toast.error('Write or paste code in the editor first.')
+      return
+    }
+
+    setIsGeneratingAlgo(true)
+    const toastId = toast.loading('AI analyzing code & writing academic algorithm...')
+
+    try {
+      const algo = await generateAlgorithmFromCode({
+        code: targetCode,
+        language: activeSnippet?.language || experiment.language || 'c',
+        title: experiment.title || activeSnippet?.title,
+      })
+
+      setExperiment((prev) => ({ ...prev, algorithm: algo }))
+      toast.success('Step-by-step algorithm generated!', { id: toastId })
+    } catch (err: any) {
+      toast.error('Failed to generate algorithm: ' + (err.message || 'Error'), { id: toastId })
+    } finally {
+      setIsGeneratingAlgo(false)
+    }
+  }
+
+  // Automatic Practical Aim Formulator from Source Code
+  const handleWriteAimWithAi = async () => {
+    const targetCode = activeSnippet?.code || experiment.source_code || ''
+    if (!targetCode.trim()) {
+      toast.error('Write or paste code in the editor first.')
+      return
+    }
+
+    setIsGeneratingAim(true)
+    const toastId = toast.loading('AI formulating practical aim...')
+
+    try {
+      const rec = await getCodeRecommendations({
+        code: targetCode,
+        language: activeSnippet?.language || experiment.language,
+      })
+
+      if (rec?.aim) {
+        setExperiment((prev) => ({
+          ...prev,
+          aim: rec.aim,
+          time_complexity: prev.time_complexity || rec.time_complexity,
+          space_complexity: prev.space_complexity || rec.space_complexity,
+        }))
+        toast.success('Practical aim updated!', { id: toastId })
+      }
+    } catch (err: any) {
+      toast.error('Failed to formulate aim: ' + (err.message || 'Error'), { id: toastId })
+    } finally {
+      setIsGeneratingAim(false)
     }
   }
 
@@ -847,22 +903,57 @@ export const ExperimentWorkspace: React.FC = () => {
           </div>
 
           <div className="space-y-3">
+            {/* Experiment Aim with Write with AI */}
             <div className="flex flex-col gap-1.5">
-              <label className="text-xs font-medium text-[var(--text-muted)]">Experiment Aim</label>
+              <div className="flex items-center justify-between">
+                <label className="text-xs font-semibold text-[var(--text-muted)] font-['Manrope']">
+                  Experiment Aim
+                </label>
+                <button
+                  type="button"
+                  onClick={handleWriteAimWithAi}
+                  disabled={isGeneratingAim}
+                  className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-white/[0.05] hover:bg-white/[0.12] border border-white/10 text-white/90 hover:text-white text-[11px] font-medium transition-all cursor-pointer disabled:opacity-50 select-none active:scale-[0.98]"
+                  title="Generate academic aim from current source code"
+                >
+                  <Sparkles className={`w-3.5 h-3.5 text-white/80 ${isGeneratingAim ? 'animate-spin' : ''}`} />
+                  <span>{isGeneratingAim ? 'Writing Aim...' : 'Write with AI'}</span>
+                </button>
+              </div>
               <input
                 type="text"
-                placeholder="State the objective of this practical..."
+                placeholder="e.g. To implement, verify, and analyze the algorithm with time and space complexity evaluation."
                 value={experiment.aim || ''}
                 onChange={(e) => setExperiment((p) => ({ ...p, aim: e.target.value }))}
                 className="bg-[var(--bg-card)] text-[var(--text-main)] text-xs rounded-lg border border-[var(--border-subtle)] px-3 py-2.5 focus:border-white focus:outline-none"
               />
             </div>
 
+            {/* Step-by-Step Algorithm with Write with AI */}
             <div className="flex flex-col gap-1.5">
-              <label className="text-xs font-medium text-[var(--text-muted)]">Step-by-Step Algorithm</label>
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <label className="text-xs font-semibold text-[var(--text-muted)] font-['Manrope']">
+                    Step-by-Step Algorithm
+                  </label>
+                  <span className="text-[10px] font-mono text-[var(--text-dim)] bg-white/[0.04] px-1.5 py-0.5 rounded border border-white/5">
+                    Lab Manual Format
+                  </span>
+                </div>
+                <button
+                  type="button"
+                  onClick={handleWriteAlgorithmWithAi}
+                  disabled={isGeneratingAlgo}
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white text-black hover:bg-neutral-200 text-xs font-semibold transition-all cursor-pointer disabled:opacity-50 select-none shadow-[0_0_15px_rgba(255,255,255,0.15)] active:scale-[0.98]"
+                  title="AI reads your active source code and writes numbered academic steps"
+                >
+                  <Sparkles className={`w-3.5 h-3.5 text-black ${isGeneratingAlgo ? 'animate-spin' : ''}`} />
+                  <span>{isGeneratingAlgo ? 'Writing Algorithm...' : 'Write with AI'}</span>
+                </button>
+              </div>
               <textarea
-                rows={3}
-                placeholder="1. Start\n2. Initialize array\n3. Perform comparisons\n4. Stop"
+                rows={5}
+                placeholder="Step 1: Start the program execution.\nStep 2: Initialize required variables.\nStep 3: Read user inputs.\nStep 4: Execute processing logic.\nStep 5: Display results.\nStep 6: Stop."
                 value={experiment.algorithm || ''}
                 onChange={(e) => setExperiment((p) => ({ ...p, algorithm: e.target.value }))}
                 className="bg-[var(--bg-card)] text-[var(--text-main)] font-mono text-xs rounded-lg border border-[var(--border-subtle)] p-3 focus:border-white focus:outline-none leading-relaxed"
@@ -932,35 +1023,58 @@ export const ExperimentWorkspace: React.FC = () => {
             </div>
           ) : aiOutput?.type === 'explain' ? (
             <div className="space-y-4 text-xs">
-              <div className="p-3 bg-[var(--bg-card)] rounded-xl border border-[var(--border-subtle)] space-y-1">
-                <span className="font-semibold text-white">Overview</span>
-                <p className="text-[var(--text-muted)] leading-relaxed">{aiOutput.data?.program_overview}</p>
+              <div className="p-3.5 bg-[var(--bg-card)] rounded-xl border border-[var(--border-subtle)] space-y-1.5">
+                <span className="font-semibold text-white tracking-tight">Academic Program Overview</span>
+                <p className="text-[var(--text-muted)] leading-relaxed whitespace-pre-wrap">{aiOutput.data?.program_overview}</p>
               </div>
 
+              {aiOutput.data?.simple_explanation && (
+                <div className="p-3 bg-white/[0.03] rounded-xl border border-white/10 space-y-1">
+                  <span className="font-semibold text-white/90">Intuitive Analogy</span>
+                  <p className="text-[var(--text-muted)] leading-relaxed">{aiOutput.data.simple_explanation}</p>
+                </div>
+              )}
+
               {aiOutput.data?.logic_breakdown && (
-                <div className="p-3 bg-[var(--bg-card)] rounded-xl border border-[var(--border-subtle)] space-y-1">
-                  <span className="font-semibold text-white">Logic Breakdown</span>
-                  <pre className="text-[var(--text-muted)] font-mono text-[11px] whitespace-pre-wrap">
+                <div className="p-3.5 bg-[var(--bg-card)] rounded-xl border border-[var(--border-subtle)] space-y-1.5">
+                  <span className="font-semibold text-white tracking-tight">Step-by-Step Logic Breakdown</span>
+                  <pre className="text-[var(--text-muted)] font-mono text-[11px] whitespace-pre-wrap leading-relaxed">
                     {aiOutput.data.logic_breakdown}
                   </pre>
                 </div>
               )}
 
-              <div className="grid grid-cols-2 gap-3">
+              {aiOutput.data?.line_by_line && (
+                <div className="p-3 bg-[var(--bg-card)] rounded-xl border border-[var(--border-subtle)] space-y-1">
+                  <span className="font-semibold text-white">Line / Function Highlights</span>
+                  <pre className="text-[var(--text-muted)] font-mono text-[11px] whitespace-pre-wrap leading-relaxed">
+                    {aiOutput.data.line_by_line}
+                  </pre>
+                </div>
+              )}
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div className="p-3 bg-[var(--bg-card)] rounded-xl border border-[var(--border-subtle)]">
                   <span className="font-semibold text-white">Time Complexity</span>
-                  <p className="text-[var(--text-muted)] font-mono mt-1">{aiOutput.data?.time_complexity}</p>
+                  <p className="text-[var(--text-muted)] font-mono mt-1 text-[11px] leading-relaxed">{aiOutput.data?.time_complexity}</p>
                 </div>
                 <div className="p-3 bg-[var(--bg-card)] rounded-xl border border-[var(--border-subtle)]">
                   <span className="font-semibold text-white">Space Complexity</span>
-                  <p className="text-[var(--text-muted)] font-mono mt-1">{aiOutput.data?.space_complexity}</p>
+                  <p className="text-[var(--text-muted)] font-mono mt-1 text-[11px] leading-relaxed">{aiOutput.data?.space_complexity}</p>
                 </div>
               </div>
 
               {aiOutput.data?.exam_points && (
-                <div className="p-3 bg-[var(--bg-card)] rounded-xl border border-[var(--border-subtle)] space-y-1">
-                  <span className="font-semibold text-white">Exam Key Points</span>
-                  <p className="text-[var(--text-muted)] leading-relaxed">{aiOutput.data.exam_points}</p>
+                <div className="p-3.5 bg-white/[0.04] rounded-xl border border-white/10 space-y-1.5">
+                  <span className="font-semibold text-white">Examiner Viva / Oral Exam Questions & Answers</span>
+                  <p className="text-[var(--text-muted)] leading-relaxed whitespace-pre-wrap">{aiOutput.data.exam_points}</p>
+                </div>
+              )}
+
+              {aiOutput.data?.common_mistakes && (
+                <div className="p-3 bg-red-500/10 rounded-xl border border-red-500/20 space-y-1">
+                  <span className="font-semibold text-red-300">Common Pitfalls & Edge Cases</span>
+                  <p className="text-red-200/90 leading-relaxed whitespace-pre-wrap">{aiOutput.data.common_mistakes}</p>
                 </div>
               )}
             </div>

@@ -23,6 +23,7 @@ import {
   RotateCcw,
 } from 'lucide-react'
 import { useAuthStore } from '@/store/authStore'
+import { generateAlgorithmFromCode } from '@/lib/aiService'
 import type { Experiment, CodeSnippetItem } from '@/types'
 import toast from 'react-hot-toast'
 
@@ -104,6 +105,8 @@ export const OfficialLabRecordModal: React.FC<OfficialLabRecordModalProps> = ({
   const [includeAim, setIncludeAim] = useState(true)
   const [includeTheory, setIncludeTheory] = useState(true)
   const [includeAlgorithm, setIncludeAlgorithm] = useState(true)
+  const [currentAlgorithm, setCurrentAlgorithm] = useState(experiment.algorithm || '')
+  const [isGeneratingModalAlgo, setIsGeneratingModalAlgo] = useState(false)
   const [includeCode, setIncludeCode] = useState(true)
   const [includeOutput, setIncludeOutput] = useState(true)
   const [includeHandwrittenScans, setIncludeHandwrittenScans] = useState(true)
@@ -171,6 +174,36 @@ export const OfficialLabRecordModal: React.FC<OfficialLabRecordModalProps> = ({
       localStorage.removeItem('cv_saved_university_logo')
     } catch {}
     toast.success('Reset to standard academic crest.')
+  }
+
+  // Automatic Step-by-Step Algorithm Generator from Source Code
+  const handleWriteAlgorithmInModal = async () => {
+    const targetCode = activeCodeSnippet?.code || experiment.source_code || ''
+    if (!targetCode.trim()) {
+      toast.error('No source code found to write algorithm.')
+      return
+    }
+
+    setIsGeneratingModalAlgo(true)
+    const toastId = toast.loading('AI is reading code & writing step-by-step algorithm...')
+
+    try {
+      const algo = await generateAlgorithmFromCode({
+        code: targetCode,
+        language: activeCodeSnippet?.language || experiment.language || 'c',
+        title: experiment.title,
+      })
+
+      setCurrentAlgorithm(algo)
+      if (experiment) {
+        experiment.algorithm = algo
+      }
+      toast.success('Academic algorithm generated!', { id: toastId })
+    } catch (err: any) {
+      toast.error('Could not generate algorithm: ' + (err.message || 'Error'), { id: toastId })
+    } finally {
+      setIsGeneratingModalAlgo(false)
+    }
   }
 
   // Handle uploading photos of handwritten pages / notebook scans
@@ -288,6 +321,7 @@ export const OfficialLabRecordModal: React.FC<OfficialLabRecordModalProps> = ({
         </div>
         <div class="section-text font-serif" style="white-space: pre-line; padding-left: 6px;">
           ${escapeHtml(
+            currentAlgorithm ||
             experiment.algorithm ||
               `Step 1: Start the program execution.\nStep 2: Declare variables and allocate required memory.\nStep 3: Accept user input parameters.\nStep 4: Execute core computational logic.\nStep 5: Display results on console and verify output.\nStep 6: Stop.`
           )}
@@ -1335,6 +1369,40 @@ export const OfficialLabRecordModal: React.FC<OfficialLabRecordModalProps> = ({
                 </div>
               </div>
 
+              {/* Step-by-Step Algorithm Review & Write with AI */}
+              {includeAlgorithm && (
+                <div className="space-y-2 pt-2 border-t border-[var(--border-subtle)]">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-1.5 font-bold uppercase tracking-wider text-[11px] text-[var(--text-dim)]">
+                      <Sparkles className="w-3.5 h-3.5 text-white/90" />
+                      <span>Algorithm & Procedure</span>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={handleWriteAlgorithmInModal}
+                      disabled={isGeneratingModalAlgo}
+                      className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-white text-black hover:bg-neutral-200 text-[11px] font-semibold transition-all cursor-pointer disabled:opacity-50 select-none shadow-sm active:scale-95"
+                      title="AI reads source code and writes numbered academic steps"
+                    >
+                      <Sparkles className={`w-3 h-3 text-black ${isGeneratingModalAlgo ? 'animate-spin' : ''}`} />
+                      <span>{isGeneratingModalAlgo ? 'Writing...' : 'Write with AI'}</span>
+                    </button>
+                  </div>
+                  <textarea
+                    rows={4}
+                    value={currentAlgorithm}
+                    onChange={(e) => {
+                      setCurrentAlgorithm(e.target.value)
+                      if (experiment) {
+                        experiment.algorithm = e.target.value
+                      }
+                    }}
+                    placeholder="Click 'Write with AI' to automatically write numbered algorithm steps from source code..."
+                    className="w-full bg-[var(--bg-input)] border border-[var(--border-subtle)] rounded-lg p-2 text-xs font-mono text-[var(--text-main)] placeholder-[var(--text-dim)] focus:outline-none focus:border-white leading-relaxed"
+                  />
+                </div>
+              )}
+
               {/* Handwritten Notebook Photos Attachment Box (Requested Feature!) */}
               <div className="space-y-3 pt-2 border-t border-[var(--border-subtle)]">
                 <div className="flex items-center justify-between">
@@ -1516,7 +1584,8 @@ export const OfficialLabRecordModal: React.FC<OfficialLabRecordModalProps> = ({
                       <span>3. Algorithm / Step-by-Step Procedure</span>
                     </h4>
                     <div className="text-xs sm:text-sm text-neutral-900 leading-relaxed font-serif whitespace-pre-line pl-2">
-                      {experiment.algorithm ||
+                      {currentAlgorithm ||
+                        experiment.algorithm ||
                         `Step 1: Start the program execution.\nStep 2: Initialize required variables and allocate necessary memory buffers.\nStep 3: Read user input parameters.\nStep 4: Execute core processing logic according to algorithm specifications.\nStep 5: Format and display output results on the console.\nStep 6: Release allocated resources and terminate successfully.`}
                     </div>
                   </div>

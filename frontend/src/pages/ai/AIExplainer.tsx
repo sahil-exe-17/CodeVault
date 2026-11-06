@@ -18,7 +18,8 @@ import { Button } from '@/components/ui/Button'
 import { Badge } from '@/components/ui/Badge'
 import { Select, SelectOption } from '@/components/ui/Select'
 import { useThemeStore } from '@/store/themeStore'
-import { experimentsApi, aiApi } from '@/lib/api'
+import { experimentsApi } from '@/lib/api'
+import { explainCodeWithAi } from '@/lib/aiService'
 import type { Experiment, AIExplanation } from '@/types'
 import toast from 'react-hot-toast'
 
@@ -70,41 +71,35 @@ export const AIExplainer: React.FC = () => {
 
     setIsLoading(true)
     try {
-      const res: any = await aiApi.explain({
+      const data: any = await explainCodeWithAi({
         experiment_id: selectedExpId || undefined,
         code,
         language,
         mode,
       })
 
-      if (res && (res.program_overview || res.data)) {
-        setExplanation(res.data || res)
-        toast.success('Deep analysis complete!')
-      } else {
-        // Fallback structured model
-        setExplanation({
-          id: 'exp-ai-1',
-          experiment_id: selectedExpId || '1',
-          mode,
-          program_overview: 'This program implements an optimized Bubble Sort algorithm in C. It continuously compares adjacent elements and swaps them if they are in the wrong order, terminating early when no swaps occur.',
-          simple_explanation: 'Think of elements bubbling up to their rightful position like bubbles in water. By tracking if any elements swapped in a pass, the algorithm avoids redundant passes on already sorted input.',
-          line_by_line: 'Line 4: Defines bubbleSort function taking array and size n.\nLine 5: Declares loop counters and swapped boolean flag.\nLine 6-16: Outer loop controls passes; inner loop performs pairwise comparisons.\nLine 17: Early termination check terminates O(n) in best case.\nLine 20-27: Driver main() initializes test array, invokes sorter, and prints results.',
-          logic_breakdown: '1. Array elements are checked pairwise.\n2. Inverted pairs are swapped using a temporary buffer.\n3. The swapped flag is reset at the start of each outer loop.\n4. If an entire pass completes without swaps, the loop breaks immediately.',
-          execution_flow: 'main() → bubbleSort() → Pass 1 (find max, bubble to end) → Pass 2 → Break if swapped==0 → Print results.',
-          variables_and_functions: '• bubbleSort(arr, n): Sorts input array in-place.\n• swapped: Flag preventing redundant passes on sorted sub-arrays.\n• temp: Temporary memory buffer for in-place swap.',
-          algorithm_explanation: 'Iterative pairwise comparison with adaptive early termination.',
-          io_explanation: 'Input: [64, 34, 25, 12, 22, 11, 90]\nOutput: 11 12 22 25 34 64 90',
-          time_complexity: 'Best Case: O(n) | Average/Worst Case: O(n²)',
-          space_complexity: 'O(1) Auxiliary space (In-place sort)',
-          common_mistakes: '• Forgetting the swapped flag reduces best-case efficiency to O(n²).\n• Running the inner loop to n rather than n-i-1 does redundant comparisons on sorted tails.\n• Off-by-one errors when accessing arr[j+1].',
-          exam_points: '★ Viva Question: What is the benefit of the swapped flag? (Turns best-case from O(n²) to O(n)).\n★ Viva Question: Is Bubble Sort stable? Yes, because equal elements are never swapped.\n★ Practical Exam Answer: Explain that space complexity is strictly O(1).',
-          created_at: new Date().toISOString(),
-          updated_at: new Date().toISOString(),
-        })
-        toast.success('AI analysis generated')
-      }
-    } catch {
-      toast.error('AI service temporarily offline. Ensure backend is running.')
+      setExplanation({
+        id: `exp-ai-${Date.now()}`,
+        experiment_id: selectedExpId || '1',
+        mode,
+        program_overview: data.program_overview,
+        simple_explanation: data.simple_explanation || data.program_overview,
+        line_by_line: data.line_by_line || '',
+        logic_breakdown: data.logic_breakdown,
+        execution_flow: data.execution_flow || data.logic_breakdown,
+        variables_and_functions: data.variables_and_functions || '',
+        algorithm_explanation: data.algorithm_explanation || data.logic_breakdown,
+        io_explanation: data.io_explanation || '',
+        time_complexity: data.time_complexity,
+        space_complexity: data.space_complexity,
+        common_mistakes: data.common_mistakes || '',
+        exam_points: data.exam_points,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+      })
+      toast.success('Deep academic analysis complete!')
+    } catch (err: any) {
+      toast.error('Could not complete analysis: ' + (err.message || 'Error'))
     } finally {
       setIsLoading(false)
     }
