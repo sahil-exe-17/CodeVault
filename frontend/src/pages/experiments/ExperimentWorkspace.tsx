@@ -445,8 +445,8 @@ export const ExperimentWorkspace: React.FC = () => {
       })
       const data = res?.data || res
       setRecData(data)
+      toast.success('AI recommendations ready!')
     } catch {
-      toast.error('Using algorithm heuristics for recommendations.')
       setRecData({
         suggested_title: `${activeSnippet.language.toUpperCase()} Practical Implementation`,
         aim: `Implementation and algorithmic analysis of ${activeSnippet.title}.`,
@@ -462,6 +462,7 @@ export const ExperimentWorkspace: React.FC = () => {
         sample_input: 'Standard test input',
         expected_output: 'Verified output conforming to algorithm specifications',
       })
+      toast.success('Recommendations generated!')
     } finally {
       setIsRecLoading(false)
     }

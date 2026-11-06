@@ -346,7 +346,7 @@ export const ExperimentDetail: React.FC<ExperimentDetailProps> = ({ mode = 'edit
         toast.success('AI explanation ready')
       }
     } catch {
-      toast.error('AI explanation error. Ensure GEMINI_API_KEY is configured.')
+      toast.error('AI explanation error. Please try again.')
     } finally {
       setIsExplaining(false)
     }

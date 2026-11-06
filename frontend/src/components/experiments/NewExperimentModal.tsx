@@ -232,7 +232,7 @@ export const NewExperimentModal: React.FC<NewExperimentModalProps> = ({
         />
 
         <p className="text-[11px] text-[var(--text-dim)] bg-[var(--bg-card)] p-2.5 rounded-lg border border-[var(--border-subtle)] font-mono">
-          Tip: You can use "Scan from Photo" or click "Auto-Name from Code" to have Gemini AI detect and name your practical automatically.
+          Tip: You can use "Scan from Photo" or click "Auto-Name from Code" to have CodeVault AI detect and name your practical automatically.
         </p>
 
         <div className="flex items-center justify-between gap-2 pt-3 border-t border-[var(--border-subtle)]">

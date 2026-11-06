@@ -336,7 +336,7 @@ If someone alters the condition to \`>=\`, Bubble Sort becomes **unstable** beca
 
           <div className="flex items-center gap-2 text-xs text-[var(--text-muted)]">
             <Sparkles className="w-3.5 h-3.5 text-white" />
-            <span className="hidden sm:inline">Gemini AI</span>
+            <span className="hidden sm:inline">CodeVault AI</span>
           </div>
         </div>
 

@@ -1,4 +1,5 @@
 import axios from 'axios'
+import { getCodeRecommendations } from './aiService'
 
 // Smart base URL detection:
 // 1. If running locally on localhost/127.0.0.1, use VITE_API_BASE_URL (http://localhost:8000).
@@ -110,7 +111,7 @@ export const experimentsApi = {
 
 export const aiApi = {
   recommendCode: (data: { code: string; language?: string; experiment_id?: string }) =>
-    api.post('/api/ai/recommend-code', data),
+    getCodeRecommendations(data),
   explain: (data: any) => api.post('/api/ai/explain', data),
   explainCode: (data: any) => api.post('/api/ai/explain', data),
   getExplanation: (id: string) => api.get(`/api/ai/explanation/${id}`),

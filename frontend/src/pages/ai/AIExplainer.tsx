@@ -259,7 +259,7 @@ export const AIExplainer: React.FC = () => {
                 <div className="animate-spin w-7 h-7 border-2 border-white border-t-transparent rounded-full mx-auto" />
                 <h4 className="text-sm font-semibold text-white">Analyzing program structure...</h4>
                 <p className="text-xs text-[var(--text-muted)] max-w-xs mx-auto">
-                  Generating deep logic graphs, time complexity, and practical exam hints with Gemini.
+                  Generating deep logic graphs, time complexity, and practical exam hints with CodeVault AI.
                 </p>
               </div>
             ) : explanation ? (

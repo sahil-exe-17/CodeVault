@@ -90,10 +90,10 @@ const compressImageIfNeeded = async (file: File): Promise<File> => {
   })
 }
 
-const directGeminiVisionScan = async (file: File): Promise<any> => {
+const directAiVisionScan = async (file: File): Promise<any> => {
   const apiKey = import.meta.env.VITE_GEMINI_API_KEY || ''
   if (!apiKey) {
-    throw new Error('Gemini API key is not configured for direct vision scan.')
+    throw new Error('AI Vision API key is not configured for direct scan.')
   }
 
   const base64Data = await new Promise<string>((resolve, reject) => {
@@ -143,7 +143,7 @@ Output pure JSON only with keys: 'title', 'experiment_number', 'language', 'topi
   )
 
   if (!res.ok) {
-    throw new Error(`Gemini Multimodal Vision API returned status ${res.status}`)
+    throw new Error(`AI Vision API returned status ${res.status}`)
   }
 
   const json = await res.json()
@@ -257,7 +257,7 @@ export const ScanPhotoModal: React.FC<ScanPhotoModalProps> = ({
         setSelectedFile(fileToSend)
       }
 
-      setScanStatus('Gemini Vision reading code & identifying algorithm...')
+      setScanStatus('AI Vision reading code & identifying algorithm...')
 
       const formData = new FormData()
       formData.append('file', fileToSend)
@@ -275,15 +275,15 @@ export const ScanPhotoModal: React.FC<ScanPhotoModalProps> = ({
             onExtracted(res)
           }
         } catch (apiErr: any) {
-          // If server returns Network Error (e.g. mobile or static deployment), run direct Gemini Vision
+          // If server returns Network Error (e.g. mobile or static deployment), run direct AI Vision
           console.warn('Backend endpoint unavailable, falling back to direct AI Vision:', apiErr)
-          setScanStatus('Running direct Gemini Vision transcription...')
-          const direct = await directGeminiVisionScan(fileToSend)
+          setScanStatus('Running direct AI Vision transcription...')
+          const direct = await directAiVisionScan(fileToSend)
           setExtractedData(direct)
           setEditedCode(direct.source_code || '')
           setEditedTitle(direct.title || 'Photo Extracted Experiment')
           setEditedLanguage(direct.language || 'c')
-          toast.success('Code transcribed via Gemini Vision!', { id: toastId })
+          toast.success('Code transcribed via CodeVault AI!', { id: toastId })
           if (onExtracted) {
             onExtracted({ extracted: direct })
           }
@@ -305,13 +305,13 @@ export const ScanPhotoModal: React.FC<ScanPhotoModalProps> = ({
         } catch (apiErr: any) {
           // Direct client-side vision fallback
           console.warn('Backend endpoint unavailable, falling back to direct AI Vision:', apiErr)
-          setScanStatus('Running direct Gemini Vision transcription...')
-          const direct = await directGeminiVisionScan(fileToSend)
+          setScanStatus('Running direct AI Vision transcription...')
+          const direct = await directAiVisionScan(fileToSend)
           setExtractedData(direct)
           setEditedCode(direct.source_code || '')
           setEditedTitle(direct.title || 'Photo Extracted Experiment')
           setEditedLanguage(direct.language || 'c')
-          toast.success('Code transcribed via Gemini Vision!', { id: toastId })
+          toast.success('Code transcribed via CodeVault AI!', { id: toastId })
         }
       }
     } catch (err: any) {
@@ -436,7 +436,7 @@ export const ScanPhotoModal: React.FC<ScanPhotoModalProps> = ({
       isOpen={isOpen}
       onClose={onClose}
       title="Scan Code from Photo (AI Vision)"
-      description="Capture or upload a photo of your handwritten lab notebook, whiteboard, textbook, or monitor screen. Gemini Vision automatically transcribes the code and recommends program details."
+      description="Capture or upload a photo of your handwritten lab notebook, whiteboard, textbook, or monitor screen. CodeVault AI automatically transcribes the code and recommends program details."
       maxWidth="2xl"
     >
       <div className="space-y-4">
