@@ -41,18 +41,18 @@ export const AppNavbar: React.FC<AppNavbarProps> = ({
       onMouseMove={handleMouseMove}
       className="sticky top-0 z-40 w-full bg-[var(--bg-header)] backdrop-blur-2xl border-b border-[var(--border-subtle)] select-none transition-colors duration-200"
     >
-      {/* 1. Dynamic Cursor Spotlight across Top Bar */}
+      {/* 1. Dynamic Cursor Spotlight across Top Bar - Pure Monochrome */}
       <div
-        className="absolute top-0 bottom-0 pointer-events-none transition-opacity duration-300 w-96 -translate-x-1/2 opacity-20 blur-2xl"
+        className="absolute top-0 bottom-0 pointer-events-none transition-opacity duration-300 w-96 -translate-x-1/2 opacity-25 blur-2xl"
         style={{
           left: `${mousePos.x}px`,
-          background: 'radial-gradient(ellipse at top, rgba(244, 63, 94, 0.2), rgba(56, 189, 248, 0.15), transparent 70%)',
+          background: 'radial-gradient(ellipse at top, rgba(255, 255, 255, 0.08), transparent 70%)',
         }}
       />
 
-      {/* 2. Traveling Animated Laser Beam along the bottom edge */}
-      <div className="absolute bottom-0 left-0 right-0 h-[1.5px] overflow-hidden pointer-events-none">
-        <div className="w-[200%] h-full bg-gradient-to-r from-transparent via-pink-500 via-amber-300 via-emerald-400 via-sky-400 to-transparent animate-[laser-pan_6s_linear_infinite] opacity-50" />
+      {/* 2. Pure Monochrome Hairline Gleam along the bottom edge */}
+      <div className="absolute bottom-0 left-0 right-0 h-[1px] overflow-hidden pointer-events-none">
+        <div className="w-[200%] h-full bg-gradient-to-r from-transparent via-white/10 via-white/35 via-white/10 to-transparent animate-[laser-pan_7s_linear_infinite] opacity-60" />
       </div>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 h-15 flex items-center justify-between gap-4 relative z-10">

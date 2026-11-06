@@ -23,6 +23,7 @@ import { Select, SelectOption } from '@/components/ui/Select'
 import { AppNavbar } from '@/components/layout/AppNavbar'
 import { ScanPhotoModal } from '@/components/experiments/ScanPhotoModal'
 import { OfficialLabRecordModal } from '@/components/experiments/OfficialLabRecordModal'
+import { MasterLabManualModal } from '@/components/subjects/MasterLabManualModal'
 import { subjectsApi, experimentsApi, aiApi } from '@/lib/api'
 import { useAuthStore } from '@/store/authStore'
 import type { Subject, Experiment } from '@/types'
@@ -45,6 +46,18 @@ export const SubjectDetail: React.FC = () => {
   const [aiContent, setAiContent] = useState<any>(null)
   const [isAiLoading, setIsAiLoading] = useState(false)
   const [selectedExpForRecord, setSelectedExpForRecord] = useState<Experiment | null>(null)
+  const [isMasterManualOpen, setIsMasterManualOpen] = useState(false)
+
+  // Practical Completion & Submission Readiness
+  const completedExperimentsCount = experiments.filter((e) => {
+    const hasCode = (e.source_code && e.source_code.trim().length > 0) || (e.code_files && e.code_files.length > 0)
+    return Boolean(hasCode || e.is_revised || (e.actual_output && e.actual_output.trim().length > 0))
+  }).length
+
+  const totalExperimentsCount = experiments.length
+  const completionPercentage = totalExperimentsCount > 0
+    ? Math.round((completedExperimentsCount / totalExperimentsCount) * 100)
+    : 0
 
   // New Experiment Form
   const [expTitle, setExpTitle] = useState('')
@@ -312,8 +325,8 @@ export const SubjectDetail: React.FC = () => {
 
   return (
     <div className="relative min-h-screen bg-[var(--bg-canvas)] text-[var(--text-main)] select-none flex flex-col overflow-hidden transition-colors duration-200">
-      <div className="hidden md:block absolute top-0 right-1/4 w-[500px] h-[300px] bg-gradient-to-br from-purple-500/10 via-pink-500/10 to-transparent blur-[120px] pointer-events-none" />
-      <div className="hidden md:block absolute top-1/3 left-10 w-[450px] h-[300px] bg-gradient-to-tr from-sky-500/10 to-transparent blur-[120px] pointer-events-none" />
+      <div className="hidden md:block absolute top-0 right-1/4 w-[500px] h-[300px] bg-gradient-to-br from-white/[0.04] to-transparent blur-[140px] pointer-events-none" />
+      <div className="hidden md:block absolute top-1/3 left-10 w-[450px] h-[300px] bg-gradient-to-tr from-white/[0.03] to-transparent blur-[140px] pointer-events-none" />
 
       <AppNavbar showAddSubject={false} />
 
@@ -359,6 +372,16 @@ export const SubjectDetail: React.FC = () => {
 
             <button
               type="button"
+              onClick={() => setIsMasterManualOpen(true)}
+              className="h-9 px-3.5 rounded-xl bg-[var(--bg-card)] hover:bg-[var(--bg-card-hover)] border border-[var(--border-subtle)] hover:border-[var(--border-hover)] text-[var(--text-main)] text-xs font-medium flex items-center gap-1.5 backdrop-blur-md transition-all cursor-pointer shadow-sm active:scale-[0.98]"
+              title="Compile and download all practicals in one complete lab manual PDF"
+            >
+              <BookOpen className="w-3.5 h-3.5 text-[var(--text-muted)]" />
+              <span>Full Lab Manual PDF</span>
+            </button>
+
+            <button
+              type="button"
               onClick={() => setIsScanOpen(true)}
               className="h-9 px-3.5 rounded-xl bg-[var(--bg-card)] hover:bg-[var(--bg-card-hover)] border border-[var(--border-subtle)] hover:border-[var(--border-hover)] text-[var(--text-main)] text-xs font-medium flex items-center gap-1.5 backdrop-blur-md transition-all cursor-pointer shadow-sm active:scale-[0.98]"
             >
@@ -381,6 +404,46 @@ export const SubjectDetail: React.FC = () => {
             >
               <span>Revision Summary</span>
             </button>
+          </div>
+        </div>
+
+        {/* Practical Completion Readiness Bar */}
+        <div className="p-5 sm:p-6 rounded-3xl bg-[var(--bg-card)] border border-[var(--border-subtle)] backdrop-blur-xl shadow-sm space-y-3 transition-colors duration-200">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5">
+            <div className="flex items-center gap-2.5">
+              <div className="w-2 h-2 rounded-full bg-white shadow-[0_0_8px_rgba(255,255,255,0.8)]" />
+              <span className="text-xs font-bold text-[var(--text-main)] font-['Manrope'] tracking-tight">
+                Practical Completion & Submission Readiness
+              </span>
+              <span className="text-[11px] font-mono px-2.5 py-0.5 rounded-full bg-[var(--bg-metric)] text-[var(--text-muted)] border border-[var(--border-subtle)]">
+                {completedExperimentsCount} / {totalExperimentsCount} Practicals Documented
+              </span>
+            </div>
+
+            <div className="flex items-center gap-2 text-xs font-mono">
+              <span className="text-[var(--text-muted)]">
+                {totalExperimentsCount === 0
+                  ? 'No practicals added yet'
+                  : completionPercentage === 100
+                  ? '✓ 100% Ready for Viva & University Submission'
+                  : `${completionPercentage}% Term Work Complete`}
+              </span>
+            </div>
+          </div>
+
+          {/* Minimalist High-Contrast Progress Bar Track & Fill */}
+          <div className="w-full h-2 rounded-full bg-[var(--bg-metric)] border border-[var(--border-subtle)] overflow-hidden p-0.5">
+            <motion.div
+              initial={{ width: 0 }}
+              animate={{ width: `${completionPercentage}%` }}
+              transition={{ duration: 0.6, ease: 'easeOut' }}
+              className="h-full rounded-full bg-white shadow-[0_0_10px_rgba(255,255,255,0.35)]"
+            />
+          </div>
+
+          <div className="flex items-center justify-between text-[10px] text-[var(--text-dim)] font-mono pt-0.5">
+            <span>University External Examiner Standard</span>
+            <span>Target: 100% Syllabus Coverage</span>
           </div>
         </div>
 
@@ -675,6 +738,14 @@ export const SubjectDetail: React.FC = () => {
           allCodeSnippets={selectedExpForRecord.code_files}
         />
       )}
+
+      {/* Complete Laboratory Manual (Batch PDF) Modal */}
+      <MasterLabManualModal
+        isOpen={isMasterManualOpen}
+        onClose={() => setIsMasterManualOpen(false)}
+        subject={subject}
+        experiments={experiments}
+      />
     </div>
   )
 }

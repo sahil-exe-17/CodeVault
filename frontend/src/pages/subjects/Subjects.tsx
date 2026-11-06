@@ -170,67 +170,86 @@ export const Subjects: React.FC = () => {
 
       {/* Grid of Subject Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-        {subjects.map((sub) => (
-          <div
-            key={sub.id}
-            className="bg-[var(--bg-card)] border border-[var(--border-subtle)] hover:border-[rgba(255,255,255,0.18)] rounded-xl p-5 flex flex-col justify-between transition-all group"
-          >
-            <div>
-              <div className="flex items-center justify-between gap-2 mb-3">
-                <span className="text-[10px] text-[var(--text-muted)] font-mono uppercase tracking-wider bg-[#1c1c1c] px-2 py-0.5 rounded border border-[var(--border-subtle)]">
-                  {sub.semester || 'Course'}
-                </span>
-                <div className="flex items-center gap-1">
-                  <button
-                    onClick={() => handleOpenModal(sub)}
-                    className="p-1 text-[var(--text-dim)] hover:text-white rounded transition-colors"
-                    title="Edit subject"
-                  >
-                    <Edit2 className="w-3.5 h-3.5" />
-                  </button>
-                  <button
-                    onClick={() => setDeleteId(sub.id)}
-                    className="p-1 text-[var(--text-dim)] hover:text-white rounded transition-colors"
-                    title="Delete subject"
-                  >
-                    <Trash2 className="w-3.5 h-3.5" />
-                  </button>
-                </div>
-              </div>
+        {subjects.map((sub) => {
+          let count = sub.experiment_count || 0
+          let completed = 0
+          try {
+            const raw = localStorage.getItem(`cv_experiments_${sub.id}`)
+            if (raw) {
+              const list = JSON.parse(raw)
+              if (Array.isArray(list)) {
+                count = Math.max(count, list.length)
+                completed = list.filter((e: any) => e.source_code || (e.code_files && e.code_files.length > 0) || e.is_revised).length
+              }
+            }
+          } catch {}
+          const percent = count > 0 ? Math.round((completed / count) * 100) : 0
 
-              <h3 className="text-base font-bold font-['Manrope'] text-white group-hover:text-neutral-200 transition-colors mb-2">
-                {sub.name}
-              </h3>
-
-              <p className="text-xs text-[var(--text-dim)] line-clamp-3 leading-relaxed mb-6">
-                {sub.description || 'No description provided for this subject.'}
-              </p>
-            </div>
-
-            <div className="space-y-4 pt-4 border-t border-[var(--border-subtle)]">
-              {/* Revision Progress */}
-              <div className="space-y-1.5">
-                <div className="flex items-center justify-between text-xs text-[var(--text-muted)]">
-                  <span>Total Experiments</span>
-                  <span className="font-mono text-white">
-                    {sub.experiment_count || 4} practicals
+          return (
+            <div
+              key={sub.id}
+              className="bg-[var(--bg-card)] border border-[var(--border-subtle)] hover:border-[rgba(255,255,255,0.18)] rounded-xl p-5 flex flex-col justify-between transition-all group"
+            >
+              <div>
+                <div className="flex items-center justify-between gap-2 mb-3">
+                  <span className="text-[10px] text-[var(--text-muted)] font-mono uppercase tracking-wider bg-[#1c1c1c] px-2 py-0.5 rounded border border-[var(--border-subtle)]">
+                    {sub.semester || 'Course'}
                   </span>
+                  <div className="flex items-center gap-1">
+                    <button
+                      onClick={() => handleOpenModal(sub)}
+                      className="p-1 text-[var(--text-dim)] hover:text-white rounded transition-colors"
+                      title="Edit subject"
+                    >
+                      <Edit2 className="w-3.5 h-3.5" />
+                    </button>
+                    <button
+                      onClick={() => setDeleteId(sub.id)}
+                      className="p-1 text-[var(--text-dim)] hover:text-white rounded transition-colors"
+                      title="Delete subject"
+                    >
+                      <Trash2 className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
                 </div>
-                <div className="w-full h-1.5 bg-[#222222] rounded-full overflow-hidden">
-                  <div className="h-full bg-white rounded-full w-[60%]" />
-                </div>
+
+                <h3 className="text-base font-bold font-['Manrope'] text-white group-hover:text-neutral-200 transition-colors mb-2">
+                  {sub.name}
+                </h3>
+
+                <p className="text-xs text-[var(--text-dim)] line-clamp-3 leading-relaxed mb-6">
+                  {sub.description || 'No description provided for this subject.'}
+                </p>
               </div>
 
-              <button
-                onClick={() => navigate(`/experiments?subject=${sub.id}`)}
-                className="w-full py-2 bg-[#1c1c1c] hover:bg-[var(--bg-card-hover)] text-xs font-semibold text-white rounded-lg border border-[var(--border-subtle)] flex items-center justify-center gap-2 transition-colors"
-              >
-                <span>View Experiments</span>
-                <ArrowRight className="w-3.5 h-3.5" />
-              </button>
+              <div className="space-y-4 pt-4 border-t border-[var(--border-subtle)]">
+                {/* Practical Completion Readiness */}
+                <div className="space-y-1.5">
+                  <div className="flex items-center justify-between text-xs text-[var(--text-muted)]">
+                    <span className="text-[11px] font-medium text-[var(--text-muted)]">Lab Readiness</span>
+                    <span className="font-mono text-xs text-white">
+                      {completed} / {count} practicals ({percent}%)
+                    </span>
+                  </div>
+                  <div className="w-full h-1.5 bg-[#222222] rounded-full overflow-hidden">
+                    <div
+                      className="h-full bg-white rounded-full transition-all duration-300"
+                      style={{ width: `${percent}%` }}
+                    />
+                  </div>
+                </div>
+
+                <button
+                  onClick={() => navigate(`/experiments?subject=${sub.id}`)}
+                  className="w-full py-2 bg-[#1c1c1c] hover:bg-[var(--bg-card-hover)] text-xs font-semibold text-white rounded-lg border border-[var(--border-subtle)] flex items-center justify-center gap-2 transition-colors"
+                >
+                  <span>View Experiments</span>
+                  <ArrowRight className="w-3.5 h-3.5" />
+                </button>
+              </div>
             </div>
-          </div>
-        ))}
+          )
+        })}
       </div>
 
       {/* Add / Edit Modal */}
