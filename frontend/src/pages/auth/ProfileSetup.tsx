@@ -1,6 +1,6 @@
 import React, { useState, useMemo } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { User, ArrowRight, Building2, Cpu, Layers, BookOpen, GraduationCap } from 'lucide-react'
+import { User, ArrowRight } from 'lucide-react'
 import { Input } from '@/components/ui/Input'
 import { Button } from '@/components/ui/Button'
 import { Select } from '@/components/ui/Select'
@@ -45,7 +45,7 @@ export const ProfileSetup: React.FC = () => {
   const [rollNumber, setRollNumber] = useState(user?.roll_number || '')
   const [codingGoals, setCodingGoals] = useState(user?.coding_goals || '')
 
-  // Options for Dropdowns - clean, professional badges and institutional logos (zero emojis)
+  // Options for Dropdowns - clean, minimalist, professional (zero bright badges or emojis)
   const collegeOptions = useMemo(() => [
     ...INDIAN_COLLEGES.map((c) => ({
       value: c.value,
@@ -60,7 +60,6 @@ export const ProfileSetup: React.FC = () => {
       label: 'Other / Custom College (Type Manually)',
       category: 'Other',
       description: 'Specify your institute name manually',
-      icon: <GraduationCap className="w-4 h-4 text-cyan-400" />,
     },
   ], [])
 
@@ -68,20 +67,17 @@ export const ProfileSetup: React.FC = () => {
     ...ENGINEERING_COURSES.map((c) => ({
       value: c.value,
       label: c.label,
-      icon: <Cpu className="w-3.5 h-3.5 text-pink-400" />,
     })),
     {
       value: '__custom__',
       label: 'Other / Custom Branch (Type Manually)',
       description: 'Enter your branch or specialization manually',
-      icon: <BookOpen className="w-3.5 h-3.5 text-amber-400" />,
     },
   ], [])
 
   const semesterOptions = useMemo(() => ACADEMIC_SEMESTERS.map((s) => ({
     value: s.value,
     label: s.label,
-    icon: <Layers className="w-3.5 h-3.5 text-emerald-400" />,
   })), [])
 
   const handleSave = async (e: React.FormEvent) => {
@@ -150,19 +146,12 @@ export const ProfileSetup: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-[var(--bg-canvas)] text-[var(--text-main)] flex items-center justify-center p-4 select-none relative overflow-hidden transition-colors duration-200">
-      {/* Dynamic Ambient Aurora Background Glow */}
-      <div className="absolute top-0 left-1/4 w-[500px] h-[300px] bg-gradient-to-br from-pink-500/10 via-purple-600/10 to-transparent blur-[120px] pointer-events-none" />
-      <div className="absolute top-1/2 right-10 w-[500px] h-[300px] bg-gradient-to-bl from-sky-500/10 via-emerald-500/10 to-transparent blur-[120px] pointer-events-none" />
-
       <div className="relative w-full max-w-2xl bg-[var(--bg-card)] border border-[var(--border-subtle)] rounded-3xl p-7 sm:p-9 shadow-2xl space-y-6 backdrop-blur-xl overflow-hidden transition-colors duration-200">
-        {/* Subtle Top Edge Laser Accent */}
-        <div className="absolute top-0 left-0 right-0 h-[1.5px] bg-gradient-to-r from-transparent via-pink-500/40 via-amber-300/40 to-transparent" />
-
         {/* Header */}
         <div className="space-y-1.5">
           <div className="flex items-center gap-2.5">
-            <div className="w-9 h-9 rounded-xl bg-[var(--bg-metric)] border border-[var(--border-subtle)] flex items-center justify-center shadow-sm">
-              <User className="w-4 h-4 text-cyan-400" />
+            <div className="w-9 h-9 rounded-xl bg-white/[0.04] border border-white/10 flex items-center justify-center shadow-sm">
+              <User className="w-4 h-4 text-white/90" />
             </div>
             <div>
               <h1 className="text-xl font-bold font-['Manrope'] text-[var(--text-main)] tracking-tight">
@@ -187,9 +176,8 @@ export const ProfileSetup: React.FC = () => {
 
           {/* College / University Selection (Across India) */}
           <div className="space-y-1.5">
-            <label className="text-xs font-semibold text-[var(--text-muted)] font-['Manrope'] flex items-center gap-1.5">
-              <Building2 className="w-3.5 h-3.5 text-cyan-400" />
-              <span>College / University (Colleges Across India)</span>
+            <label className="text-xs font-semibold text-[var(--text-muted)] font-['Manrope']">
+              College / University (Colleges Across India)
             </label>
             <Select
               value={collegeSelect}
@@ -214,9 +202,8 @@ export const ProfileSetup: React.FC = () => {
 
           {/* Department / Course Selection */}
           <div className="space-y-1.5">
-            <label className="text-xs font-semibold text-[var(--text-muted)] font-['Manrope'] flex items-center gap-1.5">
-              <Cpu className="w-3.5 h-3.5 text-pink-400" />
-              <span>Department / Engineering Course</span>
+            <label className="text-xs font-semibold text-[var(--text-muted)] font-['Manrope']">
+              Department / Engineering Course
             </label>
             <Select
               value={departmentSelect}
@@ -242,9 +229,8 @@ export const ProfileSetup: React.FC = () => {
           {/* Semester & Student Roll Number */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="space-y-1.5">
-              <label className="text-xs font-semibold text-[var(--text-muted)] font-['Manrope'] flex items-center gap-1.5">
-                <Layers className="w-3.5 h-3.5 text-emerald-400" />
-                <span>Current Semester / Year</span>
+              <label className="text-xs font-semibold text-[var(--text-muted)] font-['Manrope']">
+                Current Semester / Year
               </label>
               <Select
                 value={semesterSelect}

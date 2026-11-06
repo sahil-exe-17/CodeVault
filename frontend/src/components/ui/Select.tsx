@@ -161,7 +161,7 @@ export const resolveOptionIcon = (opt: SelectOptionType): React.ReactNode => {
     return <LanguageLogo language={key || label} />
   }
 
-  return <Compass className="w-3.5 h-3.5 text-[var(--sel-icon-color)]" />
+  return null
 }
 
 // Helper to extract options from JSX children if provided
@@ -370,8 +370,8 @@ export const Select: React.FC<SelectProps> = ({
   // Trigger button styling
   const triggerBase =
     size === 'compact'
-      ? 'group flex items-center justify-between gap-2 bg-[var(--bg-metric)]/70 hover:bg-[var(--bg-metric)] text-[var(--text-main)] text-xs px-2.5 py-1.5 rounded-lg border border-[var(--border-subtle)] hover:border-white/20 focus:border-cyan-400/50 focus:outline-none font-mono transition-all cursor-pointer shadow-sm disabled:opacity-50 disabled:cursor-not-allowed select-none active:scale-[0.99]'
-      : 'group flex w-full items-center justify-between gap-2.5 bg-[var(--bg-metric)]/60 hover:bg-[var(--bg-metric)] text-[var(--text-main)] text-sm px-3.5 py-2.5 rounded-xl border border-[var(--border-subtle)] hover:border-white/20 focus:border-cyan-400/50 focus:outline-none transition-all cursor-pointer shadow-sm disabled:opacity-50 disabled:cursor-not-allowed select-none active:scale-[0.995]'
+      ? 'group flex items-center justify-between gap-2 bg-[var(--bg-metric)]/70 hover:bg-[var(--bg-metric)] text-[var(--text-main)] text-xs px-2.5 py-1.5 rounded-lg border border-[var(--border-subtle)] hover:border-white/20 focus:border-white/30 focus:outline-none font-mono transition-all cursor-pointer shadow-sm disabled:opacity-50 disabled:cursor-not-allowed select-none active:scale-[0.99]'
+      : 'group flex w-full items-center justify-between gap-2.5 bg-[var(--bg-metric)]/60 hover:bg-[var(--bg-metric)] text-[var(--text-main)] text-sm px-3.5 py-2.5 rounded-xl border border-[var(--border-subtle)] hover:border-white/20 focus:border-white/30 focus:outline-none transition-all cursor-pointer shadow-sm disabled:opacity-50 disabled:cursor-not-allowed select-none active:scale-[0.995]'
 
   // Portal dropdown modal
   const dropdown = open
@@ -390,12 +390,9 @@ export const Select: React.FC<SelectProps> = ({
               width: dropPos.width,
               zIndex: 99999,
             }}
-            className="rounded-2xl border border-white/10 bg-[#0c0d14]/95 dark:bg-[#0c0d14]/95 light:bg-white light:border-slate-200 shadow-[0_25px_60px_-15px_rgba(0,0,0,0.85)] backdrop-blur-2xl overflow-hidden flex flex-col max-h-[460px]"
+            className="rounded-2xl border border-white/10 bg-[#0e1015]/95 dark:bg-[#0e1015]/95 light:bg-white light:border-slate-200 shadow-[0_25px_60px_-15px_rgba(0,0,0,0.85)] backdrop-blur-2xl overflow-hidden flex flex-col max-h-[460px]"
             onKeyDown={handleKeyDown}
           >
-            {/* Subtle Laser Accent */}
-            <div className="h-[1.5px] bg-gradient-to-r from-transparent via-cyan-400/60 via-purple-500/50 to-transparent shrink-0" />
-
             {/* Header with Title and Count Pill */}
             <div className="flex items-center justify-between px-3.5 pt-3 pb-2 border-b border-white/[0.06] shrink-0">
               <div className="flex items-center gap-2">
@@ -449,14 +446,14 @@ export const Select: React.FC<SelectProps> = ({
             {/* Minimalist Search Box */}
             {shouldSearch && (
               <div className="p-2.5 pb-2 shrink-0">
-                <div className="relative flex items-center bg-white/[0.04] border border-white/10 rounded-xl px-3 py-1.5 focus-within:border-cyan-400/50 focus-within:ring-1 focus-within:ring-cyan-400/20 transition-all">
+                <div className="relative flex items-center bg-white/[0.04] border border-white/10 rounded-xl px-3 py-1.5 focus-within:border-white/20 focus-within:ring-1 focus-within:ring-white/10 transition-all">
                   <Search className="w-3.5 h-3.5 text-[var(--text-muted)] shrink-0 mr-2" />
                   <input
                     ref={searchRef}
                     type="text"
                     value={search}
                     onChange={(e) => setSearch(e.target.value)}
-                    placeholder="Search institution, state, or course…"
+                    placeholder="Search…"
                     className="w-full bg-transparent border-none outline-none text-xs text-[var(--text-main)] placeholder-[var(--text-dim)] font-['Inter']"
                   />
                   {search && (
@@ -477,14 +474,13 @@ export const Select: React.FC<SelectProps> = ({
             <div
               ref={listRef}
               onScroll={handleListScroll}
-              className="flex-1 overflow-y-auto px-2 py-1 space-y-1 custom-scrollbar min-h-[140px]"
+              className="flex-1 overflow-y-auto px-2 py-1 space-y-0.5 custom-scrollbar min-h-[140px]"
               role="listbox"
             >
               {filtered.length === 0 ? (
                 <div className="py-8 text-center text-xs text-[var(--text-muted)] font-mono flex flex-col items-center justify-center gap-1.5">
                   <Compass className="w-5 h-5 text-[var(--text-dim)] stroke-[1.5]" />
-                  <span>No matching institutions found</span>
-                  <span className="text-[10px] text-[var(--text-dim)]">Try adjusting your search query</span>
+                  <span>No matching options found</span>
                 </div>
               ) : (
                 visibleItems.map((opt, idx) => {
@@ -502,25 +498,27 @@ export const Select: React.FC<SelectProps> = ({
                       onMouseEnter={() => setFocusedIndex(idx)}
                       className={`w-full text-left px-2.5 py-2 rounded-xl flex items-center justify-between gap-2.5 transition-all cursor-pointer group select-none border ${
                         isSelected
-                          ? 'bg-cyan-500/10 border-cyan-500/30 text-white font-medium shadow-[0_0_15px_rgba(6,182,212,0.1)]'
+                          ? 'bg-white/[0.08] border-white/15 text-white font-medium'
                           : isFocused
-                          ? 'bg-white/[0.06] border-white/10 text-[var(--text-main)]'
-                          : 'bg-transparent border-transparent text-[var(--text-main)] hover:bg-white/[0.04]'
+                          ? 'bg-white/[0.04] border-white/5 text-[var(--text-main)]'
+                          : 'bg-transparent border-transparent text-[var(--text-main)] hover:bg-white/[0.03]'
                       }`}
                     >
                       <div className="flex items-center gap-2.5 min-w-0 flex-1">
-                        {/* Minimalist Icon / Logo Container */}
-                        <div className="w-7 h-7 rounded-lg bg-black/40 border border-white/10 flex items-center justify-center shrink-0 overflow-hidden shadow-inner group-hover:scale-105 transition-transform">
-                          {iconNode}
-                        </div>
+                        {/* Minimalist Icon / Logo Container only when icon exists */}
+                        {iconNode && (
+                          <div className="w-6 h-6 rounded-lg bg-[#141416] border border-white/10 flex items-center justify-center shrink-0 overflow-hidden shadow-sm">
+                            {iconNode}
+                          </div>
+                        )}
 
                         {/* Label & Description Subtitle */}
                         <div className="min-w-0 flex-1">
-                          <p className={`text-xs truncate tracking-tight ${isSelected ? 'font-semibold text-cyan-300' : 'font-medium'}`}>
+                          <p className={`text-xs truncate tracking-tight ${isSelected ? 'font-semibold text-white' : 'font-normal text-neutral-200'}`}>
                             {opt.label}
                           </p>
                           {(opt.category || opt.description) && (
-                            <p className="text-[10px] text-[var(--text-muted)] truncate flex items-center gap-1.5">
+                            <p className="text-[10px] text-[var(--text-muted)] truncate flex items-center gap-1.5 mt-0.5">
                               {opt.category && (
                                 <span className="px-1.5 py-0.2 rounded bg-white/[0.04] border border-white/[0.06]">
                                   {opt.category}
@@ -532,16 +530,9 @@ export const Select: React.FC<SelectProps> = ({
                         </div>
                       </div>
 
-                      {/* Selection Checkmark */}
+                      {/* Clean Minimalist White Checkmark */}
                       {isSelected && (
-                        <motion.div
-                          initial={{ scale: 0.6, opacity: 0 }}
-                          animate={{ scale: 1, opacity: 1 }}
-                          transition={{ type: 'spring', stiffness: 500, damping: 25 }}
-                          className="w-4 h-4 rounded-full bg-cyan-400 text-black flex items-center justify-center shrink-0 ml-1.5 shadow-sm"
-                        >
-                          <Check className="w-2.5 h-2.5 stroke-[3]" />
-                        </motion.div>
+                        <Check className="w-3.5 h-3.5 text-white/90 stroke-[2.5] shrink-0 ml-1.5" />
                       )}
                     </button>
                   )
