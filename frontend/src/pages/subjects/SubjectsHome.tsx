@@ -23,22 +23,21 @@ export const SubjectsHome: React.FC = () => {
   const [newSubjectDesc, setNewSubjectDesc] = useState('')
   const [isCreating, setIsCreating] = useState(false)
 
-  const userStorageKey = `cv_subjects_${user?.id || user?.email || 'guest'}`
+  const userStorageKey = `cv_subjects_${user?.id || (user?.email ? encodeURIComponent(user.email.toLowerCase().trim()) : 'guest')}`
 
   /**
-   * Comprehensive subject retrieval across all user sessions and offline cache
+   * Strictly user-isolated subject retrieval (never cross-contaminates across accounts)
    */
   const getLocalSubjects = (): Subject[] => {
+    if (!user) return []
     const map = new Map<string, Subject>()
-    const keys = [
+    const userKeys = [
       userStorageKey,
-      `cv_subjects_${user?.id}`,
-      `cv_subjects_${user?.email}`,
-      'cv_subjects_guest',
-      'cv_subjects_all',
-    ]
+      user.id ? `cv_subjects_${user.id}` : null,
+      user.email ? `cv_subjects_${user.email.toLowerCase().trim()}` : null,
+    ].filter(Boolean) as string[]
 
-    for (const k of keys) {
+    for (const k of userKeys) {
       try {
         const raw = localStorage.getItem(k)
         if (raw) {
@@ -46,32 +45,16 @@ export const SubjectsHome: React.FC = () => {
           if (Array.isArray(list)) {
             list.forEach((s) => {
               if (s && s.id && !map.has(s.id)) {
-                map.set(s.id, s)
+                // Verify subject ownership: only accept subjects created by this user
+                if (!s.user_id || s.user_id === user.id || s.user_id === user.email) {
+                  map.set(s.id, s)
+                }
               }
             })
           }
         }
       } catch {}
     }
-
-    try {
-      for (let i = 0; i < localStorage.length; i++) {
-        const k = localStorage.key(i)
-        if (k && k.startsWith('cv_subjects_')) {
-          const raw = localStorage.getItem(k)
-          if (raw) {
-            const list = JSON.parse(raw)
-            if (Array.isArray(list)) {
-              list.forEach((s) => {
-                if (s && s.id && !map.has(s.id)) {
-                  map.set(s.id, s)
-                }
-              })
-            }
-          }
-        }
-      }
-    } catch {}
 
     return Array.from(map.values())
   }
@@ -80,8 +63,15 @@ export const SubjectsHome: React.FC = () => {
     try {
       const serialized = JSON.stringify(list)
       localStorage.setItem(userStorageKey, serialized)
-      localStorage.setItem('cv_subjects_all', serialized)
-      localStorage.setItem('cv_subjects_guest', serialized)
+      if (user?.id) {
+        localStorage.setItem(`cv_subjects_${user.id}`, serialized)
+      }
+      if (user?.email) {
+        localStorage.setItem(`cv_subjects_${user.email.toLowerCase().trim()}`, serialized)
+      }
+      // Purge legacy global keys that leaked data across user accounts
+      localStorage.removeItem('cv_subjects_all')
+      localStorage.removeItem('cv_subjects_guest')
     } catch (e) {
       console.warn('Failed to persist subjects in localStorage:', e)
     }
@@ -89,31 +79,25 @@ export const SubjectsHome: React.FC = () => {
 
   const loadSubjects = async () => {
     setIsLoading(true)
-    // 1. Immediately hydrate from local storage so user sees their subjects with 0 delay
+    // 1. Immediately hydrate from local storage strictly for this user (clears immediately if new user)
     const local = getLocalSubjects()
-    if (local.length > 0) {
-      setSubjects(local)
-    }
+    setSubjects(local)
 
-    // 2. Fetch from backend API if active and merge
+    // 2. Fetch from backend API if active and update
     try {
       const res: any = await subjectsApi.list()
       if (Array.isArray(res) && res.length > 0 && typeof res[0] === 'object' && res[0] !== null && 'id' in res[0]) {
-        const map = new Map<string, Subject>()
-        res.forEach((s: Subject) => {
-          if (s && s.id) map.set(s.id, s)
-        })
-        local.forEach((s) => {
-          if (s && s.id && !map.has(s.id)) map.set(s.id, s)
-        })
-        const merged = Array.from(map.values())
-        setSubjects(merged)
-        persistSubjects(merged)
-      } else if (local.length > 0) {
+        setSubjects(res)
+        persistSubjects(res)
+      } else if (Array.isArray(res) && res.length === 0) {
+        // Backend successfully confirmed 0 subjects for this user — keep 0
+        setSubjects(local)
+        persistSubjects(local)
+      } else {
         setSubjects(local)
       }
     } catch {
-      // Backend unavailable or static deployment — keep local subjects
+      // Backend unavailable or static deployment — keep this user's local subjects
       const freshLocal = getLocalSubjects()
       setSubjects(freshLocal)
     } finally {

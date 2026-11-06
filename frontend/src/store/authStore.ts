@@ -121,6 +121,8 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       localStorage.setItem('codevault_token', token)
       localStorage.setItem('codevault_user', JSON.stringify(user))
       saveStoredProfile(user.email, user)
+      localStorage.removeItem('cv_subjects_all')
+      localStorage.removeItem('cv_subjects_guest')
       if (password) {
         try { localStorage.setItem(`cv_pwd_${cleanEmail}`, password) } catch {}
       }
@@ -189,6 +191,8 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       localStorage.setItem('codevault_token', token)
       localStorage.setItem('codevault_user', JSON.stringify(user))
       saveStoredProfile(user.email, user)
+      localStorage.removeItem('cv_subjects_all')
+      localStorage.removeItem('cv_subjects_guest')
       if (password) {
         try { localStorage.setItem(`cv_pwd_${cleanEmail}`, password) } catch {}
       }
@@ -241,6 +245,8 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       localStorage.setItem('codevault_token', token)
       localStorage.setItem('codevault_user', JSON.stringify(user))
       saveStoredProfile(user.email, user)
+      localStorage.removeItem('cv_subjects_all')
+      localStorage.removeItem('cv_subjects_guest')
 
       set({ user, token, loading: false })
       return user
@@ -293,6 +299,8 @@ export const useAuthStore = create<AuthState>((set, get) => ({
   signOut: () => {
     localStorage.removeItem('codevault_token')
     localStorage.removeItem('codevault_user')
+    localStorage.removeItem('cv_subjects_all')
+    localStorage.removeItem('cv_subjects_guest')
     set({ user: null, token: null })
   },
 }))

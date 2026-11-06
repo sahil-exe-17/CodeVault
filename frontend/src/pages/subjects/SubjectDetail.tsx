@@ -54,17 +54,17 @@ export const SubjectDetail: React.FC = () => {
   const [expAim, setExpAim] = useState('')
   const [isCreatingExp, setIsCreatingExp] = useState(false)
 
-  const userStorageKey = `cv_subjects_${user?.id || user?.email || 'guest'}`
+  const userStorageKey = `cv_subjects_${user?.id || (user?.email ? encodeURIComponent(user.email.toLowerCase().trim()) : 'guest')}`
   const expStorageKey = `cv_experiments_${subjectId}`
 
   const findSubjectLocally = (id: string): Subject | null => {
+    if (!user) return null
     const keys = [
       userStorageKey,
-      `cv_subjects_${user?.id}`,
-      `cv_subjects_${user?.email}`,
-      'cv_subjects_all',
-      'cv_subjects_guest',
-    ]
+      user.id ? `cv_subjects_${user.id}` : null,
+      user.email ? `cv_subjects_${user.email.toLowerCase().trim()}` : null,
+    ].filter(Boolean) as string[]
+
     for (const k of keys) {
       try {
         const raw = localStorage.getItem(k)
@@ -72,26 +72,15 @@ export const SubjectDetail: React.FC = () => {
           const list = JSON.parse(raw)
           if (Array.isArray(list)) {
             const found = list.find((s: any) => s && s.id === id)
-            if (found && found.name) return found
+            if (found && found.name) {
+              if (!found.user_id || found.user_id === user.id || found.user_id === user.email) {
+                return found
+              }
+            }
           }
         }
       } catch {}
     }
-    try {
-      for (let i = 0; i < localStorage.length; i++) {
-        const k = localStorage.key(i)
-        if (k && k.startsWith('cv_subjects_')) {
-          const raw = localStorage.getItem(k)
-          if (raw) {
-            const list = JSON.parse(raw)
-            if (Array.isArray(list)) {
-              const found = list.find((s: any) => s && s.id === id)
-              if (found && found.name) return found
-            }
-          }
-        }
-      }
-    } catch {}
     return null
   }
 
