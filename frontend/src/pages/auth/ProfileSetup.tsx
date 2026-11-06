@@ -50,11 +50,16 @@ export const ProfileSetup: React.FC = () => {
     ...INDIAN_COLLEGES.map((c) => ({
       value: c.value,
       label: c.label,
-      icon: <CollegeLogo name={c.value} className="w-5 h-5" />,
+      category: c.category,
+      shortName: c.shortName,
+      description: `${c.city ? c.city + ' • ' : ''}${c.state || ''}`,
+      icon: <CollegeLogo name={c.value} domain={c.domain} className="w-5 h-5" />,
     })),
     {
       value: '__custom__',
       label: 'Other / Custom College (Type Manually)',
+      category: 'Other',
+      description: 'Specify your institute name manually',
       icon: <GraduationCap className="w-4 h-4 text-cyan-400" />,
     },
   ], [])
@@ -68,6 +73,7 @@ export const ProfileSetup: React.FC = () => {
     {
       value: '__custom__',
       label: 'Other / Custom Branch (Type Manually)',
+      description: 'Enter your branch or specialization manually',
       icon: <BookOpen className="w-3.5 h-3.5 text-amber-400" />,
     },
   ], [])

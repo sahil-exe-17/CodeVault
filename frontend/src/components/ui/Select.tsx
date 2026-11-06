@@ -1,21 +1,27 @@
 /**
- * Select — Custom themed dropdown matching the pill-list style shown in reference.
- * 
+ * Select — Minimalistic, aesthetic, crazy-animated, high-performance dropdown.
+ *
  * Features:
- * - Rounded capsule items with official language logo / icon badge and border
- * - Header title with optional close button
- * - Pill-shaped search bar with search icon on right
+ * - Framer Motion spring physics entrance and exit animations
+ * - Category filter chips with animated layoutId sliding pill
+ * - Live search with instant fuzzy matching (label, acronym, city, category)
+ * - Windowed / sliced progressive rendering for 60 FPS performance on large lists
+ * - Support for official college logos, language icons, and custom components
+ * - Keyboard navigation (Arrow keys, Enter, Escape)
  * - Light and Dark theme native styling
- * - Supports keyboard navigation & ESC to close
  */
-import React, { useState, useRef, useEffect, useId } from 'react'
+import React, { useState, useRef, useEffect, useId, useMemo } from 'react'
 import { ChevronDown, Search, Check, X, Compass, Code2 } from 'lucide-react'
 import { createPortal } from 'react-dom'
+import { motion, AnimatePresence } from 'framer-motion'
 
 export interface SelectOptionType {
   value: string
   label: string
   icon?: React.ReactNode
+  category?: string
+  description?: string
+  shortName?: string
 }
 
 interface SelectProps {
@@ -24,9 +30,9 @@ interface SelectProps {
   options?: SelectOptionType[]
   children?: React.ReactNode
   placeholder?: string
-  /** Title shown at the top of the dropdown modal/popover */
+  /** Title shown at the top of the dropdown modal */
   title?: string
-  /** compact = small inline variant (code editor toolbar). default = full input size */
+  /** compact = small inline variant. default = full input size */
   size?: 'default' | 'compact'
   className?: string
   disabled?: boolean
@@ -34,7 +40,13 @@ interface SelectProps {
   id?: string
 }
 
-export const SelectOption: React.FC<{ value: string; children: React.ReactNode; icon?: React.ReactNode }> = () => null
+export const SelectOption: React.FC<{
+  value: string
+  children: React.ReactNode
+  icon?: React.ReactNode
+  category?: string
+  description?: string
+}> = () => null
 
 /**
  * Official vector logos for programming languages and tools
@@ -122,22 +134,6 @@ export const LanguageLogo: React.FC<{ language: string; className?: string }> = 
         </svg>
       )
 
-    case 'html':
-      return (
-        <svg viewBox="0 0 24 24" className={className}>
-          <rect width="24" height="24" rx="4" fill="#E34F26"/>
-          <text x="12" y="15" textAnchor="middle" fill="white" fontSize="8" fontWeight="bold">HTML</text>
-        </svg>
-      )
-
-    case 'css':
-      return (
-        <svg viewBox="0 0 24 24" className={className}>
-          <rect width="24" height="24" rx="4" fill="#1572B6"/>
-          <text x="12" y="15" textAnchor="middle" fill="white" fontSize="8" fontWeight="bold">CSS</text>
-        </svg>
-      )
-
     default:
       return (
         <div className="w-4 h-4 rounded bg-neutral-500/20 flex items-center justify-center text-[var(--sel-icon-color)]">
@@ -173,12 +169,20 @@ const parseChildOptions = (children: React.ReactNode): SelectOptionType[] => {
   const result: SelectOptionType[] = []
   React.Children.forEach(children, (child) => {
     if (!React.isValidElement(child)) return
-    const props = child.props as { value?: string; children?: React.ReactNode; icon?: React.ReactNode }
+    const props = child.props as {
+      value?: string
+      children?: React.ReactNode
+      icon?: React.ReactNode
+      category?: string
+      description?: string
+    }
     if (props.value !== undefined) {
       result.push({
         value: String(props.value),
         label: String(props.children ?? props.value),
         icon: props.icon,
+        category: props.category,
+        description: props.description,
       })
     }
   })
@@ -201,55 +205,101 @@ export const Select: React.FC<SelectProps> = ({
   const uid = useId()
   const selectId = id ?? uid
 
-  const options: SelectOptionType[] = optionsProp ?? parseChildOptions(children)
+  const options: SelectOptionType[] = useMemo(() => optionsProp ?? parseChildOptions(children), [optionsProp, children])
   const shouldSearch = searchable ?? (options.length > 5)
 
   const [open, setOpen] = useState(false)
   const [search, setSearch] = useState('')
+  const [activeCategory, setActiveCategory] = useState<string>('All')
+  const [visibleLimit, setVisibleLimit] = useState<number>(35)
+  const [focusedIndex, setFocusedIndex] = useState<number>(0)
+
   const triggerRef = useRef<HTMLButtonElement>(null)
   const dropdownRef = useRef<HTMLDivElement>(null)
   const searchRef = useRef<HTMLInputElement>(null)
+  const listRef = useRef<HTMLDivElement>(null)
+
   const [dropPos, setDropPos] = useState({ top: 0, left: 0, width: 0, openUp: false })
 
   const selected = options.find((o) => o.value === value)
   const selectedIcon = selected ? resolveOptionIcon(selected) : null
 
-  const filtered = search.trim()
-    ? options.filter((o) => o.label.toLowerCase().includes(search.toLowerCase()))
-    : options
+  // Extract unique categories (e.g. IIT, NIT, Maharashtra, etc.)
+  const categories = useMemo(() => {
+    const set = new Set<string>()
+    options.forEach((opt) => {
+      if (opt.category) set.add(opt.category)
+    })
+    return set.size > 1 ? ['All', ...Array.from(set)] : []
+  }, [options])
 
+  // Filter options with instant fuzzy matching over label, value, description, and category
+  const filtered = useMemo(() => {
+    const q = search.trim().toLowerCase()
+    return options.filter((opt) => {
+      // Category match
+      if (activeCategory !== 'All' && opt.category !== activeCategory) {
+        return false
+      }
+      if (!q) return true
+
+      const label = opt.label.toLowerCase()
+      const val = opt.value.toLowerCase()
+      const cat = (opt.category || '').toLowerCase()
+      const desc = (opt.description || '').toLowerCase()
+      const short = (opt.shortName || '').toLowerCase()
+
+      return (
+        label.includes(q) ||
+        val.includes(q) ||
+        cat.includes(q) ||
+        desc.includes(q) ||
+        short.includes(q)
+      )
+    })
+  }, [options, search, activeCategory])
+
+  // Reset visible limit on filter changes for instantaneous snappy feel
+  useEffect(() => {
+    setVisibleLimit(35)
+    setFocusedIndex(0)
+  }, [search, activeCategory])
+
+  // Compute dropdown positioning relative to viewport
   const updatePos = () => {
     if (!triggerRef.current) return
     const rect = triggerRef.current.getBoundingClientRect()
     const spaceBelow = window.innerHeight - rect.bottom
-    const dropdownHeight = 320
+    const dropdownHeight = 440
     const openUp = spaceBelow < dropdownHeight && rect.top > dropdownHeight
 
-    const width = Math.max(rect.width, size === 'compact' ? 240 : 280)
+    const width = Math.max(rect.width, size === 'compact' ? 260 : 360)
 
-    // Adjust left if overflowing screen
-    let left = rect.left + window.scrollX
+    let left = rect.left
     if (left + width > window.innerWidth - 16) {
-      left = window.innerWidth - width - 16
+      left = Math.max(16, window.innerWidth - width - 16)
     }
-    if (left < 16) left = 16
 
     const top = openUp
-      ? rect.top + window.scrollY - 8
-      : rect.bottom + window.scrollY + 8
+      ? rect.top + window.scrollY - dropdownHeight - 6
+      : rect.bottom + window.scrollY + 6
 
     setDropPos({ top, left, width, openUp })
   }
 
+  // Handle open state and auto-focus
   useEffect(() => {
     if (open) {
       updatePos()
       const handleResize = () => updatePos()
-      const handleScroll = () => updatePos()
+      const handleScroll = (e: Event) => {
+        if (dropdownRef.current && dropdownRef.current.contains(e.target as Node)) return
+        updatePos()
+      }
+
       window.addEventListener('resize', handleResize)
       window.addEventListener('scroll', handleScroll, true)
 
-      // Auto focus search box on open
       setTimeout(() => {
         searchRef.current?.focus()
       }, 50)
@@ -260,6 +310,7 @@ export const Select: React.FC<SelectProps> = ({
       }
     } else {
       setSearch('')
+      setActiveCategory('All')
     }
   }, [open])
 
@@ -286,98 +337,225 @@ export const Select: React.FC<SelectProps> = ({
     setOpen(false)
   }
 
+  // Infinite scroll windowing handler
+  const handleListScroll = (e: React.UIEvent<HTMLDivElement>) => {
+    const { scrollTop, scrollHeight, clientHeight } = e.currentTarget
+    if (scrollTop + clientHeight >= scrollHeight - 60) {
+      setVisibleLimit((prev) => Math.min(prev + 25, filtered.length))
+    }
+  }
+
+  // Keyboard navigation
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === 'Escape') {
+      setOpen(false)
+    } else if (e.key === 'ArrowDown') {
+      e.preventDefault()
+      setFocusedIndex((prev) => Math.min(prev + 1, Math.min(visibleLimit, filtered.length) - 1))
+    } else if (e.key === 'ArrowUp') {
+      e.preventDefault()
+      setFocusedIndex((prev) => Math.max(prev - 1, 0))
+    } else if (e.key === 'Enter') {
+      e.preventDefault()
+      const target = filtered[focusedIndex]
+      if (target) {
+        handleSelect(target.value)
+      }
+    }
+  }
+
+  // Visible sliced items
+  const visibleItems = useMemo(() => filtered.slice(0, visibleLimit), [filtered, visibleLimit])
+
   // Trigger button styling
   const triggerBase =
     size === 'compact'
-      ? 'flex items-center justify-between gap-2 bg-[var(--sel-bg)] text-[var(--sel-text)] text-xs px-2.5 py-1.5 rounded-lg border border-[var(--sel-border)] hover:border-[var(--sel-border-hover)] focus:border-[var(--sel-focus)] focus:outline-none font-mono transition-all cursor-pointer shadow-sm disabled:opacity-50 disabled:cursor-not-allowed select-none'
-      : 'flex w-full items-center justify-between gap-2 bg-[var(--sel-bg)] text-[var(--sel-text)] text-sm px-3.5 py-2.5 rounded-xl border border-[var(--sel-border)] hover:border-[var(--sel-border-hover)] focus:border-[var(--sel-focus)] focus:outline-none transition-all cursor-pointer shadow-sm disabled:opacity-50 disabled:cursor-not-allowed select-none'
+      ? 'group flex items-center justify-between gap-2 bg-[var(--bg-metric)]/70 hover:bg-[var(--bg-metric)] text-[var(--text-main)] text-xs px-2.5 py-1.5 rounded-lg border border-[var(--border-subtle)] hover:border-white/20 focus:border-cyan-400/50 focus:outline-none font-mono transition-all cursor-pointer shadow-sm disabled:opacity-50 disabled:cursor-not-allowed select-none active:scale-[0.99]'
+      : 'group flex w-full items-center justify-between gap-2.5 bg-[var(--bg-metric)]/60 hover:bg-[var(--bg-metric)] text-[var(--text-main)] text-sm px-3.5 py-2.5 rounded-xl border border-[var(--border-subtle)] hover:border-white/20 focus:border-cyan-400/50 focus:outline-none transition-all cursor-pointer shadow-sm disabled:opacity-50 disabled:cursor-not-allowed select-none active:scale-[0.995]'
 
-  // Portal dropdown
+  // Portal dropdown modal
   const dropdown = open
     ? createPortal(
-        <div
-          ref={dropdownRef}
-          className="cv-pill-dropdown-container"
-          style={{
-            position: 'absolute',
-            top: dropPos.top,
-            left: dropPos.left,
-            width: dropPos.width,
-            zIndex: 99999,
-          }}
-        >
-          {/* Header row with title and close X button */}
-          <div className="flex items-center justify-between px-4 pt-3.5 pb-2">
-            <span className="text-xs font-semibold text-[var(--sel-text)] font-['Manrope'] tracking-tight">
-              {title || (placeholder !== 'Select…' ? placeholder : 'Select Option')}
-            </span>
-            <button
-              type="button"
-              onClick={() => setOpen(false)}
-              className="p-1 rounded-full text-[var(--sel-text-muted)] hover:text-[var(--sel-text)] hover:bg-[var(--sel-item-hover-bg)] transition-colors cursor-pointer"
-              title="Close"
-            >
-              <X className="w-3.5 h-3.5" />
-            </button>
-          </div>
+        <AnimatePresence>
+          <motion.div
+            ref={dropdownRef}
+            initial={{ opacity: 0, scale: 0.95, y: dropPos.openUp ? 6 : -6 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            exit={{ opacity: 0, scale: 0.95, y: dropPos.openUp ? 6 : -6 }}
+            transition={{ type: 'spring', damping: 28, stiffness: 450 }}
+            style={{
+              position: 'absolute',
+              top: dropPos.top,
+              left: dropPos.left,
+              width: dropPos.width,
+              zIndex: 99999,
+            }}
+            className="rounded-2xl border border-white/10 bg-[#0c0d14]/95 dark:bg-[#0c0d14]/95 light:bg-white light:border-slate-200 shadow-[0_25px_60px_-15px_rgba(0,0,0,0.85)] backdrop-blur-2xl overflow-hidden flex flex-col max-h-[460px]"
+            onKeyDown={handleKeyDown}
+          >
+            {/* Subtle Laser Accent */}
+            <div className="h-[1.5px] bg-gradient-to-r from-transparent via-cyan-400/60 via-purple-500/50 to-transparent shrink-0" />
 
-          {/* Pill Search input with right search icon */}
-          {shouldSearch && (
-            <div className="px-3 pb-2.5">
-              <div className="cv-pill-search-box">
-                <input
-                  ref={searchRef}
-                  type="text"
-                  value={search}
-                  onChange={(e) => setSearch(e.target.value)}
-                  placeholder="Search…"
-                  className="cv-pill-search-input"
-                  onKeyDown={(e) => {
-                    if (e.key === 'Escape') setOpen(false)
-                  }}
-                />
-                <Search className="w-4 h-4 text-[var(--sel-icon-color)] flex-shrink-0" />
+            {/* Header with Title and Count Pill */}
+            <div className="flex items-center justify-between px-3.5 pt-3 pb-2 border-b border-white/[0.06] shrink-0">
+              <div className="flex items-center gap-2">
+                <span className="text-xs font-semibold text-[var(--text-main)] font-['Manrope'] tracking-tight">
+                  {title || (placeholder !== 'Select…' ? placeholder : 'Select Option')}
+                </span>
+                <span className="text-[10px] font-mono font-medium px-2 py-0.5 rounded-full bg-white/[0.06] text-[var(--text-muted)] border border-white/[0.06]">
+                  {filtered.length} {filtered.length === 1 ? 'result' : 'options'}
+                </span>
               </div>
+              <button
+                type="button"
+                onClick={() => setOpen(false)}
+                className="p-1 rounded-lg text-[var(--text-muted)] hover:text-[var(--text-main)] hover:bg-white/[0.08] transition-colors cursor-pointer"
+                title="Close (Esc)"
+              >
+                <X className="w-3.5 h-3.5" />
+              </button>
             </div>
-          )}
 
-          {/* Pill options list */}
-          <div className="cv-pill-options-list" role="listbox">
-            {filtered.length === 0 ? (
-              <div className="py-6 text-center text-xs text-[var(--sel-empty-color)] font-mono">
-                No matching options
+            {/* Category Filter Chips Bar (Animated Layout Transition) */}
+            {categories.length > 0 && (
+              <div className="flex items-center gap-1.5 px-3 py-2 overflow-x-auto no-scrollbar border-b border-white/[0.05] shrink-0">
+                {categories.map((cat) => {
+                  const isActive = activeCategory === cat
+                  return (
+                    <button
+                      key={cat}
+                      type="button"
+                      onClick={() => setActiveCategory(cat)}
+                      className={`relative px-2.5 py-1 rounded-lg text-[11px] font-medium transition-colors shrink-0 select-none cursor-pointer ${
+                        isActive
+                          ? 'text-white font-semibold'
+                          : 'text-[var(--text-muted)] hover:text-[var(--text-main)] hover:bg-white/[0.04]'
+                      }`}
+                    >
+                      {isActive && (
+                        <motion.span
+                          layoutId="selectCategoryActive"
+                          className="absolute inset-0 bg-white/10 border border-white/15 rounded-lg shadow-sm"
+                          transition={{ type: 'spring', stiffness: 500, damping: 32 }}
+                        />
+                      )}
+                      <span className="relative z-10">{cat}</span>
+                    </button>
+                  )
+                })}
               </div>
-            ) : (
-              filtered.map((opt) => {
-                const isSelected = opt.value === value
-                const iconNode = resolveOptionIcon(opt)
-                return (
-                  <button
-                    key={opt.value}
-                    type="button"
-                    role="option"
-                    aria-selected={isSelected}
-                    onClick={() => handleSelect(opt.value)}
-                    className={`cv-pill-item-btn ${isSelected ? 'cv-pill-item-btn--active' : ''}`}
-                  >
-                    <div className="flex items-center gap-2.5 min-w-0">
-                      <div className="cv-pill-icon-bubble">
-                        {iconNode}
-                      </div>
-                      <span className="text-xs font-medium text-[var(--sel-text)] truncate text-left">
-                        {opt.label}
-                      </span>
-                    </div>
-
-                    {isSelected && (
-                      <Check className="w-3.5 h-3.5 text-[var(--sel-check-color)] flex-shrink-0 ml-2" />
-                    )}
-                  </button>
-                )
-              })
             )}
-          </div>
-        </div>,
+
+            {/* Minimalist Search Box */}
+            {shouldSearch && (
+              <div className="p-2.5 pb-2 shrink-0">
+                <div className="relative flex items-center bg-white/[0.04] border border-white/10 rounded-xl px-3 py-1.5 focus-within:border-cyan-400/50 focus-within:ring-1 focus-within:ring-cyan-400/20 transition-all">
+                  <Search className="w-3.5 h-3.5 text-[var(--text-muted)] shrink-0 mr-2" />
+                  <input
+                    ref={searchRef}
+                    type="text"
+                    value={search}
+                    onChange={(e) => setSearch(e.target.value)}
+                    placeholder="Search institution, state, or course…"
+                    className="w-full bg-transparent border-none outline-none text-xs text-[var(--text-main)] placeholder-[var(--text-dim)] font-['Inter']"
+                  />
+                  {search && (
+                    <button
+                      type="button"
+                      onClick={() => setSearch('')}
+                      className="p-0.5 rounded-md hover:bg-white/10 text-[var(--text-muted)] hover:text-white transition-colors"
+                      title="Clear search"
+                    >
+                      <X className="w-3 h-3" />
+                    </button>
+                  )}
+                </div>
+              </div>
+            )}
+
+            {/* Optimized Virtual Windowed Options List */}
+            <div
+              ref={listRef}
+              onScroll={handleListScroll}
+              className="flex-1 overflow-y-auto px-2 py-1 space-y-1 custom-scrollbar min-h-[140px]"
+              role="listbox"
+            >
+              {filtered.length === 0 ? (
+                <div className="py-8 text-center text-xs text-[var(--text-muted)] font-mono flex flex-col items-center justify-center gap-1.5">
+                  <Compass className="w-5 h-5 text-[var(--text-dim)] stroke-[1.5]" />
+                  <span>No matching institutions found</span>
+                  <span className="text-[10px] text-[var(--text-dim)]">Try adjusting your search query</span>
+                </div>
+              ) : (
+                visibleItems.map((opt, idx) => {
+                  const isSelected = opt.value === value
+                  const isFocused = idx === focusedIndex
+                  const iconNode = resolveOptionIcon(opt)
+
+                  return (
+                    <button
+                      key={opt.value}
+                      type="button"
+                      role="option"
+                      aria-selected={isSelected}
+                      onClick={() => handleSelect(opt.value)}
+                      onMouseEnter={() => setFocusedIndex(idx)}
+                      className={`w-full text-left px-2.5 py-2 rounded-xl flex items-center justify-between gap-2.5 transition-all cursor-pointer group select-none border ${
+                        isSelected
+                          ? 'bg-cyan-500/10 border-cyan-500/30 text-white font-medium shadow-[0_0_15px_rgba(6,182,212,0.1)]'
+                          : isFocused
+                          ? 'bg-white/[0.06] border-white/10 text-[var(--text-main)]'
+                          : 'bg-transparent border-transparent text-[var(--text-main)] hover:bg-white/[0.04]'
+                      }`}
+                    >
+                      <div className="flex items-center gap-2.5 min-w-0 flex-1">
+                        {/* Minimalist Icon / Logo Container */}
+                        <div className="w-7 h-7 rounded-lg bg-black/40 border border-white/10 flex items-center justify-center shrink-0 overflow-hidden shadow-inner group-hover:scale-105 transition-transform">
+                          {iconNode}
+                        </div>
+
+                        {/* Label & Description Subtitle */}
+                        <div className="min-w-0 flex-1">
+                          <p className={`text-xs truncate tracking-tight ${isSelected ? 'font-semibold text-cyan-300' : 'font-medium'}`}>
+                            {opt.label}
+                          </p>
+                          {(opt.category || opt.description) && (
+                            <p className="text-[10px] text-[var(--text-muted)] truncate flex items-center gap-1.5">
+                              {opt.category && (
+                                <span className="px-1.5 py-0.2 rounded bg-white/[0.04] border border-white/[0.06]">
+                                  {opt.category}
+                                </span>
+                              )}
+                              {opt.description && <span>{opt.description}</span>}
+                            </p>
+                          )}
+                        </div>
+                      </div>
+
+                      {/* Selection Checkmark */}
+                      {isSelected && (
+                        <motion.div
+                          initial={{ scale: 0.6, opacity: 0 }}
+                          animate={{ scale: 1, opacity: 1 }}
+                          transition={{ type: 'spring', stiffness: 500, damping: 25 }}
+                          className="w-4 h-4 rounded-full bg-cyan-400 text-black flex items-center justify-center shrink-0 ml-1.5 shadow-sm"
+                        >
+                          <Check className="w-2.5 h-2.5 stroke-[3]" />
+                        </motion.div>
+                      )}
+                    </button>
+                  )
+                })
+              )}
+            </div>
+
+            {/* Footer with Hint */}
+            <div className="px-3.5 py-1.5 bg-black/40 border-t border-white/[0.05] flex items-center justify-between text-[10px] text-[var(--text-dim)] font-mono shrink-0">
+              <span>Navigate with &uarr;&darr; &bull; Enter to select</span>
+              <span>Esc to close</span>
+            </div>
+          </motion.div>
+        </AnimatePresence>,
         document.body
       )
     : null
@@ -402,8 +580,8 @@ export const Select: React.FC<SelectProps> = ({
           <span className="truncate">{selected?.label ?? placeholder}</span>
         </div>
         <ChevronDown
-          className={`w-3.5 h-3.5 text-[var(--sel-icon-color)] transition-transform duration-200 shrink-0 ${
-            open ? 'rotate-180 text-[var(--sel-text)]' : ''
+          className={`w-3.5 h-3.5 text-[var(--text-muted)] transition-transform duration-200 shrink-0 ${
+            open ? 'rotate-180 text-[var(--text-main)]' : ''
           }`}
         />
       </button>
