@@ -35,7 +35,7 @@ interface OfficialLabRecordModalProps {
   allCodeSnippets?: CodeSnippetItem[]
 }
 
-const DEFAULT_CREST_SVG = `data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" fill="none"><circle cx="50" cy="50" r="46" stroke="%23111827" stroke-width="2.5" fill="%23f9fafb"/><circle cx="50" cy="50" r="40" stroke="%23111827" stroke-width="1.2" stroke-dasharray="2 2"/><path d="M50 20 L75 32 L75 56 C75 68 50 80 50 80 C50 80 25 68 25 56 L25 32 Z" fill="%23ffffff" stroke="%23111827" stroke-width="2"/><path d="M36 44 Q50 38 50 48 Q50 38 64 44 L64 62 Q50 56 50 64 Q50 56 36 62 Z" fill="%23f3f4f6" stroke="%23111827" stroke-width="1.5"/><line x1="50" y1="48" x2="50" y2="64" stroke="%23111827" stroke-width="1.5"/><circle cx="50" cy="30" r="3.5" fill="%23111827"/><path d="M47 34 L53 34 L51 38 L49 38 Z" fill="%23111827"/></svg>`
+const DEFAULT_CREST_SVG = `data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMDAgMTAwIiBmaWxsPSJub25lIj48Y2lyY2xlIGN4PSI1MCIgY3k9IjUwIiByPSI0NiIgc3Ryb2tlPSIjMTExODI3IiBzdHJva2Utd2lkdGg9IjIuNSIgZmlsbD0iI2Y5ZmFmYiIvPjxjaXJjbGUgY3g9IjUwIiBjeT0iNTAiIHI9IjQwIiBzdHJva2U9IiMxMTE4MjciIHN0cm9rZS13aWR0aD0iMS4yIiBzdHJva2UtZGFzaGFycmF5PSIyIDIiLz48cGF0aCBkPSJNNTAgMjAgTDc1IDMyIEw3NSA1NiBDNzUgNjggNTAgODAgNTAgODAgQzUwIDgwIDI1IDY4IDI1IDU2IEwyNSAzMiBaIiBmaWxsPSIjZmZmZmZmIiBzdHJva2U9IiMxMTE4MjciIHN0cm9rZS13aWR0aD0iMiIvPjxwYXRoIGQ9Ik0zNiA0NCBRNTAgMzggNTAgNDggUTUwIDM4IDY0IDQ0IEw2NCA2MiBRNTAgNTYgNTAgNjQgUTUwIDU2IDM2IDYyIFoiIGZpbGw9IiNmM2Y0ZjYiIHN0cm9rZT0iIzExMTgyNyIgc3Ryb2tlLXdpZHRoPSIxLjUiLz48bGluZSB4MT0iNTAiIHkxPSI0OCIgeDI9IjUwIiB5Mj0iNjQiIHN0cm9rZT0iIzExMTgyNyIgc3Ryb2tlLXdpZHRoPSIxLjUiLz48Y2lyY2xlIGN4PSI1MCIgY3k9IjMwIiByPSIzLjUiIGZpbGw9IiMxMTE4MjciLz48cGF0aCBkPSJNNDcgMzQgTDUzIDM0IEw1MSAzOCBMNDkgMzggWiIgZmlsbD0iIzExMTgyNyIvPjwvc3ZnPg==`
 
 const escapeHtml = (unsafe: string): string => {
   return (unsafe || '')
@@ -84,7 +84,13 @@ export const OfficialLabRecordModal: React.FC<OfficialLabRecordModalProps> = ({
 
   // University Logo Customization
   const [universityLogo, setUniversityLogo] = useState<string>(() => {
-    return localStorage.getItem('cv_saved_university_logo') || DEFAULT_CREST_SVG
+    try {
+      const saved = localStorage.getItem('cv_saved_university_logo')
+      if (saved && !saved.startsWith('data:image/svg+xml;utf8')) {
+        return saved
+      }
+    } catch {}
+    return DEFAULT_CREST_SVG
   })
   const [showLogo, setShowLogo] = useState(true)
   const logoInputRef = useRef<HTMLInputElement | null>(null)
@@ -830,10 +836,13 @@ export const OfficialLabRecordModal: React.FC<OfficialLabRecordModalProps> = ({
 </html>`
   }
 
-  // Direct 1-Click Client-Side PDF Download (.pdf file via html2pdf.js)
+  // Direct 1-Click Client-Side PDF Download with isolated offscreen sandbox & instant fallback
   const handleDownloadPdf = async () => {
+    if (isDownloadingPdf) return
     setIsDownloadingPdf(true)
-    const toastId = toast.loading('Generating high-resolution official PDF file...')
+    const toastId = toast.loading('Preparing official PDF download...')
+
+    let clone: HTMLElement | null = null
 
     try {
       const element = document.getElementById('official-a4-preview-content')
@@ -841,33 +850,66 @@ export const OfficialLabRecordModal: React.FC<OfficialLabRecordModalProps> = ({
         throw new Error('Preview element not found')
       }
 
+      // Clone element into an off-screen sandbox to prevent layout shift or page glitch
+      clone = element.cloneNode(true) as HTMLElement
+      clone.id = 'cv-official-a4-pdf-clone'
+      clone.style.width = '794px' // exact A4 width at 96 DPI
+      clone.style.maxWidth = '794px'
+      clone.style.minHeight = 'auto'
+      clone.style.boxShadow = 'none'
+      clone.style.border = 'none'
+      clone.style.margin = '0'
+      clone.style.padding = '32px'
+      clone.style.position = 'fixed'
+      clone.style.top = '-99999px'
+      clone.style.left = '0'
+      clone.style.zIndex = '-9999'
+      clone.style.backgroundColor = '#ffffff'
+      clone.style.color = '#000000'
+      document.body.appendChild(clone)
+
       const html2pdfModule = await import('html2pdf.js')
       const html2pdf = (html2pdfModule as any).default || html2pdfModule
 
       const filename = `${(experiment.experiment_number || 'EXP').replace(/\s+/g, '_')}_${(experiment.title || 'Record').replace(/[^a-zA-Z0-9]/g, '_')}_Lab_Record.pdf`
 
       const opt = {
-        margin: [8, 10, 8, 10], // top, left, bottom, right in mm
+        margin: [8, 8, 8, 8], // mm
         filename: filename,
-        image: { type: 'jpeg', quality: 0.98 },
+        image: { type: 'jpeg', quality: 0.95 },
         html2canvas: {
-          scale: 2,
+          scale: 1.5,
           useCORS: true,
-          letterRendering: true,
+          allowTaint: true,
           logging: false,
           backgroundColor: '#ffffff',
-          windowWidth: 800,
+          imageTimeout: 2000,
         },
         jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
         pagebreak: { mode: ['avoid-all', 'css', 'legacy'] },
       }
 
-      await html2pdf().set(opt).from(element).save()
+      // Promise race with 5.5-second timeout so page never freezes
+      const runPdfGeneration = async () => {
+        const worker = html2pdf().set(opt).from(clone)
+        await worker.save()
+      }
+
+      const timeoutPromise = new Promise((_, reject) => {
+        setTimeout(() => reject(new Error('PDF direct canvas took too long')), 5500)
+      })
+
+      await Promise.race([runPdfGeneration(), timeoutPromise])
       toast.success('Official Lab Record PDF downloaded!', { id: toastId })
     } catch (err: any) {
-      console.error('PDF generation error:', err)
-      toast.error('Failed to generate PDF: ' + (err.message || 'Error'), { id: toastId })
+      console.warn('Direct PDF canvas failed or timed out, triggering instant print-to-PDF fallback:', err)
+      toast.dismiss(toastId)
+      toast('Opening Print to PDF — select "Save as PDF" to save file', { icon: '📄' })
+      handlePrint()
     } finally {
+      if (clone && clone.parentNode) {
+        clone.parentNode.removeChild(clone)
+      }
       setIsDownloadingPdf(false)
     }
   }
@@ -987,7 +1029,7 @@ export const OfficialLabRecordModal: React.FC<OfficialLabRecordModalProps> = ({
                 title="Print or Save via Browser Print Dialog"
               >
                 <Printer className="w-3.5 h-3.5 text-amber-400" />
-                <span>Print Sheet</span>
+                <span>Print / Save as PDF</span>
               </button>
 
               <button
