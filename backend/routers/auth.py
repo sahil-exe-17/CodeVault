@@ -4,6 +4,7 @@ Auth router: login, signup, Google auth, profile onboarding & updates using SQLi
 import uuid
 from datetime import datetime, timezone
 from typing import Optional
+import httpx
 from pydantic import BaseModel, EmailStr
 from fastapi import APIRouter, Depends, HTTPException, status
 from middleware.auth import get_current_user
@@ -28,6 +29,7 @@ class GoogleAuthRequest(BaseModel):
     name: Optional[str] = None
     avatar_url: Optional[str] = None
     google_id: Optional[str] = None
+    credential: Optional[str] = None
 
 
 class ProfileUpdateRequest(BaseModel):
@@ -141,6 +143,29 @@ async def signup(payload: SignupRequest):
 async def google_auth(payload: GoogleAuthRequest):
     """Sign in or register with Google OAuth credentials."""
     email = payload.email.strip().lower()
+
+    # If a Google ID token is supplied, verify it against Google's tokeninfo API
+    if payload.credential:
+        try:
+            async with httpx.AsyncClient(timeout=5.0) as client:
+                res = await client.get(
+                    f"https://oauth2.googleapis.com/tokeninfo?id_token={payload.credential}"
+                )
+                if res.status_code == 200:
+                    info = res.json()
+                    verified_email = info.get("email")
+                    if verified_email:
+                        email = verified_email.strip().lower()
+                    if info.get("name") and not payload.name:
+                        payload.name = info.get("name")
+                    if info.get("picture") and not payload.avatar_url:
+                        payload.avatar_url = info.get("picture")
+                    if info.get("sub") and not payload.google_id:
+                        payload.google_id = info.get("sub")
+        except Exception as e:
+            # Fall back to payload credentials if offline or request timed out
+            pass
+
     if not email:
         raise HTTPException(status_code=400, detail="Google authentication failed: Email is required")
 

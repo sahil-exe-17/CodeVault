@@ -13,9 +13,12 @@ declare global {
 interface GoogleAuthModalProps {
   isOpen: boolean
   onClose: () => void
-  onSuccess: (googleData: { email: string; name: string; avatar_url: string; google_id: string }) => Promise<void>
+  onSuccess: (googleData: { email: string; name: string; avatar_url: string; google_id: string; credential?: string }) => Promise<void>
   loading?: boolean
 }
+
+export const DEFAULT_GOOGLE_CLIENT_ID =
+  '915809199680-gjgs04gc3abq06v6vk183jr0latqrfop.apps.googleusercontent.com'
 
 export const parseGoogleJwt = (token: string) => {
   try {
@@ -45,7 +48,7 @@ export const GoogleAuthModal: React.FC<GoogleAuthModalProps> = ({
   const [googleName, setGoogleName] = useState('')
   const [showConfig, setShowConfig] = useState(false)
   const [clientId, setClientId] = useState(
-    () => import.meta.env.VITE_GOOGLE_CLIENT_ID || localStorage.getItem('codevault_google_client_id') || ''
+    () => import.meta.env.VITE_GOOGLE_CLIENT_ID || localStorage.getItem('codevault_google_client_id') || DEFAULT_GOOGLE_CLIENT_ID
   )
   const [isGsiReady, setIsGsiReady] = useState(false)
   const [isSubmitting, setIsSubmitting] = useState(false)
@@ -79,6 +82,7 @@ export const GoogleAuthModal: React.FC<GoogleAuthModalProps> = ({
                 name: profile.name || profile.email.split('@')[0],
                 avatar_url: profile.picture || '',
                 google_id: profile.sub || `google-${Date.now()}`,
+                credential: response.credential,
               })
               onClose()
             }

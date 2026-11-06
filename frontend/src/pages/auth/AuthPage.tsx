@@ -1,10 +1,10 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import { Mail, Lock, X, ArrowRight } from 'lucide-react'
 import { AuroraBackground } from '@/components/auth/AuroraBackground'
 import { GlassInput } from '@/components/auth/GlassInput'
-import { GoogleAuthModal, parseGoogleJwt } from '@/components/auth/GoogleAuthModal'
+import { GoogleAuthModal, parseGoogleJwt, DEFAULT_GOOGLE_CLIENT_ID } from '@/components/auth/GoogleAuthModal'
 import { useAuthStore } from '@/store/authStore'
 import toast from 'react-hot-toast'
 
@@ -73,16 +73,65 @@ export const AuthPage: React.FC = () => {
     name: string
     avatar_url: string
     google_id: string
+    credential?: string
   }) => {
     const user = await signInWithGoogle(googleData)
     toast.success(`Signed in with Google as ${user.email}`)
     handleAuthSuccess(user)
   }
 
+  // Auto-initialize Google Identity Services One-Tap on mount
+  useEffect(() => {
+    const initGoogleGsi = () => {
+      if (typeof window === 'undefined' || !window.google?.accounts?.id) return
+      try {
+        const clientId =
+          import.meta.env.VITE_GOOGLE_CLIENT_ID ||
+          localStorage.getItem('codevault_google_client_id') ||
+          DEFAULT_GOOGLE_CLIENT_ID
+
+        window.google.accounts.id.initialize({
+          client_id: clientId.trim(),
+          callback: async (response: any) => {
+            if (response?.credential) {
+              const profile = parseGoogleJwt(response.credential)
+              if (profile?.email) {
+                await handleGoogleSuccess({
+                  email: profile.email,
+                  name: profile.name || profile.email.split('@')[0],
+                  avatar_url: profile.picture || '',
+                  google_id: profile.sub || `google-${Date.now()}`,
+                  credential: response.credential,
+                })
+              }
+            }
+          },
+          auto_select: false,
+          cancel_on_tap_outside: true,
+        })
+      } catch (e) {
+        console.warn('Google GIS init warning:', e)
+      }
+    }
+
+    if (window.google?.accounts?.id) {
+      initGoogleGsi()
+    } else {
+      const interval = setInterval(() => {
+        if (window.google?.accounts?.id) {
+          clearInterval(interval)
+          initGoogleGsi()
+        }
+      }, 500)
+      return () => clearInterval(interval)
+    }
+  }, [])
+
   const handleGoogleClick = () => {
     const savedClientId =
       import.meta.env.VITE_GOOGLE_CLIENT_ID ||
-      localStorage.getItem('codevault_google_client_id')
+      localStorage.getItem('codevault_google_client_id') ||
+      DEFAULT_GOOGLE_CLIENT_ID
 
     if (savedClientId && window.google?.accounts?.id) {
       try {
@@ -97,15 +146,21 @@ export const AuthPage: React.FC = () => {
                   name: profile.name || profile.email.split('@')[0],
                   avatar_url: profile.picture || '',
                   google_id: profile.sub || `google-${Date.now()}`,
+                  credential: response.credential,
                 })
               }
             }
           },
+          auto_select: false,
         })
-        window.google.accounts.id.prompt()
+        window.google.accounts.id.prompt((notification: any) => {
+          if (notification.isNotDisplayed() || notification.isSkippedMoment()) {
+            setIsGoogleModalOpen(true)
+          }
+        })
         return
       } catch (e) {
-        console.error('Error prompting Google GIS:', e)
+        console.warn('Error prompting Google GIS:', e)
       }
     }
     // If not connected yet, open the connection modal
@@ -266,16 +321,13 @@ export const AuthPage: React.FC = () => {
           <div className="flex-1 h-[1px] bg-white/[0.08]" />
         </div>
 
-        {/* Social Authentication: Google (Coming Soon) */}
+        {/* Social Authentication: Google */}
         <div className="mb-6">
           <button
             type="button"
-            onClick={() => {
-              toast('Google Sign-In is coming soon! Please sign in with your email & password.', {
-                icon: '⏳',
-              })
-            }}
-            className="w-full h-11 px-4 rounded-xl bg-[#1a1a20]/80 hover:bg-[#23232c] text-white/90 border border-[var(--border-subtle)] hover:border-[var(--border-subtle)] text-xs font-medium flex items-center justify-center gap-2.5 transition-all cursor-pointer shadow-sm active:scale-[0.99] group"
+            onClick={handleGoogleClick}
+            disabled={loading}
+            className="w-full h-11 px-4 rounded-xl bg-[#1a1a20]/80 hover:bg-[#23232c] text-white/90 border border-[var(--border-subtle)] hover:border-white/20 text-xs font-semibold flex items-center justify-center gap-2.5 transition-all cursor-pointer shadow-sm active:scale-[0.99] group disabled:opacity-50"
           >
             <svg className="w-4 h-4 shrink-0" viewBox="0 0 24 24">
               <path
@@ -295,10 +347,7 @@ export const AuthPage: React.FC = () => {
                 d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"
               />
             </svg>
-            <span className="font-medium text-white/90">Sign in with Google</span>
-            <span className="ml-1.5 px-2 py-0.5 text-[10px] font-mono tracking-wide rounded-full bg-white/10 text-white/60 border border-[var(--border-subtle)]">
-              Coming Soon
-            </span>
+            <span className="font-semibold text-white/90 group-hover:text-white">Sign in with Google</span>
           </button>
         </div>
 

@@ -7,6 +7,7 @@ interface GoogleAuthPayload {
   name?: string
   avatar_url?: string
   google_id?: string
+  credential?: string
 }
 
 interface AuthState {

@@ -68,7 +68,7 @@ export default api
 export const authApi = {
   login: (data: { email: string; password?: string }) => api.post('/api/auth/login', data),
   signup: (data: { email: string; password?: string; display_name?: string }) => api.post('/api/auth/signup', data),
-  googleAuth: (data: { email: string; name?: string; avatar_url?: string; google_id?: string }) => api.post('/api/auth/google', data),
+  googleAuth: (data: { email: string; name?: string; avatar_url?: string; google_id?: string; credential?: string }) => api.post('/api/auth/google', data),
   getProfile: () => api.get('/api/auth/profile'),
   updateProfile: (data: any) => api.put('/api/auth/profile', data),
   verify: () => api.post('/api/auth/verify'),
