@@ -73,7 +73,7 @@ async def login(payload: LoginRequest):
         row = cursor.fetchone()
 
         if not row:
-            raise HTTPException(status_code=404, detail="No account found with this email. Please click Sign up to create an account.")
+            raise HTTPException(status_code=400, detail="No account found with this email. Please sign up first to create an account.")
 
         user_row = dict(row)
         stored_hash = user_row.get("password_hash")

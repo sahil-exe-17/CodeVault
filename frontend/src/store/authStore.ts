@@ -48,6 +48,41 @@ const saveStoredProfile = (email: string, user: User) => {
   } catch {}
 }
 
+const isAccountRegistered = (email: string): boolean => {
+  const clean = email.trim().toLowerCase()
+  try {
+    if (localStorage.getItem(`cv_profile_${clean}`)) return true
+    if (localStorage.getItem(`cv_pwd_${clean}`)) return true
+    const listRaw = localStorage.getItem('cv_registered_accounts')
+    if (listRaw) {
+      const list = JSON.parse(listRaw)
+      if (Array.isArray(list) && list.includes(clean)) return true
+    }
+    const current = localStorage.getItem('codevault_user')
+    if (current) {
+      const u = JSON.parse(current)
+      if (u?.email?.trim().toLowerCase() === clean) return true
+    }
+  } catch {}
+  return false
+}
+
+const registerAccount = (email: string, user: User, password?: string) => {
+  const clean = email.trim().toLowerCase()
+  try {
+    const listRaw = localStorage.getItem('cv_registered_accounts')
+    const list: string[] = listRaw ? JSON.parse(listRaw) : []
+    if (!list.includes(clean)) {
+      list.push(clean)
+      localStorage.setItem('cv_registered_accounts', JSON.stringify(list))
+    }
+  } catch {}
+  saveStoredProfile(clean, user)
+  if (password) {
+    try { localStorage.setItem(`cv_pwd_${clean}`, password) } catch {}
+  }
+}
+
 const getInitialUser = (): User | null => {
   try {
     const raw = localStorage.getItem('codevault_user')
@@ -61,6 +96,13 @@ const isRealBackendValidationError = (err: any): boolean => {
   if (!err) return false
 
   const status = err.status || err.response?.status
+  const detail = err.response?.data?.detail
+
+  // If server returned a meaningful domain or validation error string from our API (e.g. from FastAPI HTTPException):
+  if (typeof detail === 'string' && detail.trim().length > 0 && !detail.includes('Cannot GET') && !detail.includes('Cannot POST')) {
+    return true
+  }
+
   // HTTP 405 (Method Not Allowed), 404 (Not Found), 502/503/504 (Server/Proxy offline) are infrastructure errors on static/Vercel hosting
   if (status === 405 || status === 404 || status === 502 || status === 503 || status === 504) {
     return false
@@ -69,7 +111,6 @@ const isRealBackendValidationError = (err: any): boolean => {
   const msg = String(err.message || '')
   if (
     msg.includes('405') ||
-    msg.includes('404') ||
     msg.includes('502') ||
     msg.includes('503') ||
     msg.includes('Network Error') ||
@@ -79,15 +120,6 @@ const isRealBackendValidationError = (err: any): boolean => {
     msg.includes('Method Not Allowed')
   ) {
     return false
-  }
-
-  // Only re-throw when FastAPI returned an explicit JSON error with detail (e.g. 400 bad request, 409 conflict, 422 unprocessable entity)
-  if (
-    (status === 400 || status === 401 || status === 409 || status === 422) &&
-    typeof err.response?.data?.detail === 'string' &&
-    err.response.data.detail.length > 0
-  ) {
-    return true
   }
 
   return false
@@ -120,12 +152,9 @@ export const useAuthStore = create<AuthState>((set, get) => ({
 
       localStorage.setItem('codevault_token', token)
       localStorage.setItem('codevault_user', JSON.stringify(user))
-      saveStoredProfile(user.email, user)
+      registerAccount(cleanEmail, user, password)
       localStorage.removeItem('cv_subjects_all')
       localStorage.removeItem('cv_subjects_guest')
-      if (password) {
-        try { localStorage.setItem(`cv_pwd_${cleanEmail}`, password) } catch {}
-      }
 
       set({ user, token, loading: false })
       return user
@@ -135,10 +164,15 @@ export const useAuthStore = create<AuthState>((set, get) => ({
         throw err
       }
 
-      // If backend network unreachable (e.g. running on static Vercel), retrieve consistent user account
-      console.warn('Backend network unreachable during signin, loading local consistent session:', err.message)
+      // If backend network unreachable (e.g. running on static Vercel), verify account exists
+      console.warn('Backend network unreachable during signin, checking local account registry:', err.message)
       const existing = getStoredProfile(cleanEmail)
-      const stableId = getDeterministicUserId(cleanEmail)
+      const isRegistered = isAccountRegistered(cleanEmail)
+
+      if (!isRegistered && !existing) {
+        set({ loading: false })
+        throw new Error('No account found with this email. Please sign up first to create an account.')
+      }
 
       // Check offline password if one was previously stored
       const storedPwd = localStorage.getItem(`cv_pwd_${cleanEmail}`)
@@ -147,6 +181,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
         throw new Error('Incorrect password. Please verify your credentials.')
       }
 
+      const stableId = getDeterministicUserId(cleanEmail)
       const localUser: User = {
         id: stableId,
         email: cleanEmail,
@@ -162,14 +197,11 @@ export const useAuthStore = create<AuthState>((set, get) => ({
         ...existing,
       }
 
-      if (password && !storedPwd) {
-        try { localStorage.setItem(`cv_pwd_${cleanEmail}`, password) } catch {}
-      }
+      registerAccount(cleanEmail, localUser, password)
 
       const token = `token_${localUser.id}`
       localStorage.setItem('codevault_token', token)
       localStorage.setItem('codevault_user', JSON.stringify(localUser))
-      saveStoredProfile(localUser.email, localUser)
 
       set({ user: localUser, token, loading: false })
       return localUser
@@ -190,12 +222,9 @@ export const useAuthStore = create<AuthState>((set, get) => ({
 
       localStorage.setItem('codevault_token', token)
       localStorage.setItem('codevault_user', JSON.stringify(user))
-      saveStoredProfile(user.email, user)
+      registerAccount(cleanEmail, user, password)
       localStorage.removeItem('cv_subjects_all')
       localStorage.removeItem('cv_subjects_guest')
-      if (password) {
-        try { localStorage.setItem(`cv_pwd_${cleanEmail}`, password) } catch {}
-      }
 
       set({ user, token, loading: false })
       return user
@@ -205,29 +234,42 @@ export const useAuthStore = create<AuthState>((set, get) => ({
         throw err
       }
 
-      // If network is unreachable or on static host (405/404), provision consistent user by email
-      console.warn('Backend network unreachable during signup, creating consistent local user:', err.message)
-      const stableId = getDeterministicUserId(cleanEmail)
+      // Local fallback for offline/static hosting
+      console.warn('Backend network unreachable during signup, creating local account:', err.message)
       const existing = getStoredProfile(cleanEmail)
+      const isRegistered = isAccountRegistered(cleanEmail)
 
+      // If user already registered this email
+      if (isRegistered || existing) {
+        const storedPwd = localStorage.getItem(`cv_pwd_${cleanEmail}`)
+        if (storedPwd && password && storedPwd !== password) {
+          set({ loading: false })
+          throw new Error('An account with this email already exists. Please switch to Sign in above.')
+        }
+      }
+
+      const stableId = getDeterministicUserId(cleanEmail)
       const localUser: User = {
         id: stableId,
         email: cleanEmail,
         username: cleanEmail.split('@')[0],
-        display_name: displayName || cleanEmail.split('@')[0].replace(/[._]/g, ' '),
-        is_profile_completed: false,
+        display_name: displayName?.trim() || cleanEmail.split('@')[0].replace(/[._]/g, ' '),
+        college: existing?.college || '',
+        department: existing?.department || '',
+        semester: existing?.semester || '',
+        roll_number: existing?.roll_number || '',
+        coding_goals: existing?.coding_goals || '',
+        is_profile_completed: existing?.is_profile_completed ?? false,
         auth_provider: 'email',
         ...existing,
-      }
-
-      if (password) {
-        try { localStorage.setItem(`cv_pwd_${cleanEmail}`, password) } catch {}
       }
 
       const token = `token_${localUser.id}`
       localStorage.setItem('codevault_token', token)
       localStorage.setItem('codevault_user', JSON.stringify(localUser))
-      saveStoredProfile(localUser.email, localUser)
+      registerAccount(cleanEmail, localUser, password)
+      localStorage.removeItem('cv_subjects_all')
+      localStorage.removeItem('cv_subjects_guest')
 
       set({ user: localUser, token, loading: false })
       return localUser

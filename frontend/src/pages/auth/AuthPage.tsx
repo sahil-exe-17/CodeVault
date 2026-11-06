@@ -1,7 +1,7 @@
 import React, { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
-import { Mail, Lock, X, ArrowRight } from 'lucide-react'
+import { Mail, Lock, X, ArrowRight, Check } from 'lucide-react'
 import { AuroraBackground } from '@/components/auth/AuroraBackground'
 import { GlassInput } from '@/components/auth/GlassInput'
 import { useAuthStore } from '@/store/authStore'
@@ -14,8 +14,11 @@ export const AuthPage: React.FC = () => {
   const [mode, setMode] = useState<'signup' | 'signin'>('signup')
   const [firstName, setFirstName] = useState('')
   const [lastName, setLastName] = useState('')
-  const [email, setEmail] = useState('')
+  const [email, setEmail] = useState(() => localStorage.getItem('cv_remembered_email') || '')
   const [password, setPassword] = useState('')
+  const [staySignedIn, setStaySignedIn] = useState(() => {
+    return localStorage.getItem('codevault_stay_signed_in') !== 'false'
+  })
 
   const handleAuthSuccess = (user: any) => {
     if (!user.is_profile_completed) {
@@ -51,6 +54,14 @@ export const AuthPage: React.FC = () => {
     }
 
     try {
+      if (staySignedIn) {
+        localStorage.setItem('codevault_stay_signed_in', 'true')
+        localStorage.setItem('cv_remembered_email', trimmedEmail)
+      } else {
+        localStorage.setItem('codevault_stay_signed_in', 'false')
+        localStorage.removeItem('cv_remembered_email')
+      }
+
       if (mode === 'signup') {
         const fullName = `${firstName.trim()} ${lastName.trim()}`.trim() || trimmedEmail.split('@')[0]
         const user = await signUp(trimmedEmail, trimmedPassword, fullName)
@@ -62,7 +73,17 @@ export const AuthPage: React.FC = () => {
         handleAuthSuccess(user)
       }
     } catch (err: any) {
-      toast.error(err.message || 'Authentication failed. Please try again.')
+      const msg = err.message || 'Authentication failed. Please try again.'
+      toast.error(msg)
+      if (
+        msg.toLowerCase().includes('no account found') ||
+        msg.toLowerCase().includes('create an account') ||
+        msg.toLowerCase().includes('sign up first')
+      ) {
+        setTimeout(() => {
+          setMode('signup')
+        }, 900)
+      }
     }
   }
 
@@ -191,6 +212,27 @@ export const AuthPage: React.FC = () => {
             onChange={(e) => setPassword(e.target.value)}
             required
           />
+
+          {/* Stay signed in checkbox & permanent session persistence */}
+          <div className="flex items-center justify-between pt-0.5 pb-1 select-none">
+            <button
+              type="button"
+              onClick={() => setStaySignedIn(!staySignedIn)}
+              className="flex items-center gap-2.5 text-xs text-white/70 hover:text-white cursor-pointer transition-colors"
+            >
+              <div
+                className={`w-4 h-4 rounded-md border flex items-center justify-center transition-all ${
+                  staySignedIn
+                    ? 'bg-white border-white text-black'
+                    : 'bg-white/[0.05] border-white/20 hover:border-white/40 text-transparent'
+                }`}
+              >
+                <Check className="w-3 h-3 stroke-[3]" />
+              </div>
+              <span className="font-medium font-['Manrope']">Stay signed in</span>
+            </button>
+            <span className="text-[11px] text-white/40 font-mono">Keep session active</span>
+          </div>
 
           {/* Primary CTA Button */}
           <button
