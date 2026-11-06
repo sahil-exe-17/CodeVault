@@ -90,7 +90,7 @@ export const CollegeLogo: React.FC<CollegeLogoProps> = ({ name, domain: explicit
 
   return (
     <div
-      className={`${className} relative shrink-0 rounded-lg bg-[#141416] border border-white/10 flex items-center justify-center overflow-hidden select-none shadow-sm`}
+      className={`${className} relative shrink-0 rounded-md bg-[#101012] border border-white/10 flex items-center justify-center overflow-hidden select-none shadow-sm`}
       title={name}
     >
       {/* Official College Web Identity Logo */}
@@ -101,7 +101,7 @@ export const CollegeLogo: React.FC<CollegeLogoProps> = ({ name, domain: explicit
           loading="lazy"
           onLoad={() => setImgLoaded(true)}
           onError={() => setImgFailed(true)}
-          className={`absolute inset-0 w-full h-full object-contain p-0.5 bg-neutral-900 transition-opacity duration-200 z-10 ${
+          className={`absolute inset-0 w-full h-full object-contain p-0.5 bg-[#101012] transition-opacity duration-200 z-10 ${
             imgLoaded ? 'opacity-100' : 'opacity-0'
           }`}
         />
@@ -109,7 +109,7 @@ export const CollegeLogo: React.FC<CollegeLogoProps> = ({ name, domain: explicit
 
       {/* Clean Minimalist Black & White Monogram Fallback */}
       <span
-        className="text-[9.5px] font-bold text-white/90 tracking-tight uppercase z-0 font-['Inter',system-ui,sans-serif]"
+        className="font-mono font-semibold text-white/90 tracking-wider uppercase z-0 select-none"
         style={{
           fontSize: monogram.length > 4 ? '7.5px' : monogram.length === 4 ? '8.5px' : '9.5px',
           lineHeight: 1,

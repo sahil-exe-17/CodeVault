@@ -1,6 +1,6 @@
 import React, { useState, useMemo } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { User, ArrowRight } from 'lucide-react'
+import { ArrowRight } from 'lucide-react'
 import { Input } from '@/components/ui/Input'
 import { Button } from '@/components/ui/Button'
 import { Select } from '@/components/ui/Select'
@@ -148,20 +148,13 @@ export const ProfileSetup: React.FC = () => {
     <div className="min-h-screen bg-[var(--bg-canvas)] text-[var(--text-main)] flex items-center justify-center p-4 select-none relative overflow-hidden transition-colors duration-200">
       <div className="relative w-full max-w-2xl bg-[var(--bg-card)] border border-[var(--border-subtle)] rounded-3xl p-7 sm:p-9 shadow-2xl space-y-6 backdrop-blur-xl overflow-hidden transition-colors duration-200">
         {/* Header */}
-        <div className="space-y-1.5">
-          <div className="flex items-center gap-2.5">
-            <div className="w-9 h-9 rounded-xl bg-white/[0.04] border border-white/10 flex items-center justify-center shadow-sm">
-              <User className="w-4 h-4 text-white/90" />
-            </div>
-            <div>
-              <h1 className="text-xl font-bold font-['Manrope'] text-[var(--text-main)] tracking-tight">
-                Academic Profile & Workspace Setup
-              </h1>
-              <p className="text-xs text-[var(--text-muted)]">
-                Select your engineering college, department, and semester to format all your practicals.
-              </p>
-            </div>
-          </div>
+        <div className="space-y-1">
+          <h1 className="text-xl font-bold font-['Manrope'] text-[var(--text-main)] tracking-tight">
+            Academic Profile & Workspace Setup
+          </h1>
+          <p className="text-xs text-[var(--text-muted)]">
+            Select your engineering college, department, and semester to format all your practicals.
+          </p>
         </div>
 
         {/* Setup Form */}

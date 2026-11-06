@@ -507,7 +507,7 @@ export const Select: React.FC<SelectProps> = ({
                       <div className="flex items-center gap-2.5 min-w-0 flex-1">
                         {/* Minimalist Icon / Logo Container only when icon exists */}
                         {iconNode && (
-                          <div className="w-6 h-6 rounded-lg bg-[#141416] border border-white/10 flex items-center justify-center shrink-0 overflow-hidden shadow-sm">
+                          <div className="shrink-0 flex items-center justify-center">
                             {iconNode}
                           </div>
                         )}
