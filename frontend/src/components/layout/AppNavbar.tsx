@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Code2, Plus, LogOut, User as UserIcon, Sparkles, ChevronDown, Cpu, Sun, Moon } from 'lucide-react'
+import { Code2, Plus, LogOut, User as UserIcon, ChevronDown, Cpu, Sun, Moon } from 'lucide-react'
 import { useAuthStore } from '@/store/authStore'
 import { useThemeStore, toggleThemeWithCircularAnimation } from '@/store/themeStore'
 
@@ -163,18 +163,6 @@ export const AppNavbar: React.FC<AppNavbarProps> = ({
                     </div>
 
                     <div className="space-y-0.5">
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setShowUserMenu(false)
-                          window.dispatchEvent(new CustomEvent('codevault:replay-intro'))
-                        }}
-                        className="w-full text-left px-3 py-2 rounded-lg text-[var(--text-muted)] hover:text-[var(--text-main)] hover:bg-[var(--bg-metric)] flex items-center gap-2.5 cursor-pointer transition-colors"
-                      >
-                        <Sparkles className="w-3.5 h-3.5 text-cyan-400" />
-                        <span>Replay Startup Intro</span>
-                      </button>
-
                       <button
                         type="button"
                         onClick={() => {

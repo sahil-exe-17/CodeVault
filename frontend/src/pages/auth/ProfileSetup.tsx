@@ -1,9 +1,11 @@
-import React, { useState } from 'react'
+import React, { useState, useMemo } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { User, ArrowRight, Check } from 'lucide-react'
+import { User, ArrowRight, Building2, Cpu, Layers, BookOpen, GraduationCap } from 'lucide-react'
 import { Input } from '@/components/ui/Input'
 import { Button } from '@/components/ui/Button'
+import { Select } from '@/components/ui/Select'
 import { useAuthStore } from '@/store/authStore'
+import { INDIAN_COLLEGES, ENGINEERING_COURSES, ACADEMIC_SEMESTERS } from '@/data/indianAcademicData'
 import toast from 'react-hot-toast'
 
 export const ProfileSetup: React.FC = () => {
@@ -11,25 +13,85 @@ export const ProfileSetup: React.FC = () => {
   const { user, updateProfile, loading } = useAuthStore()
 
   const [displayName, setDisplayName] = useState(user?.display_name || '')
-  const [college, setCollege] = useState(user?.college || '')
-  const [department, setDepartment] = useState(user?.department || '')
-  const [semester, setSemester] = useState(user?.semester || '')
+
+  // College Selection State
+  const initialCollegeInList = useMemo(() => {
+    if (!user?.college) return ''
+    const match = INDIAN_COLLEGES.find((c) => c.value === user.college || c.label === user.college)
+    return match ? match.value : '__custom__'
+  }, [user?.college])
+
+  const [collegeSelect, setCollegeSelect] = useState<string>(initialCollegeInList)
+  const [customCollege, setCustomCollege] = useState<string>(
+    initialCollegeInList === '__custom__' ? user?.college || '' : ''
+  )
+
+  // Course / Department Selection State
+  const initialCourseInList = useMemo(() => {
+    if (!user?.department) return ''
+    const match = ENGINEERING_COURSES.find((c) => c.value === user.department || c.label === user.department)
+    return match ? match.value : '__custom__'
+  }, [user?.department])
+
+  const [departmentSelect, setDepartmentSelect] = useState<string>(initialCourseInList)
+  const [customDepartment, setCustomDepartment] = useState<string>(
+    initialCourseInList === '__custom__' ? user?.department || '' : ''
+  )
+
+  // Semester Selection State
+  const [semesterSelect, setSemesterSelect] = useState<string>(user?.semester || 'Semester 4 (Year 2)')
   const [rollNumber, setRollNumber] = useState(user?.roll_number || '')
   const [codingGoals, setCodingGoals] = useState(user?.coding_goals || '')
 
+  // Options for Dropdowns
+  const collegeOptions = useMemo(() => [
+    ...INDIAN_COLLEGES.map((c) => ({
+      value: c.value,
+      label: c.label,
+      icon: <Building2 className="w-3.5 h-3.5 text-cyan-400" />,
+    })),
+    {
+      value: '__custom__',
+      label: '✏️ Other / Enter Custom College...',
+      icon: <GraduationCap className="w-3.5 h-3.5 text-amber-400" />,
+    },
+  ], [])
+
+  const courseOptions = useMemo(() => [
+    ...ENGINEERING_COURSES.map((c) => ({
+      value: c.value,
+      label: c.label,
+      icon: <Cpu className="w-3.5 h-3.5 text-pink-400" />,
+    })),
+    {
+      value: '__custom__',
+      label: '✏️ Other / Enter Custom Branch...',
+      icon: <BookOpen className="w-3.5 h-3.5 text-amber-400" />,
+    },
+  ], [])
+
+  const semesterOptions = useMemo(() => ACADEMIC_SEMESTERS.map((s) => ({
+    value: s.value,
+    label: s.label,
+    icon: <Layers className="w-3.5 h-3.5 text-emerald-400" />,
+  })), [])
+
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault()
+    const finalCollege = collegeSelect === '__custom__' ? customCollege.trim() : collegeSelect.trim()
+    const finalDepartment = departmentSelect === '__custom__' ? customDepartment.trim() : departmentSelect.trim()
+
     try {
       await updateProfile({
-        display_name: displayName.trim() || user?.display_name || 'Student',
-        college: college.trim(),
-        department: department.trim(),
-        semester: semester.trim(),
+        display_name: displayName.trim() || user?.display_name || user?.email?.split('@')[0] || 'Student',
+        college: finalCollege,
+        department: finalDepartment,
+        semester: semesterSelect.trim(),
         roll_number: rollNumber.trim(),
         coding_goals: codingGoals.trim(),
         is_profile_completed: true,
       })
-      toast.success('Profile created successfully.')
+      toast.success('Academic profile created successfully!')
       navigate('/subjects')
     } catch {
       toast.error('Failed to save profile.')
@@ -49,74 +111,133 @@ export const ProfileSetup: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen bg-[var(--bg-card)] text-[var(--text-main)] flex items-center justify-center p-4 select-none">
-      <div className="w-full max-w-xl bg-[var(--bg-card)] border border-[var(--border-subtle)] rounded-2xl p-8 shadow-2xl space-y-6">
+    <div className="min-h-screen bg-[var(--bg-canvas)] text-[var(--text-main)] flex items-center justify-center p-4 select-none relative overflow-hidden transition-colors duration-200">
+      {/* Dynamic Ambient Aurora Background Glow */}
+      <div className="absolute top-0 left-1/4 w-[500px] h-[300px] bg-gradient-to-br from-pink-500/10 via-purple-600/10 to-transparent blur-[120px] pointer-events-none" />
+      <div className="absolute top-1/2 right-10 w-[500px] h-[300px] bg-gradient-to-bl from-sky-500/10 via-emerald-500/10 to-transparent blur-[120px] pointer-events-none" />
+
+      <div className="relative w-full max-w-2xl bg-[var(--bg-card)] border border-[var(--border-subtle)] rounded-3xl p-7 sm:p-9 shadow-2xl space-y-6 backdrop-blur-xl overflow-hidden transition-colors duration-200">
+        {/* Subtle Top Edge Laser Accent */}
+        <div className="absolute top-0 left-0 right-0 h-[1.5px] bg-gradient-to-r from-transparent via-pink-500/40 via-amber-300/40 to-transparent" />
+
         {/* Header */}
         <div className="space-y-1.5">
-          <div className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-lg bg-white/10 border border-white/20 flex items-center justify-center">
-              <User className="w-4 h-4 text-white" />
+          <div className="flex items-center gap-2.5">
+            <div className="w-9 h-9 rounded-xl bg-[var(--bg-metric)] border border-[var(--border-subtle)] flex items-center justify-center shadow-sm">
+              <User className="w-4 h-4 text-cyan-400" />
             </div>
-            <h1 className="text-xl font-bold font-['Manrope'] text-white">
-              Create Student Profile
-            </h1>
+            <div>
+              <h1 className="text-xl font-bold font-['Manrope'] text-[var(--text-main)] tracking-tight">
+                Academic Profile & Workspace Setup
+              </h1>
+              <p className="text-xs text-[var(--text-muted)]">
+                Select your engineering college, department, and semester to format all your practicals.
+              </p>
+            </div>
           </div>
-          <p className="text-xs text-[var(--text-muted)]">
-            Set up your academic details to organize your practicals. All questions are optional.
-          </p>
         </div>
 
-        {/* Questions Form */}
-        <form onSubmit={handleSave} className="space-y-4">
+        {/* Setup Form */}
+        <form onSubmit={handleSave} className="space-y-5">
+          {/* Full Name */}
           <Input
-            label="Full Name (Optional)"
-            placeholder="e.g. Alex Rivera"
+            label="Full Name (Student / Scholar)"
+            placeholder="e.g. Sahil Lale"
             value={displayName}
             onChange={(e) => setDisplayName(e.target.value)}
           />
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <Input
-              label="College / University (Optional)"
-              placeholder="e.g. National Institute of Tech"
-              value={college}
-              onChange={(e) => setCollege(e.target.value)}
+          {/* College / University Selection (Across India) */}
+          <div className="space-y-1.5">
+            <label className="text-xs font-semibold text-[var(--text-muted)] font-['Manrope'] flex items-center gap-1.5">
+              <Building2 className="w-3.5 h-3.5 text-cyan-400" />
+              <span>College / University (Colleges Across India)</span>
+            </label>
+            <Select
+              value={collegeSelect}
+              onChange={(val) => setCollegeSelect(val)}
+              options={collegeOptions}
+              title="Select Your College / University"
+              placeholder="Search or select your college in India…"
+              searchable={true}
             />
-
-            <Input
-              label="Department / Branch (Optional)"
-              placeholder="e.g. Computer Science & Eng"
-              value={department}
-              onChange={(e) => setDepartment(e.target.value)}
-            />
+            {collegeSelect === '__custom__' && (
+              <div className="pt-2 animate-in fade-in duration-200">
+                <Input
+                  label="Enter Your College / Institute Name"
+                  placeholder="e.g. Government College of Engineering, Pune"
+                  value={customCollege}
+                  onChange={(e) => setCustomCollege(e.target.value)}
+                  autoFocus
+                />
+              </div>
+            )}
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <Input
-              label="Semester / Year (Optional)"
-              placeholder="e.g. Semester 4 / Year 2"
-              value={semester}
-              onChange={(e) => setSemester(e.target.value)}
+          {/* Department / Course Selection */}
+          <div className="space-y-1.5">
+            <label className="text-xs font-semibold text-[var(--text-muted)] font-['Manrope'] flex items-center gap-1.5">
+              <Cpu className="w-3.5 h-3.5 text-pink-400" />
+              <span>Department / Engineering Course</span>
+            </label>
+            <Select
+              value={departmentSelect}
+              onChange={(val) => setDepartmentSelect(val)}
+              options={courseOptions}
+              title="Select Your Branch / Program"
+              placeholder="Search or select your course / branch…"
+              searchable={true}
             />
-
-            <Input
-              label="Roll Number / Student ID (Optional)"
-              placeholder="e.g. CS2024-089"
-              value={rollNumber}
-              onChange={(e) => setRollNumber(e.target.value)}
-            />
+            {departmentSelect === '__custom__' && (
+              <div className="pt-2 animate-in fade-in duration-200">
+                <Input
+                  label="Enter Your Branch / Department Name"
+                  placeholder="e.g. Computer Science & Engineering (Cyber Security)"
+                  value={customDepartment}
+                  onChange={(e) => setCustomDepartment(e.target.value)}
+                  autoFocus
+                />
+              </div>
+            )}
           </div>
 
-          <div className="flex flex-col gap-1.5">
-            <label className="text-xs font-medium text-[var(--text-muted)]">
-              Primary Learning Goal (Optional)
+          {/* Semester & Student Roll Number */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="space-y-1.5">
+              <label className="text-xs font-semibold text-[var(--text-muted)] font-['Manrope'] flex items-center gap-1.5">
+                <Layers className="w-3.5 h-3.5 text-emerald-400" />
+                <span>Current Semester / Year</span>
+              </label>
+              <Select
+                value={semesterSelect}
+                onChange={(val) => setSemesterSelect(val)}
+                options={semesterOptions}
+                title="Select Academic Semester"
+                placeholder="Choose semester…"
+              />
+            </div>
+
+            <div>
+              <Input
+                label="Student Roll No. / PRN (Optional)"
+                placeholder="e.g. 1032210450 / CS-2024"
+                value={rollNumber}
+                onChange={(e) => setRollNumber(e.target.value)}
+              />
+            </div>
+          </div>
+
+          {/* Primary Learning Goal */}
+          <div className="space-y-1.5">
+            <label className="text-xs font-semibold text-[var(--text-muted)] font-['Manrope']">
+              Primary Learning Goal / Target (Optional)
             </label>
             <input
               type="text"
-              placeholder="e.g. Prepare for university coding practicals and oral viva"
+              placeholder="e.g. Master semester lab practicals, automate viva prep & exam records"
               value={codingGoals}
               onChange={(e) => setCodingGoals(e.target.value)}
-              className="bg-[var(--bg-metric)] text-[var(--text-main)] placeholder-[#666666] text-xs rounded-lg border border-[var(--border-subtle)] px-3 py-2.5 focus:border-white focus:outline-none"
+              className="w-full bg-[var(--bg-metric)] text-[var(--text-main)] placeholder-[var(--text-dim)] text-xs rounded-xl border border-[var(--border-subtle)] px-3.5 py-2.5 focus:border-[var(--border-hover)] focus:outline-none transition-colors"
             />
           </div>
 
@@ -125,7 +246,7 @@ export const ProfileSetup: React.FC = () => {
             <button
               type="button"
               onClick={handleSkip}
-              className="text-xs text-[var(--text-muted)] hover:text-white transition-colors cursor-pointer"
+              className="text-xs text-[var(--text-muted)] hover:text-[var(--text-main)] transition-colors cursor-pointer"
             >
               Skip for now
             </button>
@@ -135,9 +256,9 @@ export const ProfileSetup: React.FC = () => {
               variant="primary"
               size="sm"
               isLoading={loading}
-              className="px-5 font-semibold"
+              className="px-6 py-2.5 font-semibold text-xs rounded-xl shadow-sm"
             >
-              <span>Save & Continue</span>
+              <span>Save & Enter Workspace</span>
               <ArrowRight className="w-3.5 h-3.5 ml-1.5" />
             </Button>
           </div>
@@ -146,4 +267,3 @@ export const ProfileSetup: React.FC = () => {
     </div>
   )
 }
-
